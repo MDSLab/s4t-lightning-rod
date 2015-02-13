@@ -23,8 +23,8 @@ var autobahn = require('autobahn');
 var os = require('os');
 var ifaces = os.networkInterfaces();
 
-var url_wamp_router = "ws://172.17.3.139:8181/ws";
-var url_reverse_server = "ws://172.17.3.139:8080";
+var url_wamp_router = "ws://212.189.207.109:8181/ws";
+var url_reverse_server = "ws://212.189.207.109:8080";
 
 var connection = new autobahn.Connection({
 	url: url_wamp_router,
@@ -35,7 +35,7 @@ var topic_command = 'board.command';
 var topic_connection = 'board.connection';
 
 var getIP = require('./lib/getIP.js');
-var IPLocal = getIP('eth0', 'IPv4');
+var IPLocal = '127.0.0.1';//getIP('eth0', 'IPv4');
 
 
 connection.onopen = function (session, details) {
@@ -83,8 +83,20 @@ connection.onopen = function (session, details) {
                //DEBUG
    				console.log(typeof(reverse_client_ideino));
                console.log(args[2]+','+url_reverse_server+','+IPLocal+':2424')
-   				reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+'2424');
+   				reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':2424');
    				break;
+            case 'osjs':
+               //DEBUG
+               console.log("Avvio REVERSE for osjs");
+
+               
+               var reverse_client_ideino = new wts.client_reverse;
+               
+               //DEBUG
+               console.log(typeof(reverse_client_ideino));
+               console.log(args[2]+','+url_reverse_server+','+IPLocal+':')
+               reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':');
+               break;
    		}
    	}
    }
