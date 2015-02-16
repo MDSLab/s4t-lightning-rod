@@ -56,46 +56,51 @@ connection.onopen = function (session, details) {
 
 	//Gestisco topic per i comandi
    var onCommandMessage = function (args){
-   	console.log('Ricevo:::'+args[0]);
+   	console.log('Receive:::'+args[0]);
+      console.log('')
 
    	if(args[0]==os.hostname()){
    		switch(args[1]){
    			case 'ssh':
                //DEBUG
-               console.log(args[2]+','+url_reverse_server+','+IPLocal+':22')
-   				console.log("Avvio REVERSE for ssh");
-   				
+               console.log("Start REVERSE for ssh");
    				
    				var reverse_client_ssh = new wts.client_reverse;
    				
                //DEBUG
-   				console.log(typeof(reverse_client_ssh));
+               console.log(typeof(reverse_client_ssh));
                console.log(args[2]+','+url_reverse_server+','+IPLocal+':22')
-   				reverse_client_ssh.start(args[2], url_reverse_server, IPLocal+':22');
+               
+               reverse_client_ssh.start(args[2], url_reverse_server, IPLocal+':22');
    				break;
    			case 'ideino':
    				//DEBUG
-               console.log("Avvio REVERSE for ideino");
-
-   				
+               console.log("Start REVERSE for ideino");
+               
    				var reverse_client_ideino = new wts.client_reverse;
-   				
-               //DEBUG
-   				console.log(typeof(reverse_client_ideino));
+   				//DEBUG
+               console.log(typeof(reverse_client_ideino));
                console.log(args[2]+','+url_reverse_server+','+IPLocal+':2424')
-   				reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':2424');
+               
+               reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':2424');
    				break;
             case 'osjs':
                //DEBUG
-               console.log("Avvio REVERSE for osjs");
-
-               
+               console.log("Start REVERSE for osjs");               
                var reverse_client_ideino = new wts.client_reverse;
-               
+
                //DEBUG
                console.log(typeof(reverse_client_ideino));
                console.log(args[2]+','+url_reverse_server+','+IPLocal+':')
+               
                reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':');
+               break;
+
+            case 'mode':
+               break;
+            case 'analog':
+               break;
+            case 'digital':
                break;
    		}
    	}
