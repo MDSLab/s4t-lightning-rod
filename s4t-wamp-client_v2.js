@@ -48,6 +48,34 @@ board.connect( function(){
 
    connection.onopen = function (session, details) {
 
+      //Define a RPC to Read Data from PIN
+      function readDigital(args){
+         if (args[0]==os.hostname()){
+            value = board.digitalRead(args[2]);
+            return value;
+         }
+         else{
+            //DEBUG Message
+            console.log("ERRORRR");
+            return null;
+         }
+      }
+      //Define a RPC to Read Data from PIN
+      function readAnalog(args){
+         if (args[0]==os.hostname()){
+            value = board.analogRead(args[2]);
+            return value;
+         }
+         else{
+            //DEBUG Message
+            console.log("ERRORRR");
+            return null;
+         }
+      }
+      //Register a RPC for remoting
+      session.register('command.rpc.read.digital', readDigital);
+      session.register('command.rpc.read.analog', readAnalog);
+
       // Publish, Subscribe, Call and Register
       console.log("Connected to WAMP router: "+url_wamp_router);
       
@@ -103,13 +131,52 @@ board.connect( function(){
                   
                   reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':');
                   break;
-
+               
+               //-----------SET MODE------------------
                case 'mode':
+                  //DEBUG Message
+                  console.log('Set PIN MODE');
+                  //console.log('message::::'+args);
+                  //console.log('board.pinMode('+args[2]+','+args[3]+')');
+                  board.pinMode(args[2],args[3]);
                   break;
+               //------------PIN ANALOG READ---------------------   
                case 'analog':
-                  break;
+                  
+                  if(args[3]!= undefined){//WRITE
+                     //console.log('message::::'+args);
+                     //DEBUG Message
+                     console.log('ANALOG WRITE');
+                     //console.log('boardanaloglWrite('+args[2]+','+args[3]+')');
+                     board.analogWrite(args[2],parseInt(args[3]));
+                     break;
+                  }
+                  /*else{//READ
+                     //DEBUG Message
+                     //console.log('message::::'+args);
+                     console.log('ANALOG READ');
+                     //Implement quait for response
+                     break;
+                  }
+                  */
                case 'digital':
-                  break;
+                  
+                   if(args[3]!= undefined){
+                     //DEBUG Message
+                     //console.log('message::::'+args);
+                     console.log('DIGITAL WRITE');
+                     //console.log('board.digitalWrite('+args[2]+','+args[3]+')');
+                     board.digitalWrite(args[2],parseInt(args[3]));
+                     break;
+                   }
+                   /*else{//READ
+                     //DEBUG Message
+                     //console.log('message::::'+args);
+                     console.log('DIGITAL READ');
+                     //Implement quait for response
+                     break;
+                   }*/
+                  
             }
          }
       }
