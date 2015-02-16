@@ -127,9 +127,9 @@ board.connect( function(){
 
                   //DEBUG
                   console.log(typeof(reverse_client_ideino));
-                  console.log(args[2]+','+url_reverse_server+','+IPLocal+':')
+                  console.log(args[2]+','+url_reverse_server+','+IPLocal+':8000')
                   
-                  reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':');
+                  reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':8000');
                   break;
                
                //-----------SET MODE------------------
