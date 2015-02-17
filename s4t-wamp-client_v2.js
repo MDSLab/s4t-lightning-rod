@@ -73,8 +73,8 @@ board.connect( function(){
          }
       }
       //Register a RPC for remoting
-      session.register('command.rpc.read.digital', readDigital);
-      session.register('command.rpc.read.analog', readAnalog);
+      session.register(os.hostname()+'.command.rpc.read.digital', readDigital);
+      session.register(os.hostname()+'.command.rpc.read.analog', readAnalog);
 
       // Publish, Subscribe, Call and Register
       console.log("Connected to WAMP router: "+url_wamp_router);
