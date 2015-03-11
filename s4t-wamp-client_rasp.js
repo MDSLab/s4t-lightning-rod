@@ -47,15 +47,20 @@ connection.onopen = function (session, details) {
 
    //Define a RPC to Read Data from PIN
    function readDigital(args){
-      if (args[0]==os.hostname()){
-         value = gpio.readSync(args[2]);
-         return value;
-      }
+      value = gpio.readSync(args[2]);
+      return value;
+   }
+
+   function writeDigital(args){
+      gpio.setDirection(args[2],'out');
+      gpio.write(args[2],parseInt(args[3]));
+      return 0;
    }
    
 
    //Register a RPC for remoting
    session.register(os.hostname()+'.command.rpc.read.digital', readDigital);
+   session.register(os.hostname()+'.command.rpc.write.digital', writeDigital);
    //session.register(os.hostname()+'.command.rpc.read.analog', readAnalog);
 
    // Publish, Subscribe, Call and Register
@@ -99,9 +104,8 @@ connection.onopen = function (session, details) {
                //board.pinMode(args[2],args[3]);
                gpio.setDirection(args[2],args[3]);
                break;
-           
+           /*
             case 'digital':
-               
                 if(args[3]!= undefined){
                   //DEBUG Message
                   console.log('DIGITAL WRITE');
@@ -110,6 +114,7 @@ connection.onopen = function (session, details) {
                   gpio.write(args[2],parseInt(args[3]));
                   break;
                 }
+            */
          }
       }
    }
