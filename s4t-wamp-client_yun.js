@@ -1,22 +1,3 @@
-/*
-The MIT License (MIT)
-Copyright (c) 2014 Andrea Rocco Lotronto
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
 var wts = require("node-reverse-wstunnel");
 var autobahn = require('autobahn');
 
@@ -37,7 +18,7 @@ var board = new linino.Board();
 var topic_command = 'board.command';
 var topic_connection = 'board.connection';
 
-var getIP = require('./lib/getIP.js');
+var getIP = require('./lib/getIP.js'); //in this moment is not used
 var IPLocal = '127.0.0.1';//getIP('eth0', 'IPv4');
 
 var layout={
@@ -59,7 +40,7 @@ var layout={
    
    },
    analog:{
-      A0: "A0",
+   A0: "A0",
    A1: "A1",
    A2: "A2",
    A3: "A3",
@@ -79,38 +60,63 @@ board.connect( function(){
 
       //Define a RPC to Read Data from PIN
       function readDigital(args){
-         value = board.digitalRead(args[2]);
-         return value;
+         //if(layout.digital.hasOwnProperty(args[2])){
+         try{
+            value = board.digitalRead(args[2]);
+            return value;
+         }catch(ex){
+         //else{
+            return ex.message;
+         }
+         
       }
 
       //Define a RPC to Write Data from PIN
       function writeDigital(args){
-         board.pinMode(args[2],'output');
-         board.digitalWrite(args[2],parseInt(args[3]));
-         return 0;
+         //if(layout.digital.hasOwnProperty(args[2])){
+         //   board.pinMode(args[2],'output');
+         try{
+            board.digitalWrite(args[2],parseInt(args[3]));
+            return 0;
+         }catch(ex){
+         //else{
+            return ex.message;
+         }
       }
       //Define a RPC to Read Data from PIN
       function readAnalog(args){
-         value = board.analogRead(args[2]);
-         return value;
+         //if(layout.analog.hasOwnProperty(args[2])){
+         try{
+            value = board.analogRead(args[2]);
+            return value;
+         }catch(ex){
+         //else{
+            return ex.message;
+         }
       }
 
       //Define a RPC to Write Data to analog PIN
       function writeAnalog(args){
-         board.analogWrite(args[2],parseInt(args[3]));
-         return 0;
+         try{
+            board.analogWrite(args[2],parseInt(args[3]));
+            return 0;   
+         }catch(ex){
+            return ex.message;
+         }
+         
       }
 
       //Define a RPC to Set mode of the PIN
       function setMode(args){
-         if(layout.digital.hasOwnProperty(args[0])){
-            if(args[1] === 'input' || args[1] ==='output'){
+         //if(layout.digital.hasOwnProperty(args[0])){
+            //if(args[1] === 'input' || args[1] ==='output'){
+            try{
                board.pinMode(args[0],args[1]);
                return 0;   
-            }
-         }
-         else{
-            return 1;
+            
+            }catch(ex){
+         //else{
+            return ex.message;
          }
       }
 
@@ -185,7 +191,7 @@ board.connect( function(){
                   break;
                
                //-----------SET MODE------------------
-               case 'mode':
+               /*case 'mode':
                   //DEBUG Message
                   console.log('Set PIN MODE');
                   //console.log('message::::'+args);
@@ -193,16 +199,17 @@ board.connect( function(){
                   board.pinMode(args[2],args[3]);
                   break;
                //------------PIN ANALOG READ---------------------   
+               */
                case 'analog':
                   
-                  if(args[3]!= undefined){//WRITE
+                  //if(args[3]!= undefined){//WRITE
                      //console.log('message::::'+args);
                      //DEBUG Message
-                     console.log('ANALOG WRITE');
+                     console.log('ANALOG:'+args);
                      //console.log('boardanaloglWrite('+args[2]+','+args[3]+')');
-                     board.analogWrite(args[2],parseInt(args[3]));
+                     //board.analogWrite(args[2],parseInt(args[3]));
                      break;
-                  }
+                  
                   /*else{//READ
                      //DEBUG Message
                      //console.log('message::::'+args);

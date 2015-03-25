@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import shutil
 import sys
 import os
@@ -8,7 +6,8 @@ def main(argv):
 	if len(argv) == 2:
 		if(argv[1] == 'yun'):
 			try:
-				shutil.copyfile('./s4t-wamp-client_yun.js', '/opt/usr/bin/s4t-wamp-client_yun.js')
+				shutil.copyfile('./s4t-wamp-client_yun.js', '/opt/node-lighthing-rod/s4t-wamp-client_yun.js')
+				shutil.copytree('./lib/', '/opt/node-lighthing-rod/')
 				shutil.copyfile('./nlr-service', '/etc/init.d/nlr-service')
 				os.system("ln -s /etc/init.d/nlr-service /etc/rc.d/S99node-lighthing-rod")
 
