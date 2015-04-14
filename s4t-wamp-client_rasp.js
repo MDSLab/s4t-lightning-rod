@@ -4,16 +4,23 @@ var autobahn = require('autobahn');
 var os = require('os');
 var ifaces = os.networkInterfaces();
 
-var url_wamp_router = "ws://212.189.207.109:8181/ws";
-var url_reverse_server = "ws://212.189.207.109:8080";
+//Load configuration file
+var nconf = require('nconf');
+nconf.file ({file: 'setting.json'});
+
+var wampR_url = nconf.get('config:wamp:url')+":"+nconf.get('config:wamp:port')+"/ws";
+var reverseS_url = nconf.get('config:reverse:url')+":"+nconf.get('config:reverse:port');
+var wamp_realm = nconf.get('config:wamp:realm');
+
+//Debug Message
+console.log(wampR_url);
+console.log(reverseS_url);
+console.log(wamp_realm);
 
 var connection = new autobahn.Connection({
-	url: url_wamp_router,
-	realm: "s4t"
+	url: wampR_url,
+	realm: wamp_realm
 });
-
-//var linino = require('ideino-linino-lib');
-//var board = new linino.Board();
 
 var gpio = require("pi-gpio");
 

@@ -4,12 +4,17 @@ var autobahn = require('autobahn');
 var os = require('os');
 var ifaces = os.networkInterfaces();
 
-var url_wamp_router = "ws://212.189.207.109:8181/ws";
-var url_reverse_server = "ws://212.189.207.109:8080";
+//Load configuration file
+var nconf = require('nconf');
+nconf.file ({file: 'setting.json'});
+
+var wampR_url = nconf.get('config:wamp:url')+":"+nconf.get('config:wamp:port')+"/ws";
+var reverseS_url = nconf.get('config:reverse:url')+":"+nconf.get('config:reverse:port');
+var wamp_realm = nconf.get('config:wamp:realm');
 
 var connection = new autobahn.Connection({
-	url: url_wamp_router,
-	realm: "s4t"
+	url: wampR_url,
+	realm: wamp_realm
 });
 
 var linino = require('ideino-linino-lib');
@@ -21,34 +26,9 @@ var topic_connection = 'board.connection';
 var getIP = require('./lib/getIP.js'); //in this moment is not used
 var IPLocal = '127.0.0.1';//getIP('eth0', 'IPv4');
 
-var layout={
-   digital:{
-   D0: "D0",
-   D1: "D1",
-   D2: "D2",
-   D3: "D3",
-   D4: "D4",
-   D5: "D5",
-   D6: "D6",
-   D7: "D7",
-   D8: "D8",
-   D9: "D9",
-   D10:"D10",
-   D11:"D11",
-   D12:"D12",
-   D13:"D13"
-   
-   },
-   analog:{
-   A0: "A0",
-   A1: "A1",
-   A2: "A2",
-   A3: "A3",
-   A4: "A4",
-   A5: "A5"
-   }
 
-}
+
+
 
 
 //As first step we need to use the function 'connect' of the object 'linino.Board()'' 
@@ -190,52 +170,8 @@ board.connect( function(){
                   reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':8000');
                   break;
                
-               //-----------SET MODE------------------
-               /*case 'mode':
-                  //DEBUG Message
-                  console.log('Set PIN MODE');
-                  //console.log('message::::'+args);
-                  //console.log('board.pinMode('+args[2]+','+args[3]+')');
-                  board.pinMode(args[2],args[3]);
-                  break;
-               //------------PIN ANALOG READ---------------------   
-               */
-               case 'analog':
-                  
-                  //if(args[3]!= undefined){//WRITE
-                     //console.log('message::::'+args);
-                     //DEBUG Message
-                     console.log('ANALOG:'+args);
-                     //console.log('boardanaloglWrite('+args[2]+','+args[3]+')');
-                     //board.analogWrite(args[2],parseInt(args[3]));
-                     break;
-                  
-                  /*else{//READ
-                     //DEBUG Message
-                     //console.log('message::::'+args);
-                     console.log('ANALOG READ');
-                     //Implement quait for response
-                     break;
-                  }
-                  */
-               /*
-               case 'digital':
-                  
-                   if(args[3]!= undefined){
-                     //DEBUG Message
-                     //console.log('message::::'+args);
-                     console.log('DIGITAL WRITE');
-                     //console.log('board.digitalWrite('+args[2]+','+args[3]+')');
-                     board.digitalWrite(args[2],parseInt(args[3]));
-                     break;
-                   }
-                   /*else{//READ
-                     //DEBUG Message
-                     //console.log('message::::'+args);
-                     console.log('DIGITAL READ');
-                     //Implement quait for response
-                     break;
-                   }*/ 
+               
+            
             }
          }
       }
