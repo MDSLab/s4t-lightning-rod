@@ -12,6 +12,9 @@ var wampR_url = nconf.get('config:wamp:url')+":"+nconf.get('config:wamp:port')+"
 var reverseS_url = nconf.get('config:reverse:url')+":"+nconf.get('config:reverse:port');
 var wamp_realm = nconf.get('config:wamp:realm');
 
+console.log(wampR_url);
+console.log(reverseS_url);
+console.log(wamp_realm);
 var connection = new autobahn.Connection({
 	url: wampR_url,
 	realm: wamp_realm
@@ -25,10 +28,6 @@ var topic_connection = 'board.connection';
 
 var getIP = require('./lib/getIP.js'); //in this moment is not used
 var IPLocal = '127.0.0.1';//getIP('eth0', 'IPv4');
-
-
-
-
 
 
 //As first step we need to use the function 'connect' of the object 'linino.Board()'' 
@@ -110,7 +109,7 @@ board.connect( function(){
       session.register(os.hostname()+'.command.rpc.write.analog', writeAnalog);
 
       // Publish, Subscribe, Call and Register
-      console.log("Connected to WAMP router: "+url_wamp_router);
+      console.log("Connected to WAMP router: "+wampR_url);
       
       //Registro la scheda pubblicando su un topic
       console.log("Send my ID on topic: "+topic_connection);
