@@ -1,5 +1,7 @@
 var wts = require("node-reverse-wstunnel");
 var autobahn = require('autobahn');
+var spawn = require('child_process').spawn;
+
 
 var os = require('os');
 var ifaces = os.networkInterfaces();
@@ -8,6 +10,7 @@ var ifaces = os.networkInterfaces();
 var nconf = require('nconf');
 nconf.file ({file: 'setting.json'});
 
+var basePort = nconf.get('config:socat:client:port');
 var wampR_url = nconf.get('config:wamp:url')+":"+nconf.get('config:wamp:port')+"/ws";
 var reverseS_url = nconf.get('config:reverse:url')+":"+nconf.get('config:reverse:port');
 var wamp_realm = nconf.get('config:wamp:realm');
@@ -134,6 +137,18 @@ board.connect( function(){
 
          if(args[0]==os.hostname()){
             switch(args[1]){
+               case 'tty':
+                  //DEBUG
+                  console.log("Start REVERSE for tty.js");
+                  
+                  var reverse_client_ssh = new wts.client_reverse;
+                  
+                  //DEBUG
+                  console.log(typeof(reverse_client_ssh));
+                  console.log(args[2]+','+reverseS_url+','+IPLocal+':2230')
+                  
+                  reverse_client_ssh.start(args[2], reverseS_url, IPLocal+':2230');
+                  break;
                case 'ssh':
                   //DEBUG
                   console.log("Start REVERSE for ssh");
@@ -142,9 +157,9 @@ board.connect( function(){
                   
                   //DEBUG
                   console.log(typeof(reverse_client_ssh));
-                  console.log(args[2]+','+url_reverse_server+','+IPLocal+':22')
+                  console.log(args[2]+','+reverseS_url+','+IPLocal+':22')
                   
-                  reverse_client_ssh.start(args[2], url_reverse_server, IPLocal+':22');
+                  reverse_client_ssh.start(args[2], reverseS_url, IPLocal+':22');
                   break;
                case 'ideino':
                   //DEBUG
@@ -153,9 +168,9 @@ board.connect( function(){
                   var reverse_client_ideino = new wts.client_reverse;
                   //DEBUG
                   console.log(typeof(reverse_client_ideino));
-                  console.log(args[2]+','+url_reverse_server+','+IPLocal+':2424')
+                  console.log(args[2]+','+reverseS_url+','+IPLocal+':2424')
                   
-                  reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':2424');
+                  reverse_client_ideino.start(args[2], reverseS_url, IPLocal+':2424');
                   break;
                case 'osjs':
                   //DEBUG
@@ -164,11 +179,96 @@ board.connect( function(){
 
                   //DEBUG
                   console.log(typeof(reverse_client_ideino));
-                  console.log(args[2]+','+url_reverse_server+','+IPLocal+':8000')
+                  console.log(args[2]+','+reverseS_url+','+IPLocal+':8000')
                   
-                  reverse_client_ideino.start(args[2], url_reverse_server, IPLocal+':8000');
+                  reverse_client_ideino.start(args[2], reverseS_url, IPLocal+':8000');
                   break;
                
+               case 'create-network':
+                  console.log("Start configuring network topology");
+                  console.log('host tunIP: ' + JSON.stringify(args[2]));
+                  console.log('server tunIP: ' + JSON.stringify(args[3]));
+                  console.log('server socat port: ' + JSON.stringify(args[4]));
+                  console.log('host greIP: ' + JSON.stringify(args[5]));
+                  console.log('broadcast gre: ' + JSON.stringify(args[6]));
+                  console.log('subnet mask: ' + JSON.stringify(args[7]));
+                                                                        
+                  socatClient = spawn('socat', ['-d','-d','TCP-L:'+ basePort +',bind=localhost,reuseaddr,forever,interval=10','TUN:'+args[2]+'/30,tun-name=socattun,up']);
+                  
+                  //socatClient.on('error',function(err){throw err});
+                  
+                  socatClient.stdout.on('data', function (data) {
+                     console.log('stdout: ' + data);
+                  });
+                  socatClient.stderr.on('data', function (data) {
+                     var textdata = 'stderr: ' + data;
+                     console.log(textdata);
+                     if(textdata.indexOf("starting data transfer loop") > -1) {
+                        spawn('ifconfig',['socattun','up']);
+
+                       
+                        
+                        var testing = spawn('ip',['link','add','greUnime','type','gretap','remote',args[3],'local',args[2]]);                 
+                        
+                        testing.on('error',function(err){throw err});
+                        testing.stdout.on('data', function (data) {
+                           console.log('create link: ' + data);
+                        });
+                        testing.stderr.on('data', function (data) {
+                           console.log('create link: ' + data);
+                        });
+                        testing.on('close', function (code) {
+                           console.log('create link process exited with code ' + code);
+                           
+                           var testing2 = spawn('ip',['addr','add',args[5]+'/'+args[7],'broadcast',args[6],'dev','greUnime']); 
+                           testing2.stdout.on('add ip: ', function (data) { 
+                              console.log('stdout: ' + data); 
+                           });
+                           testing2.stderr.on('add ip: ', function (data) { 
+                              console.log('stderr: ' + data);
+                           });
+                           testing2.on('close', function (code) {
+                              console.log('add ip process exited with code ' + code); 
+                              var testing3 = spawn('ip',['link','set','greUnime','up']);
+                              testing3.stdout.on('data', function (data) {
+                                 console.log('set link up: ' + data);
+                              });
+                              testing3.stderr.on('data', function (data) {
+                                 console.log('set link up: ' + data);
+                              });
+                              testing3.on('close', function (code) {
+                                 console.log('set link up process exited with code ' + code);
+                              });
+                           });
+                        });
+                     }
+                  });
+                  socatClient.on('close', function (code) {
+                     console.log('socat process exited with code ' + code);
+                  });
+                                                                                                                                               
+                  var rtpath = "/opt/demo/node-lighthing-rod-develop/node_modules/node-reverse-wstunnel/bin/wstt.js";
+                  
+console.log("LOOOOGGG::"+'-r '+args[4]+':localhost:'+basePort,reverseS_url);
+
+                  rtClient = spawn(rtpath, ['-r '+args[4]+':localhost:'+basePort,reverseS_url]);
+                  rtClient.stdout.on('data', function (data) {
+                     console.log('stdout: ' + data);
+                  });
+                  rtClient.stderr.on('data', function (data) {
+                     console.log('stderr: ' + data);
+                  });
+                  rtClient.on('close', function (code) {
+                     console.log('child process exited with code ' + code);
+                  });
+                                                                                                                                                                                                                                                                                                                                            //simply waiting, that's bad, but how else ?
+              break;
+                case 'remove-from-network':
+                   socatClient.kill('SIGINT');
+                   rtClient.kill('SIGTERM');
+                   spawn('ip',['link','del','greUnime']);
+                   console.log('removed from network');
+                   break;   
                
             
             }
