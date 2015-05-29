@@ -33,3 +33,10 @@ python install.py yun|rasp
 ```
 
 *yun* paramiter for Arduino YUN/Linino One devices or *rasp* paramiter for Raspberry Pi devices.
+
+##Configuration
+After you have installed the client **node-lighthing-rod** you need to edit the configuration file:
+```
+/opt/node-lighthing-rod/setting.json
+```
+You need to change the value of the IP and the PORT of the WAMP Router, Reverse Websocket Tunnel Server and other configuration paramiters 
