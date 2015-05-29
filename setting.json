@@ -10,8 +10,13 @@
 
 		"reverse":
 		{
-			"url": "ws://212.189.207.212",
-			"port": "8080"
+			"server":{
+				"url": "ws://172.17.3.139",
+				"port": "8080"
+			},
+			"lib":{
+				"bin":"/mnt/Data-Partition/Develop/GitRepository/GitHub/MDSLab/node-lighthing-rod/node_modules/node-reverse-wstunnel/bin/wstt.js"
+			}
 		},
 
 		"socat":{
@@ -22,9 +27,20 @@
 
 		"board":
 		{
-			"name":"",
-			"uuid":"",
-			"model":""
+			"services":{
+				"ssh":{
+					"port":"22"
+				},
+				"tty":{
+					"port":"2233"
+				},
+				"ideino":{
+					"port":"2424"
+				},
+				"osjs":{
+					"port":"8000"
+				}
+			}
 		}
 
 	}
