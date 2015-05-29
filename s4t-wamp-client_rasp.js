@@ -1,3 +1,11 @@
+/*
+Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+Copyright (c) 2014 2015 Andrea Rocco Lotronto
+*/
+
 var wts = require("node-reverse-wstunnel");
 var autobahn = require('autobahn');
 

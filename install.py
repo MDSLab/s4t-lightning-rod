@@ -1,3 +1,11 @@
+#
+#Apache License
+#                           Version 2.0, January 2004
+#                        http://www.apache.org/licenses/
+#
+#Copyright (c) 2014 2015 Andrea Rocco Lotronto
+#
+
 import shutil
 import sys
 import os
@@ -6,13 +14,14 @@ def main(argv):
 	if len(argv) == 2:
 		if(argv[1] == 'yun'):
 			try:
-				shutil.copyfile('./s4t-wamp-client_yun.js', '/opt/node-lighthing-rod/s4t-wamp-client_yun.js')
-				shutil.copytree('./lib/', '/opt/node-lighthing-rod/')
-				shutil.copyfile('./nlr-service', '/etc/init.d/nlr-service')
-				os.system("ln -s /etc/init.d/nlr-service /etc/rc.d/S99node-lighthing-rod")
+				shutil.copytree('./', '/opt/node-lighthing-rod/')
+				os.system('mv /opt/node-lighthing-rod/node_modules_yun /opt/node-lighthing-rod/node_modules')
+				shutil.copyfile('./s4t_initd_service', '/etc/init.d/s4t_stable')
+				os.system('chmod +x /etc/init.d/s4t_stable')
+				os.system('/etc/init.d/s4t_stable enable')
 
 				print 'Node lighthing rod service is installed, now it will start every reboot'
-				print 'You can start now the service whit the command "/etc/ini.d/nlr-service start"'
+				print 'You can start now the service whit the command "/etc/init.d/s4t_stable start"'
 				
 			except IOError as e:
 				print('Error: %s' %e)
