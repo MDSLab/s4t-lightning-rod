@@ -55,6 +55,11 @@ board.connect( function(){
    //of the board
    connection.onopen = function (session, details) {
 
+      //DEBUG
+      //console.log("SESSION ID"+Object.getOwnPropertyNames(session));
+      console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._realm);
+      console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._id);
+
       //Define a RPC to Read Data from PIN
       function readDigital(args){
          try{
@@ -89,8 +94,7 @@ board.connect( function(){
             return 0;   
          }catch(ex){
             return ex.message;
-         }
-         
+         }     
       }
       //Define a RPC to Set mode of the PIN
       function setMode(args){
@@ -120,7 +124,7 @@ board.connect( function(){
       session.publish(topic_connection, [os.hostname(), 'connection']);
 
       //Gestione chiusura comunicazione al server
-      process.on('SIGINT', function(){
+      /*process.on('SIGINT', function(){
          session.publish(topic_connection, [os.hostname(), 'disconnect']);
          process.exit();
       });
@@ -129,7 +133,7 @@ board.connect( function(){
          session.publish(topic_connection, [os.hostname(), 'disconnect']);
          process.exit();
       });
-
+*/
       
 
       //Manage the command topic
