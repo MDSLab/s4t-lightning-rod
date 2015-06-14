@@ -57,7 +57,7 @@ board.connect( function(){
 
       //DEBUG
       //console.log("SESSION ID"+Object.getOwnPropertyNames(session));
-      console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._realm);
+      //console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._realm);
       console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._id);
 
       //Define a RPC to Read Data from PIN
@@ -121,19 +121,20 @@ board.connect( function(){
       //Registro la scheda pubblicando su un topic
       console.log("Send my ID on topic: "+topic_connection);
 
-      session.publish(topic_connection, [os.hostname(), 'connection']);
+      console.log(session._id)
+
+      session.publish(topic_connection, [os.hostname(), 'connection', session._id]);
 
       //Gestione chiusura comunicazione al server
-      /*process.on('SIGINT', function(){
-         session.publish(topic_connection, [os.hostname(), 'disconnect']);
+      process.on('SIGINT', function(){
+         session.publish(topic_connection, [os.hostname(), 'disconnect', session._id]);
          process.exit();
       });
 
       process.on('SIGTERM', function(){
-         session.publish(topic_connection, [os.hostname(), 'disconnect']);
+         session.publish(topic_connection, [os.hostname(), 'disconnect', session._id]);
          process.exit();
       });
-*/
       
 
       //Manage the command topic
