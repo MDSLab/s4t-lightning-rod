@@ -21,6 +21,7 @@ var wampR_url = nconf.get('config:wamp:url')+":"+nconf.get('config:wamp:port')+"
 var reverseS_url = nconf.get('config:reverse:server:url')+":"+nconf.get('config:reverse:server:port');
 var wamp_realm = nconf.get('config:wamp:realm');
 var rtpath = nconf.get('config:reverse:lib:bin');
+var board_code = nconf.get('config:board:code');
 
 //DEBUG
 //console.log(wampR_url);
@@ -54,6 +55,11 @@ board.connect( function(){
    //After the connection is ready we can use the ideino-linino-lib to controll the PIN
    //of the board
    connection.onopen = function (session, details) {
+
+      //DEBUG
+      //console.log("SESSION ID"+Object.getOwnPropertyNames(session));
+      //console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._realm);
+      //console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._id);
 
       //Define a RPC to Read Data from PIN
       function readDigital(args){
@@ -89,8 +95,7 @@ board.connect( function(){
             return 0;   
          }catch(ex){
             return ex.message;
-         }
-         
+         }     
       }
       //Define a RPC to Set mode of the PIN
       function setMode(args){
@@ -102,14 +107,32 @@ board.connect( function(){
          }
       }
 
+      //Define a RPC to Set a Misure
+      function setMisure(ars){
+         try{
+            //do something
+         }catch(ex){
+            return ex.message;
+         }
+      }
+
+
+
       //Register a RPC for remoting
-      session.register(os.hostname()+'.command.rpc.setmode', setMode);
+      //session.register(os.hostname()+'command.rpc.setMisure', setMisure);
+      session.register(board_code+'.command.rpc.setMisure', setMisure);
+      //session.register(os.hostname()+'.command.rpc.setmode', setMode);
+      session.register(board_code+'.command.rpc.setmode', setMode);
+      
+      //session.register(os.hostname()+'.command.rpc.read.digital', readDigital);
+      //session.register(os.hostname()+'.command.rpc.write.digital', writeDigital);
+      session.register(board_code+'.command.rpc.read.digital', readDigital);
+      session.register(board_code+'.command.rpc.write.digital', writeDigital);
 
-      session.register(os.hostname()+'.command.rpc.read.digital', readDigital);
-      session.register(os.hostname()+'.command.rpc.write.digital', writeDigital);
-
-      session.register(os.hostname()+'.command.rpc.read.analog', readAnalog);
-      session.register(os.hostname()+'.command.rpc.write.analog', writeAnalog);
+      //session.register(os.hostname()+'.command.rpc.read.analog', readAnalog);
+      //session.register(os.hostname()+'.command.rpc.write.analog', writeAnalog);
+      session.register(board_code+'.command.rpc.read.analog', readAnalog);
+      session.register(board_code+'.command.rpc.write.analog', writeAnalog);
 
       // Publish, Subscribe, Call and Register
       console.log("Connected to WAMP router: "+wampR_url);
@@ -117,20 +140,22 @@ board.connect( function(){
       //Registro la scheda pubblicando su un topic
       console.log("Send my ID on topic: "+topic_connection);
 
-      session.publish(topic_connection, [os.hostname(), 'connection']);
+
+      //session.publish(topic_connection, [os.hostname(), 'connection', session._id]);
+      session.publish(topic_connection, [board_code, 'connection', session._id]);
 
       //Gestione chiusura comunicazione al server
+      /*
       process.on('SIGINT', function(){
-         session.publish(topic_connection, [os.hostname(), 'disconnect']);
+         session.publish(topic_connection, [os.hostname(), 'disconnect', session._id]);
          process.exit();
       });
 
       process.on('SIGTERM', function(){
-         session.publish(topic_connection, [os.hostname(), 'disconnect']);
+         session.publish(topic_connection, [os.hostname(), 'disconnect', session._id]);
          process.exit();
       });
-
-      
+      */
 
       //Manage the command topic
       var onCommandMessage = function (args){
@@ -139,7 +164,8 @@ board.connect( function(){
          console.log('Receive:::'+args[0]);
          //console.log(rtpath);
 
-         if(args[0]==os.hostname()){
+         //if(args[0]==os.hostname()){
+         if(args[0]==board_code){
             switch(args[1]){
                case 'tty':
                   exportService(args[1],args[2],nconf.get('config:board:services:tty:port'),args[3]);
