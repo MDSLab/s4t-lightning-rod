@@ -3,7 +3,7 @@
 		
 		"wamp":
 		{
-			"url": "ws://",
+			"url": "",
 			"port": "",
 			"realm": ""
 		},
@@ -11,7 +11,7 @@
 		"reverse":
 		{
 			"server":{
-				"url": "ws://",
+				"url": "",
 				"port": ""
 			},
 			"lib":{
@@ -41,7 +41,16 @@
 					"port":"8000"
 				}
 			},
-			"code":""
+			"code":"",
+			"sensors":{
+				"temp":{
+					"resource_id":"",
+					"auth_id":"",
+					"time":"60000",
+					"status":"on"
+				}
+				
+			}
 		}
 
 	}
