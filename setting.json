@@ -3,19 +3,19 @@
 		
 		"wamp":
 		{
-			"url": "ws://212.189.207.212",
-			"port": "8181",
-			"realm": "s4t"
+			"url": "",
+			"port": "",
+			"realm": ""
 		},
 
 		"reverse":
 		{
 			"server":{
-				"url": "ws://172.17.3.139",
-				"port": "8080"
+				"url": "",
+				"port": ""
 			},
 			"lib":{
-				"bin":"/mnt/Data-Partition/Develop/GitRepository/GitHub/MDSLab/node-lighthing-rod/node_modules/node-reverse-wstunnel/bin/wstt.js"
+				"bin":"/opt/usr/lib/node_modules/node-reverse-wstunnel/bin/wstt.js"
 			}
 		},
 
@@ -40,6 +40,16 @@
 				"osjs":{
 					"port":"8000"
 				}
+			},
+			"code":"",
+			"sensors":{
+				"temp":{
+					"resource_id":"",
+					"auth_id":"",
+					"time":"60000",
+					"status":"on"
+				}
+				
 			}
 		}
 

@@ -15,16 +15,20 @@ export NODE_PATH=/usr/lib/node_modules:/opt/usr/lib/node_modules:$NODE_PATH
 
 START=99
 STOP=99
+MYPID=`ps www | grep s4t-wamp-client_yun.js | grep -v grep | awk {'print $1'}`
 
 boot () {
 
 start
 }
 start () {
-
-    cd /opt/node-lighthing-rod
-    node s4t-wamp-client_yun.js > /opt/node-lighthing-rod/log &
-        
+	if [ -r $MYPID ]; then
+    	cd /opt/node-lighthing-rod
+    	node s4t-wamp-client_yun.js > /opt/node-lighthing-rod/log &
+    	echo "Service is started"
+    else
+    	echo "Service is already started with PID $MYPID"	
+    fi
 
 }
 stop () {
