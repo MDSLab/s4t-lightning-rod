@@ -64,8 +64,8 @@ board.connect( function(){
 
       //DEBUG
       //console.log("SESSION ID"+Object.getOwnPropertyNames(session));
-      console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._realm);
-      console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._id);
+      //console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._realm);
+      //console.log("AAAAAAAAAAAAAAAAAAAaa:::::::::"+session._id);
 
       //Define a RPC to Read Data from PIN
       function readDigital(args){
@@ -115,35 +115,72 @@ board.connect( function(){
 
       //Define a RPC to Set a Misure
       function sendTemp(args){
-         var pin           = args[0];
-         var operation     = args[1];
-         var measureName   = args[2];
-         var measureTime   = args[3];
-         var response = {};
-/*
-         try{/*
-            if(sendTempFlag){
-               response.resource="",
-               response.name="",
-               return response;
+         //console.log("args::"+args);
+         var obj           = JSON.parse(fs.readFileSync('setting.json'));
+         var time          = obj.config.board.sensors.temp.time;
+         var resourceid    = obj.config.board.sensors.temp.resource_id;
+         var authid        = obj.config.board.sensors.temp.auth_id;
+         var status        = obj.config.board.sensors.temp.status;
+
+         //DEBUG
+         //console.log("status::"+status);
+         //console.log("args[0]::"+args[0]);
+
+         if(resourceid != undefined && authid != undefined){
+            if(status==='on'){
+               if(args[0]==='off'){
+                  clearInterval(misuraTemp);
+                  obj.config.board.sensors.temp.status = args[0];
+                  console.log(obj);
+                  fs.writeFileSync('setting.json', JSON.stringify(obj));
+                  var result = {
+                     message: 'Measure stopped',
+                     name: 'Temp',
+                     time: time
+                  };
+                  return result;
+               }
+               if(args[0]==='on'){
+                  var result = {
+                     message: 'Measure already started',
+                     name: 'Temp',
+                     time: time
+                  };
+                  return result;
+               }
             }
-         
-
-         
-            misura = setInterval(function(){
-               sensor = board.analogRead(pin);
-               volt =  (sensor /1024.0) * 4.54;
-               cel = (volt - 0.5) * 100;
-               console.log("Measure name::"+measureName+" value::"+cel);
-
-            },measureTime);
-            return 0;
-         }catch(ex){
-            return ex.message;
-         }*/
+            if(status==='off'){
+               if(args[0]==='on'){
+                  startTempMeasure(board,time,resourceid,authid);
+                  obj.config.board.sensors.temp.status = args[0];
+                  console.log(obj);
+                  fs.writeFileSync('setting.json', JSON.stringify(obj));
+                  var result = {
+                     message: 'Measure started',
+                     name: 'Temp',
+                     time: time
+                  };
+                  return result;  
+               }
+               if(args[0]==='off'){
+                  var result = {
+                     message: 'Measure already stopped',
+                     name: 'Temp',
+                     time: time
+                  };
+                  return result;
+               }
+            }
+         }
+         else{
+            var result = {
+               message: 'Error',
+               name: null,
+               time: null
+            };
+            return result;
+         }
       }
-
-
 
       //Register a RPC for remoting
       //session.register(os.hostname()+'command.rpc.setMisure', setMisure);
@@ -324,15 +361,24 @@ board.connect( function(){
          }              
       }
       session.subscribe(topic_command, onCommandMessage);
+
+      //THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
+      setInterval(function(){
+         //console.log("Session status:: 'session.isOpen'"+session.isOpen);
+         //console.log("Session status:: 'session.id'"+session.id);
+         session.publish(topic_connection, ['alive']);
+      },5000);
+
    };
 
    connection.onclose = function (reason, details) {
-      // handle connection lost  
+      //DEBUGG
+      console.log("Connection close for::"+reason);
+      console.log("Connection close for::");
+      console.dir(details);
    }
 
    connection.open();
-
-
 
 });
 
@@ -343,13 +389,13 @@ function restartMeasure(m_board){
    //console.log("OBJ");
    //console.dir(obj);
    
-   var time        = obj.config.board.sensors.temp.time;
-   var resourceid  = obj.config.board.sensors.temp.resource_id;
-   var authid      = obj.config.board.sensors.temp.auth_id;
-
+   var time          = obj.config.board.sensors.temp.time;
+   var resourceid    = obj.config.board.sensors.temp.resource_id;
+   var authid        = obj.config.board.sensors.temp.auth_id;
+   var status        = obj.config.board.sensors.temp.status       
    
    
-   if(obj.config.board.sensors.temp.status == 'on'){
+   if(status == 'on'){
       console.log("Measure Temp is Started!!");
       startTempMeasure(m_board,time,resourceid,authid);
    }
@@ -368,7 +414,7 @@ function startTempMeasure(m_board, m_time, m_resourceid, m_authid){
          var volt =  (sensor / 1024.0) * 4.54;
          var cel = (volt - 0.5) * 100;
 
-         console.log(record+","+sensor+","+volt+","+cel);
+         //console.log(record+","+sensor+","+volt+","+cel);
 
          var header = {
             'Content-Type': "application/json", 
@@ -383,7 +429,7 @@ function startTempMeasure(m_board, m_time, m_resourceid, m_authid){
             headers: header
          };
 
-         console.log(options);
+         //console.log(options);
    
          record.push({
             Date: new Date().toISOString(),
@@ -411,14 +457,14 @@ function startTempMeasure(m_board, m_time, m_resourceid, m_authid){
             var responseString = '';
 
             res.on('data', function(data) {
-               responseString += data;
+               //responseString += data;
                //console.log('On Data: '+ responseString);
             });
 
             res.on('end', function() {
-               var resultObject = JSON.parse(responseString);
-               console.log('On End: ');
-               console.dir(resultObject);
+               //var resultObject = JSON.parse(responseString);
+               //console.log('On End: ');
+               //console.dir(resultObject);
             });
          });
 
@@ -430,7 +476,7 @@ function startTempMeasure(m_board, m_time, m_resourceid, m_authid){
          req.write(payloadJSON);
 
          req.end();
-
+         console.log("Temperature data sent")
       },m_time);
       //return 0;
       //}catch(ex){
