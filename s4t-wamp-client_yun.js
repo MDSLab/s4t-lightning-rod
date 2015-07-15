@@ -368,7 +368,6 @@ board.connect( function(){
          //console.log("Session status:: 'session.id'"+session.id);
          session.publish(topic_connection, ['alive']);
       },5000);
-
    };
 
    connection.onclose = function (reason, details) {
@@ -405,6 +404,7 @@ function restartMeasure(m_board){
    }
 }
 
+//This function start the sensor temperature measure
 function startTempMeasure(m_board, m_time, m_resourceid, m_authid){
    var pin           = 'A4';
    //try{
@@ -484,9 +484,8 @@ function startTempMeasure(m_board, m_time, m_resourceid, m_authid){
       //}*/
 }
 
-/*
-This function export a generic local service of the board 
-*/
+
+//This function export a generic local service of the board
 function exportService(s_name, r_port, l_port, op){
    if(op === "start"){
       var Elem = {
