@@ -1,5 +1,5 @@
 {
-  "name": "s4t-iotronic-standalone",
+  "name": "s4t-lighthing-rod",
   "version": "0.0.1",
   "description": "node-lighthing-rod is the client to connect Arduino YUN/Linino One or Raspberry Pi to s4t-node-cloud",
   "main": "index.js",
