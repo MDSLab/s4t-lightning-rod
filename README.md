@@ -41,6 +41,7 @@ After you have installed the client **node-lighthing-rod** you need to edit the 
 ```
 You need to change the value of the IP and the PORT of the WAMP Router, Reverse Websocket Tunnel Server and other configuration paramiters 
 
+##Scientific References
 Scientific papers describing the University of Messina work on Stack4Thing can be found here:
 
 [**MDSL**] (http://mdslab.unime.it/biblio)
