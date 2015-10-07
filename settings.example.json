@@ -15,7 +15,7 @@
 				"port": ""
 			},
 			"lib":{
-				"bin":"/opt/usr/lib/node_modules/node-reverse-wstunnel/bin/wstt.js"
+				"bin":"/root/lightning-rod/node_modules/node-reverse-wstunnel/bin/wstt.js"
 			}
 		},
 
