@@ -185,7 +185,6 @@ exports.stopAllMeasures = function (){
     }
 }
 
-//exports.injectMeasure = function(measure_name, pin, period, read_plugin_name, elaborate_plugin_name, read_plugin_code, elaborate_plugin_code){
 exports.injectMeasure = function(args){
     
     measure_name = String(args[0]);
@@ -242,6 +241,43 @@ exports.injectMeasure = function(args){
     });
 }
 
+exports.injectPlugin = function(args){
+    
+    plugin_name = String(args[0]);
+    plugin_code = String(args[1]);
+    
+    console.log("Called RPC with plugin_name = " + plugin_name + ", plugin_code = " + plugin_code);
+    
+    var fs = require("fs");
+    
+    //Writing the file
+    var fileName = './plugins/' + plugin_name + '.js';
+    fs.writeFile(fileName, plugin_code, function(err) {
+        if(err) {
+            console.log(err);
+        } else {
+            console.log("Plugin " + fileName + " injected successfully");
+            
+            //Read the JSON file
+            var pluginsConf = require("./plugins.json");
+            
+            //Update the data structure                    
+            pluginsConf.plugins[plugin_name] = {};                
+            pluginsConf.plugins[plugin_name]['status'] = "off";
+            
+            //Updates the JSON file
+            var outputFilename = './plugins.json';
+            fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    console.log("JSON saved to " + outputFilename);
+                }
+            });
+        }
+    });
+}
+
 //This function exports all the functions in the module as WAMP remote procedure calls
 exports.exportMeasureCommands = function (session){
     
@@ -257,5 +293,6 @@ exports.exportMeasureCommands = function (session){
     session.register(boardCode+'.command.rpc.measure.restartallactivemeasures', exports.restartAllActiveMeasures);
     session.register(boardCode+'.command.rpc.measure.stopallmeasures', exports.stopAllMeasures);
     session.register(boardCode+'.command.rpc.injectmeasure', exports.injectMeasure);
+    session.register(boardCode+'.command.rpc.injectplugin', exports.injectPlugin);
 }
 
