@@ -27,24 +27,15 @@ process.on('exit', function(){
         console.log('Error parsing JSON file ./plugins.json');
     }
         
-    console.log('old file %j', pluginsConf);
     
     pluginsConf.plugins[plugin_name].status = "off";
-    
-    console.log('New file %j', pluginsConf);
-    
+    pluginsConf.plugins[plugin_name].pid = "";
+
+             
     //updates the JSON file
-    var outputFilename = './plugins2.json';
-    var string  = JSON.stringify(pluginsConf, null, 4);
-    console.log('I will write ' + string);
-    fs.writeFile(outputFilename, string, function(err) {
-        console.log('WTF!');
-        if(err) {
-            console.log(err);
-        } else {
-            console.log("JSON saved to " + outputFilename);
-        }
-    });
+    var outputFilename = './plugins.json';
+    fs.writeFileSync(outputFilename, JSON.stringify(pluginsConf, null, 4));
+    
 });
 
 

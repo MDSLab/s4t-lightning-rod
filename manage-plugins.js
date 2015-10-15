@@ -1,13 +1,10 @@
-//Se il processo muore naturalmente deve passare a off (credo che questo vada fatto nel wrapper)
 //ADESSO NON FUNZIONA PERCHé LA CHIAMATA REST NON RITORNA CORRETTAMENTE
-//Come faccio a killare il processo se non ho l'ogetto child? 
 //Per adesso stiamo considerando processi asincroni che non restituiscono nulla
 //Per far restituire qualcosa alla funzione run (almeno se il processo è stato lanciato correttamente) credo che si debbano usare le promise ma non sono sicuro (si dovrebbe domandare a quelli di TAVENDO se è possibile in WAMP dichiarare una RPC con una funziona asincrona ed eventualmente come).
 
+
 //This function runs a plugin in a new process
 exports.run = function (args){
-    
-    console.log("entering run");
     
     //Parsing the input arguments
     var plugin_name = String(args[0]);
@@ -33,7 +30,7 @@ exports.run = function (args){
         
         if (status == "off"){
             
-            console.log("Plugin being started");
+            console.log("Plugin " + plugin_name + " being started");
             
             //Create a new process that has plugin-wrapper as code
             var cp = require('child_process');
@@ -70,8 +67,9 @@ exports.run = function (args){
 //             });
             
             pluginsConf.plugins[plugin_name].status = "on";
+            pluginsConf.plugins[plugin_name].pid = child.pid;
             
-            console.log('New file %j', pluginsConf);
+            //console.log('New file %j', pluginsConf);
             
             //updates the JSON file
             var outputFilename = './plugins.json';
@@ -82,11 +80,14 @@ exports.run = function (args){
                     console.log("JSON saved to " + outputFilename);
                 }
             });
+            return 'OK';
+
         }
         else{
             console.log("Plugin already started.");
             return 'Plugin already started on this board';
         }
+        
     }
     else{
     //Here the plugin does not exist
@@ -106,16 +107,17 @@ exports.kill = function (args){
     //Reading the json file as follows does not work because the result is cached!
     //var pluginsConf = require("./plugins.json");
     
-            console.log('old file %j', pluginsConf);
-    
+          
     if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
         var status = pluginsConf.plugins[plugin_name].status;
         if (status == "on"){
-            console.log('Stopping plugin ' + plugin_name);
+            console.log("Plugin " + plugin_name + " being stopped");
             
+            var pid = pluginsConf.plugins[plugin_name].pid;
+            process.kill(pid);
             pluginsConf.plugins[plugin_name].status = "off";
-            
-            console.log('New file %j', pluginsConf);
+            pluginsConf.plugins[plugin_name].pid = "";
+
             
             //updates the JSON file
             var fs = require("fs");
@@ -127,9 +129,12 @@ exports.kill = function (args){
                     console.log("JSON saved to " + outputFilename);
                 }
             });
+            return 'OK';
         }
         else{
                 console.log("Plugin already stopped.");
+                return 'Plugin is not running on this board';
+
         }
         
     }    
