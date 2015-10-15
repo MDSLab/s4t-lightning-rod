@@ -65,6 +65,11 @@ board.connect(function() {
         //If I'm connected to the WAMP server I can receive measures to be scheduled as RPCs
         var manageMeasures = require('./manage-measures');
         manageMeasures.exportMeasureCommands(session);
+        
+        //If I'm connected to the WAMP server I can receive plugins to be scheduled as RPCs
+        var managePlugins = require('./manage-plugins');
+        managePlugins.exportPluginCommands(session);
+
 
         //Function to manage messages received on the command topic
     }

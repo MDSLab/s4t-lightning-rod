@@ -16,8 +16,13 @@ exports.start = function (id){
     //This is to force id to be of primitive type string 
     //In fact, if the function is called through WAMP id could be of object type String
     id = String(id);
+        
+    //Reading the measure configuration file
+    var fs = require('fs');
+    var measuresConf = JSON.parse(fs.readFileSync('./measures.json', 'utf8'));
+    //Reading the json file as follows does not work because the result is cached!
+    //var measuresConf = require("./measures.json");
     
-    var measuresConf = require("./measures.json");
     if(measuresConf["measures"].hasOwnProperty(id)){
                 
         var status = measuresConf.measures[id].status;
@@ -59,7 +64,12 @@ exports.stop = function (id){
     //In fact, if the function is called through WAMP id could be of object type String    
     id = String(id);
     
-    var measuresConf = require("./measures.json");
+    //Reading the measure configuration file
+    var fs = require('fs');
+    var measuresConf = JSON.parse(fs.readFileSync('./measures.json', 'utf8'));
+    //Reading the json file as follows does not work because the result is cached!
+    //var measuresConf = require("./measures.json");
+    
     if(measuresConf["measures"].hasOwnProperty(id)){
         var status = measuresConf.measures[id].status;
         if (status == "on"){
@@ -87,7 +97,12 @@ exports.stop = function (id){
 
 
 exports.startAllMeasures = function (){
-    var measuresConf = require("./measures.json");
+    //Reading the measure configuration file
+    var fs = require('fs');
+    var measuresConf = JSON.parse(fs.readFileSync('./measures.json', 'utf8'));
+    //Reading the json file as follows does not work because the result is cached!
+    //var measuresConf = require("./measures.json");
+
     for(var id in measuresConf["measures"]){
         var status = measuresConf.measures[id].status;
 
@@ -127,7 +142,13 @@ exports.restartAllActiveMeasures = function (){
     
     console.log('Restarting all the already scheduled measures');
     
-    var measuresConf = require("./measures.json");
+    //Reading the measure configuration file
+    var fs = require('fs');
+    var measuresConf = JSON.parse(fs.readFileSync('./measures.json', 'utf8'));
+    //Reading the json file as follows does not work because the result is cached!
+    //var measuresConf = require("./measures.json");
+
+    
     for(var id in measuresConf["measures"]){
         var status = measuresConf.measures[id].status;
 
@@ -160,7 +181,13 @@ exports.restartAllActiveMeasures = function (){
 }
 
 exports.stopAllMeasures = function (){
-    var measuresConf = require("./measures.json");
+    
+    //Reading the measure configuration file
+    var fs = require('fs');
+    var measuresConf = JSON.parse(fs.readFileSync('./measures.json', 'utf8'));
+    //Reading the json file as follows does not work because the result is cached!
+    //var measuresConf = require("./measures.json");
+
     for(var id in measuresConf["measures"]){
         var status = measuresConf.measures[id].status;
         if (status == "on"){
@@ -215,8 +242,12 @@ exports.injectMeasure = function(args){
                 } else {
                     console.log("Elaborate plugin " + elaborateFilename + " injected successfully");
                     
-                    //Read the JSON file
-                    var measuresConf = require("./measures.json");
+                    //Reading the measure configuration file
+                    var fs = require('fs');
+                    var measuresConf = JSON.parse(fs.readFileSync('./measures.json', 'utf8'));
+                    //Reading the json file as follows does not work because the result is cached!
+                    //var measuresConf = require("./measures.json");
+
                     
                     //Update the data structure                    
                     measuresConf.measures[measure_name] = {};                
@@ -258,8 +289,11 @@ exports.injectPlugin = function(args){
         } else {
             console.log("Plugin " + fileName + " injected successfully");
             
-            //Read the JSON file
-            var pluginsConf = require("./plugins.json");
+            //Reading the measure configuration file
+            var fs = require('fs');
+            var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
+            //Reading the json file as follows does not work because the result is cached!
+            //var measuresConf = require("./measures.json");
             
             //Update the data structure                    
             pluginsConf.plugins[plugin_name] = {};                
