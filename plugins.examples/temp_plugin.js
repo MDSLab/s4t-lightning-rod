@@ -1,7 +1,5 @@
 exports.main = function (arguments){
     
-    
-    
     var pin = arguments.pin;
     var timer = arguments.timer;
     
@@ -26,4 +24,4 @@ exports.main = function (arguments){
         console.log("Temperature: " + cel);
       },timer);
     });
-                  }
+}
