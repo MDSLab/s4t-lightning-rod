@@ -8,7 +8,8 @@ opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel 
 
 
 ##### DOWNLOAD SORGENTI #####         
-mkdir /opt/stack4things/ && cd /opt/stack4things/            
+mkdir /opt/stack4things/
+cd /opt/stack4things/            
 wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
 unzip master.zip && rm -f master.zip
 cd s4t-lightning-rod-master
@@ -35,7 +36,7 @@ sed -i "s/\"resource_id\":\"\"/\"resource_id\":\"$2\"/g" /opt/stack4things/s4t-l
 #sed -i "s/\"latitude\":/\"latitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 #sed -i "s/\"longitude\":/\"longitude\":$5/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 #sed -i "s/\"altitude\":/\"altitude\":$6/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
-
+echo -e "\t Configurazione s4t-lightning-rod completata!"
 
 
 ##### INIT SERVIZI AND REBOOT#####
@@ -45,7 +46,7 @@ chmod +x /etc/init.d/s4t-lightning-rod
 
 cp /opt/stack4things/s4t-lightning-rod-master/crontabs/root /etc/crontabs/
 /etc/init.d/cron start
-
+echo -e "\t Servizio s4t-lightning-rod abilitato!"
 
 
 echo "Installazione completata riavvio della board"

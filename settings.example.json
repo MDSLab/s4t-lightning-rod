@@ -4,15 +4,15 @@
 		"wamp":
 		{
 			"url_wamp": "",
-			"port_wamp": "",
-			"realm": ""
+			"port_wamp": "8181",
+			"realm": "s4t"
 		},
 
 		"reverse":
 		{
 			"server":{
 				"url_reverse": "",
-				"port_reverse": ""
+				"port_reverse": "8080"
 			},
 			"lib":{
 				"bin":"/root/lightning-rod/node_modules/node-reverse-wstunnel/bin/wstt.js"
