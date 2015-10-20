@@ -25,9 +25,8 @@ start
                                                                                                                                                              
 start () {                                                                                                                                                   
         if [ -r $MYPID ]; then                                                                                                                               
-                cd /opt/s4t/s4t-lightning-rod-master                                                                                                         
-                #node lightning-rod.js > /opt/s4t/s4t-lightning-rod-master/log &                                                                             
-                node lightning-rod.js >> /var/log/lightning-rod.log &                                                                                        
+                cd /opt/stack4things/s4t-lightning-rod-master                                                                                                                                                                                 
+                node lightning-rod.js >> /var/log/s4t-lightning-rod.log &                                                                                        
                 echo "Lightning-rod is started"                                                                                                              
         else                                                                                                                                                 
                 echo "Lightning-rod is already started with PID $MYPID"                                                                                            
