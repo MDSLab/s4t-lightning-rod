@@ -27,6 +27,7 @@
 
 		"board":
 		{
+			"code":"",
 			"services":{
 				"ssh":{
 					"port":"22"
@@ -41,14 +42,11 @@
 					"port":"8000"
 				}
 			},
-			"code":"",
-			"sensors":{
-				"temp":{
-					"resource_id":"",
-					"auth_id":"",
-					"time":"60000",
-					"status":"on"
-				}
+			
+			"position":{
+				"altitude":0,
+				"longitude":0,
+				"latitude":0
 				
 			}
 		}

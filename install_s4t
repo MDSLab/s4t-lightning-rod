@@ -1,6 +1,6 @@
 #!/bin/sh                                                                                                                                                    
 
-#EXEC: ./install_s4t 14141414 62d35513-0000-0000-0000-201e68759f3d
+#EXEC: ./install_s4t 14141414 38.2587055 15.5968229 17.75
 
 ##### INSTALLAZIONE DIPENDENZE #####
 opkg update
@@ -26,16 +26,16 @@ echo -e "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-mas
 
 #Edit settings
 sed -i "s/\"code\":\"\"/\"code\":\"$1\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
-sed -i "s/\"resource_id\":\"\"/\"resource_id\":\"$2\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"resource_id\":\"\"/\"resource_id\":\"$2\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 #sed -i "s/\"url_wamp\":\"\"/\"url_wamp\":\"ws://$3\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 #sed -i "s/\"port_wamp\":\"\"/\"port_wamp\":\"8181\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 #sed -i "s/\"realm\":\"\"/\"realm\":\"s4t\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 #sed -i "s/\"url_reverse\":\"\"/\"url_reverse\":\"ws://$3\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 #sed -i "s/\"port_reverse\":\"\"/\"port_reverse\":\"8080\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 
-#sed -i "s/\"latitude\":/\"latitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
-#sed -i "s/\"longitude\":/\"longitude\":$5/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
-#sed -i "s/\"altitude\":/\"altitude\":$6/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"latitude\":/\"latitude\":$2/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"longitude\":/\"longitude\":$3/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"altitude\":/\"altitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 echo -e "\t Configurazione s4t-lightning-rod completata!"
 
 
