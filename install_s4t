@@ -24,6 +24,8 @@ cp /opt/stack4things/s4t-lightning-rod-master/measures.example.json /opt/stack4t
 mkdir /opt/stack4things/s4t-lightning-rod-master/plugins
 echo -e "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-master/plugins.json
 
+mkdir /opt/stack4things/s4t-lightning-rod-master/schemas
+
 #Edit settings
 sed -i "s/\"code\":\"\"/\"code\":\"$1\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 #sed -i "s/\"resource_id\":\"\"/\"resource_id\":\"$2\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
@@ -36,6 +38,7 @@ sed -i "s/\"code\":\"\"/\"code\":\"$1\"/g" /opt/stack4things/s4t-lightning-rod-m
 sed -i "s/\"latitude\":/\"latitude\":$2/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 sed -i "s/\"longitude\":/\"longitude\":$3/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 sed -i "s/\"altitude\":/\"altitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+
 echo -e "\t Configurazione s4t-lightning-rod completata!"
 
 
