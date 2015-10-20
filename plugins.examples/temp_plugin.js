@@ -1,3 +1,5 @@
+//TO USE THIS PLUGIN DELETE ALL COMMENTs
+
 exports.main = function (arguments){
     
     var pin = arguments.pin;
@@ -102,7 +104,7 @@ exports.main = function (arguments){
 
 	    req.end();
 	 
-	    
+
 	    console.log("Temperature " + cel + " °C sent to CKAN");
 	    
 	    
