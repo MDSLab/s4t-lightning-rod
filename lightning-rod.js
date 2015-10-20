@@ -27,7 +27,7 @@ board.connect(function() {
     //WAMP ---------------------------------------------------------------------------------
     
     var autobahn = require('autobahn');
-    var wampUrl = nconf.get('config:wamp:url')+":"+nconf.get('config:wamp:port')+"/ws";
+    var wampUrl = nconf.get('config:wamp:url_wamp')+":"+nconf.get('config:wamp:port_wamp')+"/ws";
     var wampRealm = nconf.get('config:wamp:realm');
     var wampConnection = new autobahn.Connection({
             url: wampUrl,

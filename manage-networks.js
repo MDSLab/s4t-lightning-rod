@@ -5,7 +5,7 @@ exports.manageNetworks = function(args){
             
             var basePort = nconf.get('config:socat:client:port');
             var rtpath = nconf.get('config:reverse:lib:bin');
-            var reverseS_url = nconf.get('config:reverse:server:url')+":"+nconf.get('config:reverse:server:port');
+            var reverseS_url = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
             
             var sClientElem = {
                 key: args[9],

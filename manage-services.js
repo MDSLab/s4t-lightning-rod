@@ -7,7 +7,7 @@ exports.exportService = function(args){
     
     //Getting information from the configuration file
     localPort = nconf.get('config:board:services:'+serviceName+':port');
-    reverseTunnellingServer = nconf.get('config:reverse:server:url')+":"+nconf.get('config:reverse:server:port');
+    reverseTunnellingServer = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
     
     console.log('Activating operation ' + operation + ' to service ' + serviceName + ' with remote port ' + remotePort + ' on local port ' + localPort + ' contacting remote server ' + reverseTunnellingServer);
 
