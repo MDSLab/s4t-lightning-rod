@@ -1,2 +1,2 @@
-* * * * * /etc/init.d/lightning-rod restart
+* * * * * /etc/init.d/lightning-rod start
 

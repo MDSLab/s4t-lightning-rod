@@ -3,16 +3,16 @@
 		
 		"wamp":
 		{
-			"url": "",
-			"port": "",
+			"url_wamp": "",
+			"port_wamp": "",
 			"realm": ""
 		},
 
 		"reverse":
 		{
 			"server":{
-				"url": "",
-				"port": ""
+				"url_reverse": "",
+				"port_reverse": ""
 			},
 			"lib":{
 				"bin":"/root/lightning-rod/node_modules/node-reverse-wstunnel/bin/wstt.js"

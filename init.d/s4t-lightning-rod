@@ -30,7 +30,7 @@ start () {
                 node lightning-rod.js >> /var/log/lightning-rod.log &                                                                                        
                 echo "Lightning-rod is started"                                                                                                              
         else                                                                                                                                                 
-                echo "Service is already started with PID $MYPID"                                                                                            
+                echo "Lightning-rod is already started with PID $MYPID"                                                                                            
         fi                                                                                                                                                   
                                                                                                                                                              
 }                                                                                                                                                            

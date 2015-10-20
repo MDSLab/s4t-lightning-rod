@@ -77,14 +77,22 @@ board.connect(function() {
 
     //This function is called as soon as the connection is created successfully
     wampConnection.onopen = function (session, details) {
-        console.log('Connection to WAMP server '+ wampUrl + ' created successfully!');
-        console.log('Connected to realm '+ wampRealm);
-        
-        //Calling the manage_WAMP_connection function that contains the logic 
-        //that has to be performed if I'm connected to the WAMP server
-        manage_WAMP_connection(session, details);
+      console.log('Connection to WAMP server '+ wampUrl + ' created successfully!');
+      console.log('Connected to realm '+ wampRealm);
+      
+      //Calling the manage_WAMP_connection function that contains the logic 
+      //that has to be performed if I'm connected to the WAMP server
+      manage_WAMP_connection(session, details);
+      
+      
+      //THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
+      setInterval(function(){
+	session.publish('board.connection', ['alive']);
+      },5000);
+      
+      
     };
-
+    
     //This function is called if there are problems with the WAMP connection
     wampConnection.onclose = function (reason, details) {
         console.log('Error in connecting to WAMP server!');

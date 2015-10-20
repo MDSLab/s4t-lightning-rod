@@ -1,0 +1,54 @@
+#!/bin/sh                                                                                                                                                    
+
+#EXEC: ./install_s4t 14141414 62d35513-0000-0000-0000-201e68759f3d 212.189.207.205
+
+##### INSTALLAZIONE DIPENDENZE #####
+opkg update
+opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib -d mnt
+
+
+##### DOWNLOAD SORGENTI #####         
+mkdir /opt/stack4things/ && cd /opt/stack4things/            
+wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
+unzip master.zip && rm -f master.zip
+cd s4t-lightning-rod-master
+
+
+
+##### CONFIGURAZIONE JSON #####
+cp /opt/stack4things/s4t-lightning-rod-master/settings.example.json /opt/stack4things/s4t-lightning-rod-master/settings.json
+cp /opt/stack4things/s4t-lightning-rod-master/measures.example.json /opt/stack4things/s4t-lightning-rod-master/measures.json
+
+#Edit plugins
+mkdir /opt/stack4things/s4t-lightning-rod-master/plugins
+echo -e "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-master/plugins.json
+
+#Edit settings
+sed -i "s/\"code\":\"\"/\"code\":\"$1\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"resource_id\":\"\"/\"resource_id\":\"$2\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"url_wamp\":\"\"/\"url_wamp\":\"ws://$3\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"port_wamp\":\"\"/\"port_wamp\":\"8181\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"realm\":\"\"/\"realm\":\"s4t\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"url_reverse\":\"\"/\"url_reverse\":\"ws://$3\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"port_reverse\":\"\"/\"port_reverse\":\"8080\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+
+#sed -i "s/\"latitude\":/\"latitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"longitude\":/\"longitude\":$5/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"altitude\":/\"altitude\":$6/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+
+
+
+##### INIT SERVIZI AND REBOOT#####
+cp /opt/stack4things/s4t-lightning-rod-master/init.d/lightning-rod /etc/init.d/
+chmod +x /etc/init.d/lightning-rod
+/etc/init.d/lightning-rod enable
+
+cp /opt/stack4things/s4t-lightning-rod-master/crontabs/root /etc/crontabs/
+/etc/init.d/cron start
+
+
+
+echo "Installazione completata riavvio della board"
+sleep 2
+
+reboot
