@@ -39,7 +39,7 @@ sed -i "s/\"resource_id\":\"\"/\"resource_id\":\"$2\"/g" /opt/stack4things/s4t-l
 
 
 ##### INIT SERVIZI AND REBOOT#####
-cp /opt/stack4things/s4t-lightning-rod-master/init.d/lightning-rod /etc/init.d/
+cp /opt/stack4things/s4t-lightning-rod-master/init.d/s4t-lightning-rod /etc/init.d/
 chmod +x /etc/init.d/s4t-lightning-rod
 /etc/init.d/s4t-lightning-rod enable
 
