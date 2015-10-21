@@ -10,6 +10,8 @@ exports.run = function (args){
     var plugin_name = String(args[0]);
     var plugin_json = String(args[1]);
     
+    console.log(new Date().toISOString() + ' - INFO - Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
+    
     try{
         //Reading the plugin configuration file
         var fs = require('fs');
@@ -80,7 +82,21 @@ exports.run = function (args){
                     console.log("JSON saved to " + outputFilename);
                 }
             });
+	    
+	    //create plugin json schema
+	    var schema_outputFilename = './schemas/'+plugin_name+'.json';
+	    fs.writeFile(schema_outputFilename, plugin_json, function(err) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    console.log(new Date().toISOString() + ' - INFO - JSON SCHEMA saved to ' + schema_outputFilename);
+                }
+            });
+	    
             return 'OK';
+	    
+
+	    
 
         }
         else{
@@ -90,9 +106,9 @@ exports.run = function (args){
         
     }
     else{
-    //Here the plugin does not exist
-    console.log("Plugin " + pluginname + " does not exists on this board");
-    return 'Plugin does not exist on this board';
+      //Here the plugin does not exist
+      console.log("Plugin " + pluginname + " does not exists on this board");
+      return 'Plugin does not exist on this board';
     }
 }
 
@@ -129,6 +145,14 @@ exports.kill = function (args){
                     console.log("JSON saved to " + outputFilename);
                 }
             });
+	    
+	    
+	    //delete plugin json schema
+	    fs.unlink('./schemas/'+plugin_name+'.json', function (err) {
+	      if (err) throw err;
+		console.log(new Date().toISOString() + ' - INFO - Json schema '+ plugin_name +' successfully deleted!');
+	    });
+	    
             return 'OK';
         }
         else{

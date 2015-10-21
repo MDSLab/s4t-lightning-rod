@@ -1,46 +1,49 @@
-#!/bin/sh /etc/rc.common                                                                                                                                     
-#                                                                                                                                                            
-#Apache License                                                                                                                                              
-#                           Version 2.0, January 2004                                                                                                        
-#                        http://www.apache.org/licenses/                                                                                                     
-#                                                                                                                                                            
-#Copyright (c) 2014 2015 Andrea Rocco Lotronto                                                                                                               
-#                                                                                                                                                            
-                                                                                                                                                             
-export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/usr/bin                                                                                                       
-export NODEJS=/opt/usr/bin/node                                                                                                                              
-export LD_LIBRARY_PATH=/opt/usr/lib                                                                                                                          
-export NPM=/opt/usr/bin/npm                                                                                                                                  
-export NODE_PATH=/usr/lib/node_modules:/opt/usr/lib/node_modules:$NODE_PATH                                                                                  
-                                                                                                                                                             
-START=99                                                                                                                                                     
-STOP=99                                                                                                                                                      
-MYPID=`ps www | grep lightning-rod.js | grep -v grep | awk {'print $1'}`                                                                                     
-                                                                                                                                                             
-boot () {                                                                                                                                                    
-                                                                                                                                                             
-start                                                                                                                                                        
-                                                                                                                                                             
-}                                                                                                                                                            
-                                                                                                                                                             
-start () {                                                                                                                                                   
-        if [ -r $MYPID ]; then                                                                                                                               
-                cd /opt/stack4things/s4t-lightning-rod-master                                                                                                                                                                                 
-                node lightning-rod.js >> /var/log/s4t-lightning-rod.log &                                                                                        
-                echo "Lightning-rod is started"                                                                                                              
-        else                                                                                                                                                 
-                echo "Lightning-rod is already started with PID $MYPID"                                                                                            
-        fi                                                                                                                                                   
-                                                                                                                                                             
-}                                                                                                                                                            
-stop () {                                                                                                                                                    
-        kill -9 `ps www | grep lightning-rod.js | grep -v grep | awk {'print $1'}` > /dev/null 2>&1                                                          
-        echo "Lightning-rod is stopped"                                                                                                                      
-}                                                                                                                                                            
-                                                                                                                                                             
-restart () {                                                                                                                                                 
-                                                                                                                                                             
-        stop                                                                                                                                                 
-        start                                                                                                                                                
-                                                                                                                                                             
-}                                                                                                                                                            
+#!/bin/sh /etc/rc.common                                                                                                                 
+#                                                                                                                                        
+#Apache License                                                                                                                          
+#                           Version 2.0, January 2004                                                                                    
+#                        http://www.apache.org/licenses/                                                                                 
+#                                                                                                                                        
+#Copyright (c) 2014 2015 Andrea Rocco Lotronto                                                                                           
+#                                                                                                                                        
+                                                                                                                                         
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/opt/usr/bin                                                                                   
+export NODEJS=/opt/usr/bin/node                                                                                                          
+export LD_LIBRARY_PATH=/opt/usr/lib                                                                                                      
+export NPM=/opt/usr/bin/npm                                                                                                              
+export NODE_PATH=/usr/lib/node_modules:/opt/usr/lib/node_modules:$NODE_PATH                                                              
+                                                                                                                                         
+START=99                                                                                                                                 
+STOP=99                                                                                                                                  
+#MYPID=`ps www | grep lightning-rod.js | grep -v grep | awk {'print $1'}`                                                                
+                                                                                                                                         
+boot () {                                                                                                                                
+                                                                                                                                         
+start                                                                                                                                    
+                                                                                                                                         
+}                                                                                                                                        
+                                                                                                                                         
+start () {                                                                                                                               
+                                                                                                                                         
+        MYPID=`ps www | grep lightning-rod.js | grep -v grep | awk {'print $1'}`                                                         
+                                                                                                                                         
+        if [ -r $MYPID ]; then                                                                                                           
+                cd /opt/stack4things/s4t-lightning-rod-master                                                                            
+                node lightning-rod.js >> /var/log/s4t-lightning-rod.log &                                                                
+                echo "Lightning-rod is started"                                                                                          
+        else                                                                                                                             
+                echo "Lightning-rod is already started with PID $MYPID"                                                                  
+        fi                                                                                                                               
+                                                                                                                                         
+}                                                                                                                                        
+stop () {                                                                                                                                
+        kill -9 `ps www | grep lightning-rod.js | grep -v grep | awk {'print $1'}` > /dev/null 2>&1                                      
+        echo "Lightning-rod is stopped"                                                                                                  
+}                                                                                                                                        
+                                                                                                                                         
+restart () {                                                                                                                             
+                                                                                                                                         
+        stop                                                                                                                                                                                                                                                
+        start                                                                                                                            
+                                                                                                                                         
+}
