@@ -1,3 +1,6 @@
+//service logging configuration: "managePins"
+var logger = log4js.getLogger('managePins');
+
 //Function to read data from a digital pin
 function readDigital(args){
     try{
@@ -51,7 +54,8 @@ exports.exportPins = function (session){
     //Read the board code in the configuration file
     var boardCode = nconf.get('config:board:code');
     
-    console.log('Exporting pins to the Cloud');
+    logger.info('Exporting pins to the Cloud')
+    //console.log('Exporting pins to the Cloud');
     
     //Register all the module functions as WAMP RPCs
     session.register(boardCode+'.command.rpc.setmode', setMode);

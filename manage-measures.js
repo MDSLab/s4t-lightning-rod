@@ -1,3 +1,7 @@
+//service logging configuration: "manageMeasures"
+var logger = log4js.getLogger('manageMeasures');
+
+
 function run(pin,period,read,elaborate){   
     return setInterval(function(){
         var readPlugin = require(read);
@@ -140,7 +144,8 @@ exports.startAllMeasures = function (){
 
 exports.restartAllActiveMeasures = function (){
     
-    console.log('Restarting all the already scheduled measures');
+    logger.info('Restarting all the already scheduled measures');
+    //console.log('Restarting all the already scheduled measures');
     
     //Reading the measure configuration file
     var fs = require('fs');
@@ -280,7 +285,8 @@ exports.exportMeasureCommands = function (session){
     //Read the board code in the configuration file
     var boardCode = nconf.get('config:board:code');
     
-    console.log('Exporting measure commands to the Cloud');
+    logger.info('Exporting measure commands to the Cloud');
+    //console.log('Exporting measure commands to the Cloud');
     
     //Register all the module functions as WAMP RPCs
     session.register(boardCode+'.command.rpc.measure.start', exports.start);

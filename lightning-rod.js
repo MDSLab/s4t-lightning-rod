@@ -10,9 +10,23 @@ Copyright (c) 2014 2015 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto, Ar
 nconf = require('nconf');
 nconf.file ({file: 'settings.json'});
 
+
+//main logging configuration                                                                
+log4js = require('log4js');          
+log4js.loadAppender('file');         
+log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log '));            
+                                                                                         
+//service logging configuration: "main"                                                  
+var logger = log4js.getLogger('main');                                                   
+logger.info('Starting Lightning-rod...');  
+
+    
+
 //Connecting to the board
+
 var linino = require('ideino-linino-lib');
 board = new linino.Board();
+logger.info('Board initialization...');  
 
 servicesProcess = [];
 socatClient = [];
@@ -48,13 +62,15 @@ board.connect(function() {
         var boardCode = nconf.get('config:board:code');
         
         //Registering the board to the Cloud by sending a message to the connection topic
-        console.log('Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
+	logger.info('Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
+        //console.log('Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
         session.publish(connectionTopic, [boardCode, 'connection', session._id]);
         
         //Subscribing to the command topic to receive messages for asyncronous operation to be performed
         //Maybe everything can be implemented as RPCs
         //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
-        console.log('Registering to command topic ' + commandTopic);
+	logger.info('Registering to command topic ' + commandTopic);
+        //console.log('Registering to command topic ' + commandTopic);
         var manageCommands = require('./manage-commands');
         session.subscribe(commandTopic, manageCommands.onCommand);
                 
@@ -77,8 +93,10 @@ board.connect(function() {
 
     //This function is called as soon as the connection is created successfully
     wampConnection.onopen = function (session, details) {
-      console.log('Connection to WAMP server '+ wampUrl + ' created successfully!');
-      console.log('Connected to realm '+ wampRealm);
+      logger.info('Connection to WAMP server '+ wampUrl + ' created successfully!');
+      logger.info('Connected to realm '+ wampRealm);
+      //console.log('Connection to WAMP server '+ wampUrl + ' created successfully!');
+      //console.log('Connected to realm '+ wampRealm);
       
       //Calling the manage_WAMP_connection function that contains the logic 
       //that has to be performed if I'm connected to the WAMP server
@@ -95,14 +113,20 @@ board.connect(function() {
     
     //This function is called if there are problems with the WAMP connection
     wampConnection.onclose = function (reason, details) {
-        console.log('Error in connecting to WAMP server!');
-        console.log('Reason: ' + reason);
-        console.log('Details: ');
-        console.dir(details);
+	logger.error('Error in connecting to WAMP server!');
+        logger.error('Reason: ' + reason);
+        logger.error('Details: ');
+        logger.error(details);
+	
+        //console.log('Error in connecting to WAMP server!');
+        //console.log('Reason: ' + reason);
+        //console.log('Details: ');
+        //console.dir(details);
     };
 
     //Opening the connection to the WAMP server
-    console.log("Opening connection to WAMP server...");
+    logger.info('Opening connection to WAMP server...');  
+    //console.log("Opening connection to WAMP server...");
     wampConnection.open();
 
     //Here the connection should be established or an error should have been raised

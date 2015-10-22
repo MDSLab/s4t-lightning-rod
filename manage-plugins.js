@@ -10,7 +10,11 @@ exports.run = function (args){
     var plugin_name = String(args[0]);
     var plugin_json = String(args[1]);
     
-    console.log(new Date().toISOString() + ' - INFO - Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
+    //service logging configuration: "managePlugins"   
+    var logger = log4js.getLogger('managePlugins');
+    logger.info('Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
+    //console.log(new Date().toISOString() + ' - INFO - Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
+    
     
     try{
         //Reading the plugin configuration file
@@ -212,7 +216,8 @@ exports.exportPluginCommands = function (session){
     //Read the board code in the configuration file
     var boardCode = nconf.get('config:board:code');
     
-    console.log('Exporting plugin commands to the Cloud');
+    logger.info('Exporting plugin commands to the Cloud');
+    //console.log('Exporting plugin commands to the Cloud');
     
     //Register all the module functions as WAMP RPCs
     session.register(boardCode+'.command.rpc.plugin.run', exports.run);
