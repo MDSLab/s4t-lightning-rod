@@ -3,6 +3,9 @@
 //Per far restituire qualcosa alla funzione run (almeno se il processo è stato lanciato correttamente) credo che si debbano usare le promise ma non sono sicuro (si dovrebbe domandare a quelli di TAVENDO se è possibile in WAMP dichiarare una RPC con una funziona asincrona ed eventualmente come).
 
 
+//service logging configuration: "managePlugins"   
+var logger = log4js.getLogger('managePlugins');
+
 //This function runs a plugin in a new process
 exports.run = function (args){
     
@@ -10,8 +13,7 @@ exports.run = function (args){
     var plugin_name = String(args[0]);
     var plugin_json = String(args[1]);
     
-    //service logging configuration: "managePlugins"   
-    var logger = log4js.getLogger('managePlugins');
+
     logger.info('Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
     //console.log(new Date().toISOString() + ' - INFO - Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
     
