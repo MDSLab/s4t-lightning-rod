@@ -1,6 +1,7 @@
 {
 	"config":{
-		
+	
+		"device":"arduino_yun",
 		"wamp":
 		{
 			"url_wamp": "",
