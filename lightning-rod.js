@@ -144,8 +144,18 @@ if (typeof device !== 'undefined'){
             var manageMeasure = require('./manage-measures');
             manageMeasure.restartAllActiveMeasures();
             //---------------------------------------------------------------------------------------
+	    
+	    
+	    
+	    //PLUGINS -------------------------------------------------------------------------------
+	    //This procedure restarts all plugins in "ON" status
+	    var managePlugins = require('./manage-plugins');
+            managePlugins.restartAllActivePlugins();
+	    //---------------------------------------------------------------------------------------
             
             
+	    
+	    
         });
         
         //Here I cannot connect to the board
