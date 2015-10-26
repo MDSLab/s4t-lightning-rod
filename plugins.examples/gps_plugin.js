@@ -1,11 +1,11 @@
 //JSON to send 
 // {
-//     'm_authid': '22c5cfa7-9dea-4dd9-9f9d-eedf296852ae',
-//     'm_resourceid': 'c1c06bee-00d3-4cb6-8b2c-4e029211bf06',
-//     'gps_device': '/dev/ttyUSB1',
-//     'ckan_host': 'smartme-data.unime.it',
-//     'ckan_port': '80',
-//     'ckan_path': '/api/3/action/datastore_upsert'
+//     'm_authid': '',
+//     'm_resourceid': '',
+//     'gps_device': '',
+//     'ckan_host': '',
+//     'ckan_port': '',
+//     'ckan_path': ''
 // }
 
 exports.main = function (arguments){
