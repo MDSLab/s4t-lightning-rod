@@ -30,7 +30,8 @@ var device = nconf.get('config:device');
 //If the device has been specified
 if (typeof device !== 'undefined'){
     
-    console.log('The device is ' + device);
+    logger.info('The device is ' + device);
+    //console.log('The device is ' + device);
     
     //If I'm on a Arduino Yun
     if (device == 'arduino_yun'){
