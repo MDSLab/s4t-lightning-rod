@@ -3,7 +3,7 @@
  *                           Version 2.0, January 2004
  *                        http://www.apache.org/licenses/
  * 
- * Copyright (c) 2014 2015 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto, Arthur Warnier
+ * Copyright (c) 2014 2015 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
  */
 
 //Loading configuration file
