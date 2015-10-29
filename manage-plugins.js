@@ -70,7 +70,7 @@ exports.restartAllActivePlugins = function (){
 	      
 	      logger.info("|--> " + plugin_name + ': autostart < ' + autostart + ' > - status < '+ status + ' > ' + pid);
 				  
-	      if (status == "on" || autostart == "on"){
+	      if (status == "on" || autostart == "true"){
 		//Check pid: if this parameter is not specified 
 		if (pid == null || pid =='') {      //if (eval ("typeof " + pid) === 'undefined'){
 		  
@@ -153,22 +153,23 @@ exports.restartAllActivePlugins = function (){
 		    
 		  
 		} else{
-		  //If the schema json file doen't exist the related plugin will be not restarted and the value of its PID will be cleaned
+		  //If the schema json file doesn't exist the related plugin will be not restarted and the value of its PID will be cleaned.
 		  
 		  //updates the JSON file plugins.json
 		  try{
 		    
-		    logger.warn('|----> JSON file '+ plugin_json_name +' does not exist!');
-		    logger.warn('|----> I can not restart '+ plugin_name +' !!!');
+		    logger.warn('|----> I can not restart '+ plugin_name +'!!! JSON file '+ plugin_json_name +' does not exist!');
 		    pluginsConf.plugins[plugin_name].pid = "";
 
 		    fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
 			if(err) {
 			    logger.error(err);
 			} else {
-			    logger.info("|----> JSON file " + outputFilename + " updated!");
+			    logger.info("|----> JSON file " + outputFilename + " updated: PID value cleaned!");
 			}
 		    });
+		    
+		    logger.warn('|----> Please call the RUN command again for the plugin: '+ plugin_name);
 		    
 		  }
 		  catch(err){
@@ -189,12 +190,10 @@ exports.restartAllActivePlugins = function (){
 		
 				  
 	}, 5000*i);
+	
       })(i);
     }
     
-    
-    
-   
 
 }
 
@@ -205,7 +204,7 @@ exports.run = function (args){
     //Parsing the input arguments
     var plugin_name = String(args[0]);
     var plugin_json = String(args[1]);
-    var plugin_autostart = "null"
+    var plugin_autostart = "";
 
     
     logger.info('Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
@@ -244,9 +243,13 @@ exports.run = function (args){
                 "plugin_json": JSON.parse(plugin_json)
             }
             
+            
             //I send the input to the wrapper so that it can launch the proper plugin with the proper json file as argument
             child.send(input_message);
             
+	    
+	    
+	    
 //             //I wait for a message from the wrapper to know if it terminates
 //             child.on('message', function(message) {
 //                 if (message == "exiting"){
@@ -274,78 +277,81 @@ exports.run = function (args){
 	    //Creating plugin json schema
 	    var schema_outputFilename = './schemas/'+plugin_name+'.json';
 	    fs.writeFile(schema_outputFilename, plugin_json, function(err) {
+	      
                 if(err) {
                     logger.error(err);
+		    
                 } else {
-                    logger.info('JSON SCHEMA saved to ' + schema_outputFilename);
+		  
+                    logger.info('JSON schema saved to ' + schema_outputFilename);
     
-		    //Reading the plugin json schema configuration file in order to get autostart parameter 
+		    //Reading the plugins.json configuration file
 		    try{
+		      
 			var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
+			
 			var pluginsSchemaConf = JSON.parse(fs.readFileSync(schema_outputFilename, 'utf8'));
 			
-			logger.info("SCHEMA: " + fs.readFileSync(schema_outputFilename, 'utf8'));
+			//logger.info("SCHEMA: " + fs.readFileSync(schema_outputFilename, 'utf8'));
+			
 			//Get the autostart parameter 
 			plugin_autostart = pluginsSchemaConf.autostart;
-			logger.info("plugin_autostart: " + plugin_autostart);
+			
+
+
 		    }
 		    catch(err){
-			logger.error('Error parsing JSON file '+ schema_outputFilename + ": " + err);
+			logger.error('Error parsing plugins.json configuration file: ' + err);
 			return 'Internal server error';
 		    }
 		    
 		    
 		    
 		    //updates the JSON file
+		    if(plugin_autostart != undefined){
+		      
+			pluginsConf.plugins[plugin_name].autostart = plugin_autostart;
+			logger.info("Autostart parameter set by user to " + plugin_autostart);
+
+		    } else {
+		      
+			logger.info("Autostart parameter not changed!");
+		      
+		    }
 		    pluginsConf.plugins[plugin_name].status = "on";
 		    pluginsConf.plugins[plugin_name].pid = child.pid;
-		    pluginsConf.plugins[plugin_name].autostart = plugin_autostart;
-		    
-		    logger.info("CHECK SCHEMA: " + plugin_name + ': autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
 		    
 		    var outputFilename = './plugins.json';
 		    fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
 			if(err) {
 			    logger.error(err);
 			} else {
-			    logger.info("JSON saved to " + outputFilename);
+			    logger.info("JSON file " + outputFilename + " updated -> " + plugin_name + ': autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
 			}
 		    });
-		    
-		    
-		    
-		    
 
 		    
                 }
             });
 	    
-	    
-
-	    
-	    
-	    
-
-	    
-	    
             return 'OK';
-	    
-
 	    
 
         }
         else{
-            logger.warn("Plugin already started.");
+            logger.warn("Plugin already started!");
             return 'Plugin already started on this board';
         }
         
     }
     else{
       //Here the plugin does not exist
-      logger.warn("Plugin " + pluginname + " does not exists on this board");
+      logger.warn("Plugin " + pluginname + " does not exists on this board!");
       return 'Plugin does not exist on this board';
     }
 }
+
+
 
 
 exports.kill = function (args){
@@ -360,9 +366,13 @@ exports.kill = function (args){
     
           
     if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
+      
         var status = pluginsConf.plugins[plugin_name].status;
+	
         if (status == "on"){
-            console.log("Plugin " + plugin_name + " being stopped");
+	  
+	    logger.info("Plugin " + plugin_name + " being stopped!");
+            //console.log("Plugin " + plugin_name + " being stopped");
             
             var pid = pluginsConf.plugins[plugin_name].pid;
             process.kill(pid);
@@ -375,9 +385,11 @@ exports.kill = function (args){
             var outputFilename = './plugins.json';
             fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
                 if(err) {
-                    console.log(err);
+		    logger.error(err);
+                    //console.log(err);
                 } else {
-                    console.log("JSON saved to " + outputFilename);
+		    logger.info("JSON saved to " + outputFilename);
+                    //console.log("JSON saved to " + outputFilename);
                 }
             });
 	    
@@ -385,13 +397,15 @@ exports.kill = function (args){
 	    //delete plugin json schema
 	    fs.unlink('./schemas/'+plugin_name+'.json', function (err) {
 	      if (err) throw err;
-		console.log(new Date().toISOString() + ' - INFO - Json schema '+ plugin_name +' successfully deleted!');
+		logger.info('JSON schema of '+ plugin_name +' successfully deleted!');
+		//console.log(new Date().toISOString() + ' - INFO - Json schema '+ plugin_name +' successfully deleted!');
 	    });
 	    
             return 'OK';
         }
         else{
-                console.log("Plugin already stopped.");
+                logger.warn("Plugin already stopped!");
+		//console.log("Plugin already stopped.");
                 return 'Plugin is not running on this board';
 
         }
@@ -400,6 +414,65 @@ exports.kill = function (args){
 }
 
 
+exports.injectPlugin = function(args){
+    
+    plugin_name = String(args[0]);
+    plugin_code = String(args[1]);
+    autostart = String(args[2]);
+    
+    console.log("Called RPC with plugin_name = " + plugin_name + ", autostart = " + autostart + ", plugin_code = " + plugin_code);
+    
+    var fs = require("fs");
+    
+    //Writing the file
+    var fileName = './plugins/' + plugin_name + '.js';
+    fs.writeFile(fileName, plugin_code, function(err) {
+      
+        if(err) {
+	    logger.error(err);
+            //console.log(err);
+	    
+        } else {
+	  
+	    logger.info("Plugin " + fileName + " injected successfully");
+            //console.log("Plugin " + fileName + " injected successfully");
+            
+            //Reading the measure configuration file
+            var fs = require('fs');
+            var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
+            //Reading the json file as follows does not work because the result is cached!
+            //var measuresConf = require("./measures.json");
+            
+            //Update the data structure                    
+            pluginsConf.plugins[plugin_name] = {};                
+            pluginsConf.plugins[plugin_name]['status'] = "off";
+	    
+	    if(autostart != undefined){
+		pluginsConf.plugins[plugin_name]['autostart'] = autostart;
+		
+	    } else {
+	      
+		pluginsConf.plugins[plugin_name]['autostart'] = false;
+	      
+	    }
+            
+            //Updates the JSON file
+            var outputFilename = './plugins.json';
+            fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
+                if(err) {
+		    logger.error(err);
+		    //console.log(err);
+                } else {
+		    logger.info("JSON saved to " + outputFilename);
+                    //console.log("JSON saved to " + outputFilename);
+                }
+            });
+        }
+    });
+}
+
+
+/*
 exports.injectPlugin = function(args){
     
     plugin_name = String(args[0]);
@@ -439,9 +512,7 @@ exports.injectPlugin = function(args){
         }
     });
 }
-
-
-
+*/
 
 
 
