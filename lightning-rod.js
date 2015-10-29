@@ -35,12 +35,14 @@ if (typeof device !== 'undefined'){
     
     //If I'm on a Arduino Yun
     if (device == 'arduino_yun'){
-        
+    
+	/*        
         //Writing to the watchdog file to signal I am alive
         require('shelljs/global');
         setInterval(function(){                    
             echo('1').to(‘/dev/watchdog’);
         },5000);
+        */
         
         //Connecting to the board
         var linino = require('ideino-linino-lib');
@@ -114,6 +116,15 @@ if (typeof device !== 'undefined'){
                 //Calling the manage_WAMP_connection function that contains the logic 
                 //that has to be performed if I'm connected to the WAMP server
                 manage_WAMP_connection(session, details);
+		
+		
+		//PLUGINS -------------------------------------------------------------------------------
+		//This procedure restarts all plugins in "ON" status
+		var managePlugins = require('./manage-plugins');
+		managePlugins.restartAllActivePlugins();
+		//---------------------------------------------------------------------------------------
+	    
+	    
 
                 //THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
                 setInterval(function(){
@@ -152,11 +163,7 @@ if (typeof device !== 'undefined'){
 	    
 	    
 	    
-	    //PLUGINS -------------------------------------------------------------------------------
-	    //This procedure restarts all plugins in "ON" status
-	    var managePlugins = require('./manage-plugins');
-            managePlugins.restartAllActivePlugins();
-	    //---------------------------------------------------------------------------------------
+
             
             
 	    

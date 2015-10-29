@@ -16,6 +16,10 @@ exports.restartAllActivePlugins = function (){
     
     logger.info('Restarting all the already scheduled plugins');
     
+    //In order to create a plugin-wrapper process for each active plugin
+    var cp = require('child_process');
+    var child = [];
+    
     //Reading the plugins configuration file
     try{
         var fs = require('fs');
@@ -24,134 +28,173 @@ exports.restartAllActivePlugins = function (){
     catch(err){
         logger.info('Error parsing JSON file ./plugins.json');
     }
-
-    logger.info('Plugin list:');
     
-    for(var plugin_name in pluginsConf["plugins"]){
-      
-        var status = pluginsConf.plugins[plugin_name].status;
-	var pid = pluginsConf.plugins[plugin_name].pid;
-	
-	logger.info("--> " + plugin_name + ' - '+ status  + ' - ' + pid);
+   
+    
+    /*
+    // TEST FOR
+    console.log('new scope');
+    for(var i = 0; i < 5; i++) {
+    (function(i) {
+      setTimeout(function() {console.log('st2:'+i)}, 0);
+    })(i);
+    }
 
-	if (status == "on"){
-	  
-	    //if (eval ("typeof " + pid) === 'undefined'){
-	    if (pid == null || pid =='') {
-	      
-	      logger.info("Plugin " + plugin_name + " being restarted with this json schema:")
+    */
+  
+    
+    
+    var plugins_keys = Object.keys( pluginsConf["plugins"] );
+
  
-	    } else {
+    var plugin_num = plugins_keys.length; 
+    logger.info('Number of plugins: '+ plugin_num);
+    
+    //var file_exist = null;
+    var outputFilename = './plugins.json';
+    
+    for(var i = 0; i < plugin_num; i++) {
       
-	      try{
-		process.kill(pid);
-		pluginsConf.plugins[plugin_name].pid = "";
-		logger.info("Plugin " + plugin_name + " had a PID and it was killed!");
-		logger.info("--> " + plugin_name + " being restarted with this json schema:")
-	      }
-	      catch(err){
-		  logger.warn('The PID ('+ pid +') of the plugin ('+plugin_name+') was already killed!');
-	      }
+      (function(i) {
+	setTimeout(function() {
 	      
-	    }
-	    
-	    //Create a new process that has plugin-wrapper as code
-	    var cp = require('child_process');
-	    var child = cp.fork('./plugin-wrapper');
-	    
-	    //check if plugin json schema exists:
-	    //var path = require('path'); 
-	    var plugin_json_name = "./schemas/"+plugin_name+".json";
-	    
-	    var file_exist = null;
-	    
-	    /*
-	    fs.statSync(plugin_json_name, function(err, stat) {
+	  
+	      var plugin_name = plugins_keys[ i ];
+	  
+	      //console.log(plugins_keys[ i ]);
+	      logger.info("|");
+	      var plugin_json_name = "./schemas/"+plugin_name+".json";
+	      var status = pluginsConf.plugins[plugin_name].status;
+	      var pid = pluginsConf.plugins[plugin_name].pid;
+	      var autostart = pluginsConf.plugins[plugin_name].autostart;
 	      
-		if(err == null) {
-		    file_exist = true;
-		    logger.info("--> file exists" + file_exist); 
+	      logger.info("|--> " + plugin_name + ': autostart < ' + autostart + ' > - status < '+ status + ' > ' + pid);
+				  
+	      if (status == "on" || autostart == "on"){
+		//Check pid: if this parameter is not specified 
+		if (pid == null || pid =='') {      //if (eval ("typeof " + pid) === 'undefined'){
 		  
+		    logger.info("|----> Plugin " + plugin_name + " being restarted with this json schema:")
+    
 		} else {
-		    file_exist = false;
-		    logger.info("--> file NOT exists" + file_exist); 
+	  
+		    try{
+			process.kill(pid);
+			pluginsConf.plugins[plugin_name].pid = "";
+			logger.info("|----> Plugin " + plugin_name + " had a PID and it was killed!");
+			logger.info("|----> " + plugin_name + " being restarted with this json schema:")
+		    }
+		    catch(err){
+			logger.warn('|----> The PID ('+ pid +') of the plugin ('+plugin_name+') was already killed!');
+		    }
+		  
 		}
 		
-	    });
-	    */
-	    
-	    if (fs.existsSync(plugin_json_name)) {
-		file_exist = true;
-		//logger.warn("--> file exists" + file_exist); 
-	    }else {
-		file_exist = false;
-		//logger.warn("--> file NOT exists" + file_exist); 
-	    }
+		//check if plugin json schema exists:
+		//nuovo metodo di verifica esistenza file ma non funzionante! DA RIVERIFICARE
+		      	    /*
+			    fs.statSync(plugin_json_name, function(err, stat) {
+			      
+				if(err == null) {
+				    file_exist = true;
+				    logger.info("|---->  file exists" + file_exist); 
+				  
+				} else {
+				    file_exist = false;
+				    logger.info("|---->  file NOT exists" + file_exist); 
+				}
+				
+			    });
+			    */
+
 		
+		if (fs.existsSync(plugin_json_name) === true){
+		    //If the schema json file exists the board will create a process to restart the plugin and update the status and the PID value
 
-	   //logger.warn("--> OUT file_exist: " + file_exist); 
-	   
-	   if (file_exist === true){ 	   
-	    
-	     
-	    try{
-		  var plugin_json_schema = JSON.parse(fs.readFileSync(plugin_json_name));
-		  var input_message = {
-		      "plugin_name": plugin_name,
-		      "plugin_json": plugin_json_schema
-		  }
-		  logger.info("--> "+ fs.readFileSync(plugin_json_name));
-		  
-	      }
-	      catch(err){
-		  logger.error('Error parsing JSON file '+ plugin_json_name +': ' + err);
-	      }
+		    //Create a new process that has plugin-wrapper as code
+		    try{
 
-	      try{
-		var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
-	      }
-	      catch(err){
-		  logger.error('Error parsing JSON file ./plugins.json: ' + err);
-	      }
-	      
-	      //I send the input to the wrapper so that it can launch the proper plugin with the proper json file as argument
-	      child.send(input_message);
+			child[plugin_name] = cp.fork('./plugin-wrapper');
+			var plugin_json_schema = JSON.parse(fs.readFileSync(plugin_json_name));
+			var input_message = {
+			    "plugin_name": plugin_name,
+			    "plugin_json": plugin_json_schema
+			}
 
-	      
-	      //updates the JSON file
-	      try{
-		
-		pluginsConf.plugins[plugin_name].pid = child.pid;	      
+			logger.info("|----> "+ fs.readFileSync(plugin_json_name));
+			child[plugin_name].send(input_message);
 
-		var fs = require("fs");
-		var outputFilename = './plugins.json';
-		fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
-		    if(err) {
-			logger.error(err);
-		    } else {
-			logger.info("JSON saved to " + outputFilename);
 		    }
-		});
+		    catch(err){
+			logger.error('|----> Error parsing JSON file '+ plugin_json_name +': ' + err);
+		    }	
+		    
+		    
+		    //updates the JSON file plugins.json
+		    try{
+		      
+		      pluginsConf.plugins[plugin_name].pid = child[plugin_name].pid;	      
+		      pluginsConf.plugins[plugin_name].status = "on";
+
+		      fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
+			  if(err) {
+			      logger.error(err);
+			  } else {
+			      logger.info("|----> JSON file " + outputFilename + " updated!");
+			  }
+		      });
+		      
+		    }
+		    catch(err){
+			logger.error('|----> Error writing JSON file ./plugins.json: ' + err);
+		    } 
+		    
+		    
+		    
+		  
+		} else{
+		  //If the schema json file doen't exist the related plugin will be not restarted and the value of its PID will be cleaned
+		  
+		  //updates the JSON file plugins.json
+		  try{
+		    
+		    logger.warn('|----> JSON file '+ plugin_json_name +' does not exist!');
+		    logger.warn('|----> I can not restart '+ plugin_name +' !!!');
+		    pluginsConf.plugins[plugin_name].pid = "";
+
+		    fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
+			if(err) {
+			    logger.error(err);
+			} else {
+			    logger.info("|----> JSON file " + outputFilename + " updated!");
+			}
+		    });
+		    
+		  }
+		  catch(err){
+		      logger.error('|----> Error writing JSON file ./plugins.json: ' + err);
+		  } 
+		  
+		  
+		}		  
+
 		
+		
+	      // END IF STATUS
+	      } else {
+		  logger.info("|----> Plugin " + plugin_name + " status OFF!");
 	      }
-	      catch(err){
-		  logger.error('Error writing JSON file ./plugins.json: ' + err);
-	      }
-	      
-	      
-	      
-	   } else{
-	     logger.warn('JSON file '+ plugin_json_name +' does not exist!');
-	   }
-	   
-	   
-	   
-	    
-	} else {
-	    logger.info("Plugin " + plugin_name + " status OFF!");
-	}
-	
+		  
+		
+		
+				  
+	}, 5000*i);
+      })(i);
     }
+    
+    
+    
+   
 
 }
 
@@ -162,8 +205,9 @@ exports.run = function (args){
     //Parsing the input arguments
     var plugin_name = String(args[0]);
     var plugin_json = String(args[1]);
-    
+    var plugin_autostart = "null"
 
+    
     logger.info('Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
     //console.log(new Date().toISOString() + ' - INFO - Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
     
@@ -224,30 +268,65 @@ exports.run = function (args){
 //                     console.log("something very strange happened");
 //             });
             
-            pluginsConf.plugins[plugin_name].status = "on";
-            pluginsConf.plugins[plugin_name].pid = child.pid;
-            
-            //console.log('New file %j', pluginsConf);
-            
-            //updates the JSON file
-            var outputFilename = './plugins.json';
-            fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
-                if(err) {
-                    logger.error(err);
-                } else {
-                    logger.info("JSON saved to " + outputFilename);
-                }
-            });
 	    
-	    //create plugin json schema
+	    
+	    
+	    //Creating plugin json schema
 	    var schema_outputFilename = './schemas/'+plugin_name+'.json';
 	    fs.writeFile(schema_outputFilename, plugin_json, function(err) {
                 if(err) {
                     logger.error(err);
                 } else {
-                    logger.info(new Date().toISOString() + ' - INFO - JSON SCHEMA saved to ' + schema_outputFilename);
+                    logger.info('JSON SCHEMA saved to ' + schema_outputFilename);
+    
+		    //Reading the plugin json schema configuration file in order to get autostart parameter 
+		    try{
+			var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
+			var pluginsSchemaConf = JSON.parse(fs.readFileSync(schema_outputFilename, 'utf8'));
+			
+			logger.info("SCHEMA: " + fs.readFileSync(schema_outputFilename, 'utf8'));
+			//Get the autostart parameter 
+			plugin_autostart = pluginsSchemaConf.autostart;
+			logger.info("plugin_autostart: " + plugin_autostart);
+		    }
+		    catch(err){
+			logger.error('Error parsing JSON file '+ schema_outputFilename + ": " + err);
+			return 'Internal server error';
+		    }
+		    
+		    
+		    
+		    //updates the JSON file
+		    pluginsConf.plugins[plugin_name].status = "on";
+		    pluginsConf.plugins[plugin_name].pid = child.pid;
+		    pluginsConf.plugins[plugin_name].autostart = plugin_autostart;
+		    
+		    logger.info("CHECK SCHEMA: " + plugin_name + ': autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+		    
+		    var outputFilename = './plugins.json';
+		    fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
+			if(err) {
+			    logger.error(err);
+			} else {
+			    logger.info("JSON saved to " + outputFilename);
+			}
+		    });
+		    
+		    
+		    
+		    
+
+		    
                 }
             });
+	    
+	    
+
+	    
+	    
+	    
+
+	    
 	    
             return 'OK';
 	    
