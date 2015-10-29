@@ -108,6 +108,7 @@ if (typeof device !== 'undefined'){
             
             //This function is called as soon as the connection is created successfully
             wampConnection.onopen = function (session, details) {
+	      
                 logger.info('Connection to WAMP server '+ wampUrl + ' created successfully!');
                 logger.info('Connected to realm '+ wampRealm);
                 //console.log('Connection to WAMP server '+ wampUrl + ' created successfully!');
@@ -119,17 +120,18 @@ if (typeof device !== 'undefined'){
 		
 		
 		//PLUGINS -------------------------------------------------------------------------------
-		//This procedure restarts all plugins in "ON" status
+		//This procedure restarts all plugins with status "ON" or with autostart = true
 		var managePlugins = require('./manage-plugins');
 		managePlugins.restartAllActivePlugins();
 		//---------------------------------------------------------------------------------------
-	    
 	    
 
                 //THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
                 setInterval(function(){
                     session.publish('board.connection', ['alive']);
                 },5000);
+		
+		
             };
             
             //This function is called if there are problems with the WAMP connection
