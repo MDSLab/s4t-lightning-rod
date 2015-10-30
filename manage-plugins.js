@@ -18,7 +18,11 @@ exports.restartAllActivePlugins = function (){
     
     //In order to create a plugin-wrapper process for each active plugin
     var cp = require('child_process');
+    
+    // create a list of child_process one for each active plugin
     var child = [];
+    
+    var outputFilename = './plugins.json';
     
     //Reading the plugins configuration file
     try{
@@ -43,48 +47,57 @@ exports.restartAllActivePlugins = function (){
     */
   
     
-    
+    // Get the plugin json object list
     var plugins_keys = Object.keys( pluginsConf["plugins"] );
 
- 
+    // Get the number of plugins in the list "plugins_keys" in order to use it in the next loop
     var plugin_num = plugins_keys.length; 
     logger.info('Number of plugins: '+ plugin_num);
     
-    //var file_exist = null;
-    var outputFilename = './plugins.json';
     
+    // Loop used to find the active plugin at the boot of the board or after a crash of L-R. In particular this loop use the setTimeout function in order to avoid to start at the same time the plugins that use the "board.connect" function.
     for(var i = 0; i < plugin_num; i++) {
       
+      // We used this construct "function(i)" because with javascript and nodejs "the code within the function is only executed after the loop has been completed". 
       (function(i) {
+	
+	//Moreover "setTimeout() ensures that the function is only executed at some later stage."
+	//At the moment we set the timeout at 5 seconds between the exection of the plugins to avoid the simultaneously connection to the board ("board.connect").
 	setTimeout(function() {
 	      
 	  
 	      var plugin_name = plugins_keys[ i ];
-	  
-	      //console.log(plugins_keys[ i ]);
+
 	      logger.info("|");
+	      // Get the plugin's configuration.
 	      var plugin_json_name = "./schemas/"+plugin_name+".json";
 	      var status = pluginsConf.plugins[plugin_name].status;
 	      var pid = pluginsConf.plugins[plugin_name].pid;
 	      var autostart = pluginsConf.plugins[plugin_name].autostart;
 	      
 	      logger.info("|--> " + plugin_name + ': autostart < ' + autostart + ' > - status < '+ status + ' > ' + pid);
-				  
+
+	      // The board restarts all the plugins with status "on" (this status happens after a crash of L-R/board) or with autostart parameter set at true (because some plugins need to start at boot time).
 	      if (status == "on" || autostart == "true"){
-		//Check pid: if this parameter is not specified 
+		
+		//Check PID value
 		if (pid == null || pid =='') {      //if (eval ("typeof " + pid) === 'undefined'){
-		  
+	  
+		    // This parameter is not specified only if the user KILLED/STOPPED the plugin execution previously. So in this case the plugin will be restarted because has autostart set at "true" and the board is at boot time.
 		    logger.info("|----> Plugin " + plugin_name + " being restarted with this json schema:")
     
 		} else {
 	  
+		    // otherwise, if the PID is specified, this means: 
 		    try{
+			// the L-R crashed... so we need to kill all the child_process of each plugin before to start them again;
 			process.kill(pid);
 			pluginsConf.plugins[plugin_name].pid = "";
-			logger.info("|----> Plugin " + plugin_name + " had a PID and it was killed!");
+			logger.info("|----> Plugin " + plugin_name + " had a PID and it was just killed!");
 			logger.info("|----> " + plugin_name + " being restarted with this json schema:")
 		    }
 		    catch(err){
+		        // the board crashed for a power failure... so we don't need to kill any child_process.
 			logger.warn('|----> The PID ('+ pid +') of the plugin ('+plugin_name+') was already killed!');
 		    }
 		  
@@ -107,9 +120,8 @@ exports.restartAllActivePlugins = function (){
 			    });
 			    */
 
-		
+		// If the schema json file exists the board will create a child_process to restart the plugin and update the status and the PID value	
 		if (fs.existsSync(plugin_json_name) === true){
-		    //If the schema json file exists the board will create a process to restart the plugin and update the status and the PID value
 
 		    //Create a new process that has plugin-wrapper as code
 		    try{
@@ -159,6 +171,7 @@ exports.restartAllActivePlugins = function (){
 		  try{
 		    
 		    logger.warn('|----> I can not restart '+ plugin_name +'!!! JSON file '+ plugin_json_name +' does not exist!');
+		    
 		    pluginsConf.plugins[plugin_name].pid = "";
 
 		    fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
@@ -183,16 +196,16 @@ exports.restartAllActivePlugins = function (){
 		
 	      // END IF STATUS
 	      } else {
-		  logger.info("|----> Plugin " + plugin_name + " status OFF!");
+		  logger.info("|----> Plugin " + plugin_name + " with status OFF and autostart FALSE!");
 	      }
 		  
 		
-		
-				  
-	}, 5000*i);
+			  
+	}, 5000*i);  // end of setTimeout function	
 	
-      })(i);
-    }
+      })(i);  // end of the function(i)	
+      
+    } // end of the for loop
     
 
 }
@@ -204,6 +217,8 @@ exports.run = function (args){
     //Parsing the input arguments
     var plugin_name = String(args[0]);
     var plugin_json = String(args[1]);
+    
+    // The autostart parameter at RUN stage is OPTIONAL. It is used at this stage if the user needs to change the boot execution configuration of the plugin after the INJECTION stage.
     var plugin_autostart = "";
 
     
@@ -274,30 +289,28 @@ exports.run = function (args){
 	    
 	    
 	    
-	    //Creating plugin json schema
+	    //Creating the plugin json schema
 	    var schema_outputFilename = './schemas/'+plugin_name+'.json';
 	    fs.writeFile(schema_outputFilename, plugin_json, function(err) {
 	      
                 if(err) {
-                    logger.error(err);
+                    logger.error('Error parsing '+plugin_name+'.json file: ' + err);
+		    return 'Internal server error';
 		    
                 } else {
 		  
-                    logger.info('JSON schema saved to ' + schema_outputFilename);
+                    logger.info('Plugin JSON schema saved to ' + schema_outputFilename);
     
-		    //Reading the plugins.json configuration file
+		    // Reading the plugins.json configuration file
 		    try{
 		      
 			var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
 			
 			var pluginsSchemaConf = JSON.parse(fs.readFileSync(schema_outputFilename, 'utf8'));
 			
-			//logger.info("SCHEMA: " + fs.readFileSync(schema_outputFilename, 'utf8'));
-			
-			//Get the autostart parameter 
+			//Get the autostart parameter from the schema just uploaded
 			plugin_autostart = pluginsSchemaConf.autostart;
 			
-
 
 		    }
 		    catch(err){
@@ -307,7 +320,8 @@ exports.run = function (args){
 		    
 		    
 		    
-		    //updates the JSON file
+		    // Updating the plugins.json file:
+		    // - check if the user changed the autostart parameter at this stage
 		    if(plugin_autostart != undefined){
 		      
 			pluginsConf.plugins[plugin_name].autostart = plugin_autostart;
@@ -318,16 +332,20 @@ exports.run = function (args){
 			logger.info("Autostart parameter not changed!");
 		      
 		    }
+		    
+		    // - change the plugin status from "off" to "on" and update the PID value
 		    pluginsConf.plugins[plugin_name].status = "on";
 		    pluginsConf.plugins[plugin_name].pid = child.pid;
 		    
 		    var outputFilename = './plugins.json';
 		    fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
+		      
 			if(err) {
-			    logger.error(err);
+			    logger.error('Error writing ./plugins.json file: ' + err);
 			} else {
-			    logger.info("JSON file " + outputFilename + " updated -> " + plugin_name + ': autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+			    logger.info("JSON file plugins.json updated -> " + plugin_name + ': autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
 			}
+			
 		    });
 
 		    
@@ -340,14 +358,14 @@ exports.run = function (args){
         }
         else{
             logger.warn("Plugin already started!");
-            return 'Plugin already started on this board';
+            return 'Plugin already started on this board!';
         }
         
     }
     else{
-      //Here the plugin does not exist
+      // Here the plugin does not exist
       logger.warn("Plugin " + pluginname + " does not exists on this board!");
-      return 'Plugin does not exist on this board';
+      return 'Plugin does not exist on this board!';
     }
 }
 
@@ -394,7 +412,7 @@ exports.kill = function (args){
             });
 	    
 	    
-	    //delete plugin json schema
+	    // delete the plugin json schema
 	    fs.unlink('./schemas/'+plugin_name+'.json', function (err) {
 	      if (err) throw err;
 		logger.info('JSON schema of '+ plugin_name +' successfully deleted!');
@@ -406,7 +424,7 @@ exports.kill = function (args){
         else{
                 logger.warn("Plugin already stopped!");
 		//console.log("Plugin already stopped.");
-                return 'Plugin is not running on this board';
+                return 'Plugin is not running on this board!';
 
         }
         
@@ -416,32 +434,33 @@ exports.kill = function (args){
 
 exports.injectPlugin = function(args){
     
+    // Parsing the input arguments
     plugin_name = String(args[0]);
     plugin_code = String(args[1]);
+    
+    // The autostart parameter is used to set the boot execution configuration of the plugin.
     autostart = String(args[2]);
     
     console.log("Called RPC with plugin_name = " + plugin_name + ", autostart = " + autostart + ", plugin_code = " + plugin_code);
     
     var fs = require("fs");
     
-    //Writing the file
+    // Writing the file
     var fileName = './plugins/' + plugin_name + '.js';
     fs.writeFile(fileName, plugin_code, function(err) {
       
         if(err) {
-	    logger.error(err);
-            //console.log(err);
+	    logger.error('Error writing '+ fileName +' file: ' + err);
+            //console.log('Error writing '+ fileName +' file: ' + err);
 	    
         } else {
 	  
-	    logger.info("Plugin " + fileName + " injected successfully");
+	    logger.info("Plugin " + fileName + " injected successfully!");
             //console.log("Plugin " + fileName + " injected successfully");
             
             //Reading the measure configuration file
             var fs = require('fs');
             var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
-            //Reading the json file as follows does not work because the result is cached!
-            //var measuresConf = require("./measures.json");
             
             //Update the data structure                    
             pluginsConf.plugins[plugin_name] = {};                
@@ -460,11 +479,11 @@ exports.injectPlugin = function(args){
             var outputFilename = './plugins.json';
             fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
                 if(err) {
-		    logger.error(err);
-		    //console.log(err);
+		    logger.error('Error writing ./plugins.json file: ' + err);
+		    //console.log('Error writing ./plugins.json file: ' + err);
                 } else {
-		    logger.info("JSON saved to " + outputFilename);
-                    //console.log("JSON saved to " + outputFilename);
+		    logger.info("Plugins JSON configuration file saved to " + outputFilename);
+                    //console.log("Plugins JSON configuration file saved to " + outputFilename);
                 }
             });
         }
