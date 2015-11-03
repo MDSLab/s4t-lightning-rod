@@ -352,7 +352,7 @@ exports.run = function (args){
                 }
             });
 	    
-            return 'OK';
+            return 'OK - Plugin running!';
 	    
 
         }
@@ -419,10 +419,10 @@ exports.kill = function (args){
 		//console.log(new Date().toISOString() + ' - INFO - Json schema '+ plugin_name +' successfully deleted!');
 	    });
 	    
-            return 'OK';
+            return 'OK - plugin killed!';
         }
         else{
-                logger.warn("Plugin already stopped!");
+                logger.warn("Plugin is not running on this board!");
 		//console.log("Plugin already stopped.");
                 return 'Plugin is not running on this board!';
 
@@ -453,6 +453,8 @@ exports.injectPlugin = function(args){
 	    logger.error('Error writing '+ fileName +' file: ' + err);
             //console.log('Error writing '+ fileName +' file: ' + err);
 	    
+	    return 'Error writing '+ fileName +' file: ' + err;
+	    
         } else {
 	  
 	    logger.info("Plugin " + fileName + " injected successfully!");
@@ -481,13 +483,19 @@ exports.injectPlugin = function(args){
                 if(err) {
 		    logger.error('Error writing ./plugins.json file: ' + err);
 		    //console.log('Error writing ./plugins.json file: ' + err);
+		    return 'Error writing ./plugins.json file: ' + err;
+		    
                 } else {
 		    logger.info("Plugins JSON configuration file saved to " + outputFilename);
                     //console.log("Plugins JSON configuration file saved to " + outputFilename);
+		    //return "Plugins JSON configuration file saved to " + outputFilename;
                 }
             });
+	    
         }
     });
+    
+    return "Plugin injected successfully!"; 
 }
 
 
