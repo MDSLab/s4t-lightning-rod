@@ -6,11 +6,6 @@
 //service logging configuration: "managePlugins"   
 var logger = log4js.getLogger('managePlugins');
 
-
-
-
-
-
 //This function restarts all active plugins after a crash of Lightning-rod or a reboot of the board and starts  at boot all the plugins with "autostart" paramenter set true.
 exports.restartAllActivePlugins = function (){
     
@@ -210,7 +205,6 @@ exports.restartAllActivePlugins = function (){
 
 }
 
-
 //This function runs a plugin in a new process
 exports.run = function (args){
     
@@ -369,9 +363,6 @@ exports.run = function (args){
     }
 }
 
-
-
-
 exports.kill = function (args){
     
     var plugin_name = String(args[0]);
@@ -430,7 +421,6 @@ exports.kill = function (args){
         
     }    
 }
-
 
 exports.injectPlugin = function(args){
     
@@ -497,12 +487,6 @@ exports.injectPlugin = function(args){
     
     return "Plugin injected successfully!"; 
 }
-
-
-
-
-
-
 
 //This function exports all the functions in the module as WAMP remote procedure calls
 exports.exportPluginCommands = function (session){
