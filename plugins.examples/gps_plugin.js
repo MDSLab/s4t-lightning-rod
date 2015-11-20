@@ -9,8 +9,8 @@
 //     'ckan_path': ''
 // }
 
+
 exports.main = function (arguments){
-    
     var m_authid = arguments.m_authid;
     var m_resourceid = arguments.m_resourceid;
     var gps_device_command = arguments.gps_device_command;
@@ -19,7 +19,6 @@ exports.main = function (arguments){
     var ckan_port = arguments.ckan_port;
     var ckan_path = arguments.ckan_path;
     
-    var winston = require('winston');
     var http = require('http');
     var gpsd = require('node-gpsd');
     var modem = require('modem').Modem();
@@ -33,9 +32,13 @@ exports.main = function (arguments){
                 console.log('It is working');
                 modem.close();
                 
+                exec('/root/dialup.sh', function(error, stdout, stderr){
+                    console.log('Starting PPP connection: ' + stdout);
+                });
+                
                 var daemon = new gpsd.Daemon({
                     program: 'gpsd',
-                    device: gps_device,
+                    device: gps_device_data,
                     port: 2947,
                     pid: '/tmp/gpsd.pid'
                 });
@@ -91,16 +94,6 @@ exports.main = function (arguments){
                                     
                                     var responseString = '';
                                     
-                                    res.on('data', function(data) {
-                                        //responseString += data;
-                                        //console.log('On Data: '+ responseString);
-                                    });
-                                    
-                                    res.on('end', function() {
-                                        //var resultObject = JSON.parse(responseString);
-                                        //console.log('On End: ');
-                                        //console.dir(resultObject);
-                                    });
                                 });
                                 
                                 req.on('error', function(e) {
