@@ -3,8 +3,245 @@
 //Per far restituire qualcosa alla funzione run (almeno se il processo è stato lanciato correttamente) credo che si debbano usare le promise ma non sono sicuro (si dovrebbe domandare a quelli di TAVENDO se è possibile in WAMP dichiarare una RPC con una funziona asincrona ed eventualmente come).
 
 
+
+
 //service logging configuration: "managePlugins"   
 var logger = log4js.getLogger('managePlugins');
+
+var m_result = null;
+
+
+/*
+exports.call_sync = function (args, kwargs, details){
+  
+    var when = require('when');
+    var synco="rrr";
+
+    test_sync(args, function(err, result){
+	logger.info("LOG: "+result);
+	synco = result;
+    });
+
+    var n = 1;
+
+    var interval_id = null;
+
+    if (details.progress) {
+	var i = 0;
+	details.progress([i]);
+	i += 1;
+	interval_id = setInterval(function () {
+	  if (i < n) {
+	      details.progress([i]);
+	      i += 1;
+	  } else {
+	      clearInterval(interval_id);
+	  }
+	}, 1000);
+    }
+
+    logger.info("LOG: "+ n);
+    var d = when.defer();
+
+    setTimeout(function () {
+	d.resolve(synco);
+    }, 7000 * n);
+    
+    return d.promise;
+    
+    
+}
+
+function test_sync(args, callback){    
+   somma_sync(args, function(err, result){
+	  setTimeout(function(args) {   results="ciaooooooo"+result;     callback("OK", results);  }, 5000);
+    });	    
+	    
+}  
+
+function somma_sync(args, callback2){  
+  var a=1; var b=2;
+  var c=a+b;
+  callback2("OK", c);
+}
+*/
+
+
+
+//This function executes a single call
+exports.call = function (args, details){
+    
+    //Parsing the input arguments
+    var plugin_name = String(args[0]);
+    var plugin_json = String(args[1]);
+    
+    
+    
+    
+    var when = require('when');
+    var d = when.defer();
+    
+    
+    
+    
+    // The autostart parameter at RUN stage is OPTIONAL. It is used at this stage if the user needs to change the boot execution configuration of the plugin after the INJECTION stage.
+    var plugin_autostart = "";
+
+    
+    logger.info('Running request for plugin \"'+ plugin_name +'\" with parameter json: '+plugin_json);
+    
+    
+    try{
+        //Reading the plugin configuration file
+        var fs = require('fs');
+        var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
+        //Reading the json file as follows does not work because the result is cached!
+        //var pluginsConf = require("./plugins.json");
+    }
+    catch(err){
+        logger.error('Error parsing JSON file ./plugins.json');
+        //return 'Internal server error';
+    }
+    
+    //If the plugin exists
+    if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
+      
+	logger.info("Plugin successfully loaded!");
+        
+        //Check the status to be decided
+	var status = pluginsConf.plugins[plugin_name].status;
+        if (status == "off" || status == "on"){
+            
+            logger.info("Plugin " + plugin_name + " being started");
+            
+            //Create a new process that has plugin-wrapper as code
+            var cp = require('child_process');
+            var child = cp.fork('./call-wrapper');
+	    
+            
+            //Prepare the message I will send to the process with name of the plugin to start and json file as argument
+            var input_message = {
+                "plugin_name": plugin_name,
+                "plugin_json": JSON.parse(plugin_json)
+            }
+            
+	      
+            
+            child.on('message', function(msg) {
+	   
+	      if(msg.name != undefined){
+		
+		
+		if (msg.status === "alive"){
+		  
+		  
+		      //Creating the plugin json schema
+		      var schema_outputFilename = './schemas/'+plugin_name+'.json';
+		      fs.writeFile(schema_outputFilename, plugin_json, function(err) {
+			
+			  if(err) {
+			      logger.error('Error parsing '+plugin_name+'.json file: ' + err);
+			      //return 'Internal server error';
+			      
+			  } else {
+			    
+			      logger.info('Plugin JSON schema saved to ' + schema_outputFilename);
+	      
+			      
+			      // - change the plugin status from "off" to "on" and update the PID value
+			      pluginsConf.plugins[plugin_name].status = "on";
+			      pluginsConf.plugins[plugin_name].pid = child.pid;
+			      
+			      var outputFilename = './plugins.json';
+			      fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
+				
+				  if(err) {
+				      logger.error('Error writing ./plugins.json file: ' + err);
+				  } else {
+				      logger.info("JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+				  }
+				  
+			      });
+
+			      
+			  }
+		      });
+		      
+		  
+		  
+		} else if(msg.status === "finish") {
+		  
+		  
+		  logger.info("RESULT: ", msg.logmsg);
+		  
+		  d.resolve(msg.logmsg);
+      
+		  
+		  
+		} else if(msg.status === "fault") {
+		  
+		  
+		  logger.info("RESULT: ", msg.logmsg);
+		  
+		  d.resolve(msg.logmsg);
+      
+		  
+		  
+		} else if(msg.level === "error") {
+		  
+		  logger.error(msg.name + ": " + msg.logmsg);
+		  
+		} else if(msg.level === "warn") {
+		  
+		  logger.warn(msg.name + ": " + msg.logmsg);
+		  
+		}  
+		else{
+		  //level info
+		  logger.info(msg.name + ": " + msg.logmsg);
+		  
+		  
+		  
+		  
+
+		}
+		
+	      }
+	      else{
+		//serve per gestire il primo messaggio alla creazione del child
+		logger.info(msg);
+	      }
+	      
+
+	      
+	    });
+ 
+	    
+	    //I send the input to the wrapper so that it can launch the proper plugin with the proper json file as argument
+	    child.send(input_message); 
+	    
+	    return d.promise;
+	    //return "OK - CALL";
+	    
+
+	    
+
+        }
+        else{
+            logger.warn("Call already started!");
+            return 'Call already started on this board!';
+        }
+        
+    }
+    else{
+      // Here the plugin does not exist
+      logger.warn("Call \"" + plugin_name + "\" does not exist on this board!");
+      return 'Call does not exist on this board!';
+    }
+}
+
+
+
 
 
 
@@ -222,16 +459,14 @@ exports.run = function (args){
     var plugin_autostart = "";
 
     
-    logger.info('Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
-    //console.log(new Date().toISOString() + ' - INFO - Plugin '+ plugin_name +' JSON Schema: '+plugin_json);
+    logger.info('Running request for plugin \"'+ plugin_name +'\" with parameter json: '+plugin_json);
     
     
     try{
         //Reading the plugin configuration file
         var fs = require('fs');
         var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
-        //Reading the json file as follows does not work because the result is cached!
-        //var pluginsConf = require("./plugins.json");
+
     }
     catch(err){
         logger.error('Error parsing JSON file ./plugins.json');
@@ -240,6 +475,8 @@ exports.run = function (args){
     
     //If the plugin exists
     if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
+      
+	logger.info("Plugin successfully loaded!");
         
         //Check the status
         var status = pluginsConf.plugins[plugin_name].status;
@@ -258,102 +495,120 @@ exports.run = function (args){
                 "plugin_json": JSON.parse(plugin_json)
             }
             
-            
-            //I send the input to the wrapper so that it can launch the proper plugin with the proper json file as argument
-            child.send(input_message);
-            
-	    
-	    
-	    
-//             //I wait for a message from the wrapper to know if it terminates
-//             child.on('message', function(message) {
-//                 if (message == "exiting"){
-//                     pluginsConf.plugins[plugin_name].status = "on";
-//                     
-//                     //updates the JSON file
-//                     var fs = require("fs");
-//                     var outputFilename = './plugins.json';
-//                     fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
-//                         if(err) {
-//                             console.log(err);
-//                         } else {
-//                             console.log("JSON saved to " + outputFilename);
-//                         }
-//                     });
-//                 }
-//                 
-//                 else
-//                     console.log("something very strange happened");
-//             });
-            
-	    
-	    
-	    
-	    //Creating the plugin json schema
-	    var schema_outputFilename = './schemas/'+plugin_name+'.json';
-	    fs.writeFile(schema_outputFilename, plugin_json, function(err) {
 	      
-                if(err) {
-                    logger.error('Error parsing '+plugin_name+'.json file: ' + err);
-		    return 'Internal server error';
-		    
-                } else {
+            
+            child.on('message', function(msg) {
+	   
+	      if(msg.name != undefined){
+		
+		
+		if (msg.status === "alive"){
 		  
-                    logger.info('Plugin JSON schema saved to ' + schema_outputFilename);
-    
-		    // Reading the plugins.json configuration file
-		    try{
-		      
-			var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
+		  
+		      //Creating the plugin json schema
+		      var schema_outputFilename = './schemas/'+plugin_name+'.json';
+		      fs.writeFile(schema_outputFilename, plugin_json, function(err) {
 			
-			var pluginsSchemaConf = JSON.parse(fs.readFileSync(schema_outputFilename, 'utf8'));
-			
-			//Get the autostart parameter from the schema just uploaded
-			plugin_autostart = pluginsSchemaConf.autostart;
-			
+			  if(err) {
+			      logger.error('Error parsing '+plugin_name+'.json file: ' + err);
+			      return 'Internal server error';
+			      
+			  } else {
+			    
+			      logger.info('Plugin JSON schema saved to ' + schema_outputFilename);
+	      
+			      // Reading the plugins.json configuration file
+			      try{
+				
+				  var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
+				  
+				  var pluginsSchemaConf = JSON.parse(fs.readFileSync(schema_outputFilename, 'utf8'));
+				  
+				  //Get the autostart parameter from the schema just uploaded
+				  plugin_autostart = pluginsSchemaConf.autostart;
+				  
 
-		    }
-		    catch(err){
-			logger.error('Error parsing plugins.json configuration file: ' + err);
-			return 'Internal server error';
-		    }
-		    
-		    
-		    
-		    // Updating the plugins.json file:
-		    // - check if the user changed the autostart parameter at this stage
-		    if(plugin_autostart != undefined){
-		      
-			pluginsConf.plugins[plugin_name].autostart = plugin_autostart;
-			logger.info("Autostart parameter set by user to " + plugin_autostart);
+			      }
+			      catch(err){
+				  logger.error('Error parsing plugins.json configuration file: ' + err);
+				  return 'Internal server error';
+			      }
+			      
+			      
+			      
+			      // Updating the plugins.json file:
+			      // - check if the user changed the autostart parameter at this stage
+			      if(plugin_autostart != undefined){
+				
+				  pluginsConf.plugins[plugin_name].autostart = plugin_autostart;
+				  logger.info("Autostart parameter set by user to " + plugin_autostart);
 
-		    } else {
-		      
-			logger.info("Autostart parameter not changed!");
-		      
-		    }
-		    
-		    // - change the plugin status from "off" to "on" and update the PID value
-		    pluginsConf.plugins[plugin_name].status = "on";
-		    pluginsConf.plugins[plugin_name].pid = child.pid;
-		    
-		    var outputFilename = './plugins.json';
-		    fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
-		      
-			if(err) {
-			    logger.error('Error writing ./plugins.json file: ' + err);
-			} else {
-			    logger.info("JSON file plugins.json updated -> " + plugin_name + ': autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
-			}
-			
-		    });
+			      } else {
+				
+				  logger.info("Autostart parameter not changed!");
+				
+			      }
+			      
+			      // - change the plugin status from "off" to "on" and update the PID value
+			      pluginsConf.plugins[plugin_name].status = "on";
+			      pluginsConf.plugins[plugin_name].pid = child.pid;
+			      
+			      var outputFilename = './plugins.json';
+			      fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
+				
+				  if(err) {
+				      logger.error('Error writing ./plugins.json file: ' + err);
+				  } else {
+				      logger.info("JSON file plugins.json updated -> " + plugin_name + ': autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+				  }
+				  
+			      });
 
-		    
-                }
-            });
+			      
+			  }
+		      });
+		      
+		      
+		      
+		      
+		      		  
+		  
+		  
+		  
+		  
+		  
+		  
+		} else if(msg.level === "error") {
+		  
+		  logger.error(msg.name + ": " + msg.logmsg);
+		  
+		} else if(msg.level === "warn") {
+		  
+		  logger.warn(msg.name + ": " + msg.logmsg);
+		  
+		}  
+		else{
+		  //level info
+		  logger.info(msg.name + ": " + msg.logmsg);
+
+		}
+		
+	      }
+	      else{
+		//serve per gestire il primo messaggio alla creazione del child
+		logger.info(msg);
+	      }
+
+	      
+	    });
+            
 	    
-            return 'OK - Plugin running!';
+	    //I send the input to the wrapper so that it can launch the proper plugin with the proper json file as argument
+	    child.send(input_message); 
+
 	    
+	    return 'OK - Plugin running!';
+
 
         }
         else{
@@ -364,10 +619,13 @@ exports.run = function (args){
     }
     else{
       // Here the plugin does not exist
-      logger.warn("Plugin " + pluginname + " does not exists on this board!");
+      logger.warn("Plugin \"" + plugin_name + "\" does not exist on this board!");
       return 'Plugin does not exist on this board!';
     }
 }
+
+
+
 
 
 
@@ -504,6 +762,21 @@ exports.injectPlugin = function(args){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //This function exports all the functions in the module as WAMP remote procedure calls
 exports.exportPluginCommands = function (session){
     
@@ -514,10 +787,11 @@ exports.exportPluginCommands = function (session){
     //console.log('Exporting plugin commands to the Cloud');
     
     //Register all the module functions as WAMP RPCs
+    //session.register(boardCode+'.command.rpc.plugin.call_sync', exports.call_sync);
     session.register(boardCode+'.command.rpc.plugin.run', exports.run);
     session.register(boardCode+'.command.rpc.plugin.kill', exports.kill);    
     session.register(boardCode+'.command.rpc.injectplugin', exports.injectPlugin);
     session.register(boardCode+'.command.rpc.restartAllActivePlugins', exports.restartAllActivePlugins);
-  
+    session.register(boardCode+'.command.rpc.plugin.call', exports.call);
 }
 

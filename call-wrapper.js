@@ -8,25 +8,26 @@ process.once('message', function(message) {
     
     var fs = require('fs');
     
-    
     if (fs.existsSync('./plugins/' + plugin_name + '.js') === true){
-      
+
       var plugin = require('./plugins/' + plugin_name);
       
-      process.send({ name: plugin_name, level: "info" , logmsg: "I'm alive!"});
-      
+      process.send({ name: plugin_name, status: true , logmsg: "I'm alive!"});
       process.send({ name: plugin_name, level: "info" , logmsg: "starting..."});
-      
       process.send({ name: plugin_name, status: "alive"});
       
-      plugin.main(plugin_json);
-      //plugin.main(plugin_json, callback(err, result){});
-      
+      plugin.main(plugin_json, function(err, result){
+	
+	//process.send({ name: plugin_name, status: true , logmsg: result});
+	process.send({ name: plugin_name, status: "finish", logmsg: result});
+	
+      });
+
       
     }
     else{
       
-      process.send({ name: plugin_name, level: "warn" , logmsg: "plugin source file does not exist!"});
+      process.send({ name: plugin_name, status: "fault" , logmsg: "Call source file does not exist!"});
       
     }
     

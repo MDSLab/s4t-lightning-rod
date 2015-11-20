@@ -108,7 +108,6 @@ if (typeof device !== 'undefined'){
             
             //This function is called as soon as the connection is created successfully
             wampConnection.onopen = function (session, details) {
-	      
                 logger.info('Connection to WAMP server '+ wampUrl + ' created successfully!');
                 logger.info('Connected to realm '+ wampRealm);
                 //console.log('Connection to WAMP server '+ wampUrl + ' created successfully!');
@@ -120,18 +119,17 @@ if (typeof device !== 'undefined'){
 		
 		
 		//PLUGINS -------------------------------------------------------------------------------
-		//This procedure restarts all plugins with status "ON" or with autostart = true
+		//This procedure restarts all plugins in "ON" status
 		var managePlugins = require('./manage-plugins');
-		managePlugins.restartAllActivePlugins();
+		//managePlugins.restartAllActivePlugins();
 		//---------------------------------------------------------------------------------------
+	    
 	    
 
                 //THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
                 setInterval(function(){
                     session.publish('board.connection', ['alive']);
                 },5000);
-		
-		
             };
             
             //This function is called if there are problems with the WAMP connection
@@ -177,9 +175,8 @@ if (typeof device !== 'undefined'){
     else if (device == 'laptop'){
         
         //WAMP ---------------------------------------------------------------------------------
-        
         var autobahn = require('autobahn');
-        var wampUrl = nconf.get('config:wamp:url')+":"+nconf.get('config:wamp:port')+"/ws";
+	var wampUrl = nconf.get('config:wamp:url_wamp')+":"+nconf.get('config:wamp:port_wamp')+"/ws";
         var wampRealm = nconf.get('config:wamp:realm');
         var wampConnection = new autobahn.Connection({
             url: wampUrl,
