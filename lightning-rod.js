@@ -121,7 +121,7 @@ if (typeof device !== 'undefined'){
 		//PLUGINS -------------------------------------------------------------------------------
 		//This procedure restarts all plugins in "ON" status
 		var managePlugins = require('./manage-plugins');
-		//managePlugins.restartAllActivePlugins();
+		managePlugins.restartAllActivePlugins();
 		//---------------------------------------------------------------------------------------
 	    
 	    
