@@ -134,7 +134,7 @@ exports.call = function (args, details){
 		  
 		  
 		      //Creating the plugin json schema
-		      var schema_outputFilename = './schemas/'+plugin_name+'.json';
+		      var schema_outputFilename = './plugin_conf/'+plugin_name+'.json';
 		      fs.writeFile(schema_outputFilename, plugin_json, function(err) {
 			
 			  if(err) {
@@ -302,7 +302,7 @@ exports.restartAllActivePlugins = function (){
 
 	      logger.info("|");
 	      // Get the plugin's configuration.
-	      var plugin_json_name = "./schemas/"+plugin_name+".json";
+	      var plugin_json_name = "./plugin_conf/"+plugin_name+".json";
 	      var status = pluginsConf.plugins[plugin_name].status;
 	      var pid = pluginsConf.plugins[plugin_name].pid;
 	      var autostart = pluginsConf.plugins[plugin_name].autostart;
@@ -500,7 +500,7 @@ exports.run = function (args){
 		  
 		  
 		      //Creating the plugin json schema
-		      var schema_outputFilename = './schemas/'+plugin_name+'.json';
+		      var schema_outputFilename = './plugin_conf/'+plugin_name+'.json';
 		      fs.writeFile(schema_outputFilename, plugin_json, function(err) {
 			
 			  if(err) {
@@ -660,7 +660,7 @@ exports.kill = function (args){
 	    
 	    
 	    // delete the plugin json schema
-	    fs.unlink('./schemas/'+plugin_name+'.json', function (err) {
+	    fs.unlink('./plugin_conf/'+plugin_name+'.json', function (err) {
 	      if (err) throw err;
 		logger.info('JSON schema of '+ plugin_name +' successfully deleted!');
 		//console.log(new Date().toISOString() + ' - INFO - Json schema '+ plugin_name +' successfully deleted!');
