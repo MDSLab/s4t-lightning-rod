@@ -4,7 +4,8 @@
 
 ##### INSTALLAZIONE DIPENDENZE #####
 opkg update
-opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib -d mnt
+opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib socat ip -d mnt
+opkg install --force-depends kmod-tun kmod-gre
 
 npm install -g log4js is-reachable
 
