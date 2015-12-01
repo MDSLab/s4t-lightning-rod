@@ -1,4 +1,6 @@
 exports.manageNetworks = function(args){
+  
+    var spawn = require('child_process').spawn;
     
     switch(args[1]){
         case 'add-to-network':

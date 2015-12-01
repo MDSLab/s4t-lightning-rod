@@ -26,7 +26,7 @@ exports.onCommand = function (args){
             case 'add-to-network':
             case 'remove-from-network':
             case 'update-board':
-                var manageNetworks = require('manage-networks');
+                var manageNetworks = require('./manage-networks');
                 manageNetworks.manageNetworks(args);
                 break;
         }

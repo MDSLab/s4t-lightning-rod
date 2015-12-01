@@ -633,6 +633,7 @@ exports.kill = function (args){
     if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
       
         var status = pluginsConf.plugins[plugin_name].status;
+	var autostart = pluginsConf.plugins[plugin_name].autostart;
 	
         if (status == "on"){
 	  
@@ -645,7 +646,7 @@ exports.kill = function (args){
             pluginsConf.plugins[plugin_name].pid = "";
 
             
-            //updates the JSON file
+            // updates the JSON file
             var fs = require("fs");
             var outputFilename = './plugins.json';
             fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
@@ -659,12 +660,14 @@ exports.kill = function (args){
             });
 	    
 	    
-	    // delete the plugin json schema
-	    fs.unlink('./plugin_conf/'+plugin_name+'.json', function (err) {
-	      if (err) throw err;
-		logger.info('JSON schema of '+ plugin_name +' successfully deleted!');
-		//console.log(new Date().toISOString() + ' - INFO - Json schema '+ plugin_name +' successfully deleted!');
-	    });
+	    // delete the plugin json configuration file if it doesn't have to be executed at boot time
+	    if (autostart == "false"){
+	    
+		fs.unlink('./plugin_conf/'+plugin_name+'.json', function (err) {
+		  if (err) throw err;
+		    logger.info('JSON schema of '+ plugin_name +' successfully deleted!');
+		});
+	    }
 	    
             return 'OK - plugin killed!';
         }

@@ -6,7 +6,7 @@
 opkg update
 opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib -d mnt
 
-npm install -g log4js
+npm install -g log4js is-reachable
 
 
 ##### DOWNLOAD SORGENTI #####         

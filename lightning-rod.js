@@ -27,11 +27,15 @@ greDevices = [];
 //Reading information about the device from configuration file
 var device = nconf.get('config:device');
 
+//for connection test
+var isReachable = require('is-reachable');
+var online = true;
+
+
 //If the device has been specified
 if (typeof device !== 'undefined'){
     
     logger.info('The device is ' + device);
-    //console.log('The device is ' + device);
     
     //If I'm on a Arduino Yun
     if (device == 'arduino_yun'){
@@ -55,6 +59,7 @@ if (typeof device !== 'undefined'){
             //WAMP ---------------------------------------------------------------------------------
             
             var autobahn = require('autobahn');
+	    
             var wampUrl = nconf.get('config:wamp:url_wamp')+":"+nconf.get('config:wamp:port_wamp')+"/ws";
             var wampRealm = nconf.get('config:wamp:realm');
             var wampConnection = new autobahn.Connection({
@@ -63,8 +68,11 @@ if (typeof device !== 'undefined'){
 		//initial_retry_delay:0.5,
                 //max_retries: 15,
                 //max_retry_delay: 60
-
+  
             });
+	    
+	    var wampIP = wampUrl.split("//")[1].split(":")[0];
+	    //logger.info("WAMP SERVER IP: "+wampIP);
             
             //This function contains the logic 
             //that has to be performed if I'm connected to the WAMP server
@@ -80,13 +88,13 @@ if (typeof device !== 'undefined'){
                 var boardCode = nconf.get('config:board:code');
                 
                 //Registering the board to the Cloud by sending a message to the connection topic
-                logger.info('Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
+                logger.info('WAMP: Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
                 session.publish(connectionTopic, [boardCode, 'connection', session._id]);
                 
                 //Subscribing to the command topic to receive messages for asyncronous operation to be performed
                 //Maybe everything can be implemented as RPCs
                 //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
-                logger.info('Registering to command topic ' + commandTopic);
+                logger.info('WAMP: Registering to command topic ' + commandTopic);
                 var manageCommands = require('./manage-commands');
                 session.subscribe(commandTopic, manageCommands.onCommand);
                 
@@ -110,9 +118,9 @@ if (typeof device !== 'undefined'){
             //This function is called as soon as the connection is created successfully
             wampConnection.onopen = function (session, details) {
 
-                logger.info('Connection to WAMP server '+ wampUrl + ' created successfully!');
-                logger.info('Connected to realm '+ wampRealm);
-                logger.info('Session ID: '+ session._id);
+                logger.info('WAMP: Connection to WAMP server '+ wampUrl + ' created successfully!');
+                logger.info('WAMP: Connected to realm '+ wampRealm);
+                logger.info('WAMP: Session ID: '+ session._id);
 		//logger.info('Connection details: '+ JSON.stringify(details));
 		
                 //Calling the manage_WAMP_connection function that contains the logic 
@@ -124,8 +132,13 @@ if (typeof device !== 'undefined'){
 		var managePlugins = require('./manage-plugins');
 		//managePlugins.restartAllActivePlugins();
 		//----------------------------------------------------------------------------------------------------
-		  
-                //THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
+		
+		
+		
+		//----------------------------------------------------------------------------------------------------
+		// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
+		//----------------------------------------------------------------------------------------------------
+		/*
                 setInterval(function(){
 		  
 		  if(session.isOpen){
@@ -133,40 +146,65 @@ if (typeof device !== 'undefined'){
 		  }
                     
                 }, 5000);
+		*/	
 		
-
+		setInterval(function(){
+		    
+		    isReachable(wampIP, function (err, reachable) {
+		      if(!reachable){
+			logger.warn("CONNECTION STATUS: "+reachable+ " - ERROR: "+err);
+			online=false;
+			
+		      } else {
+			
+			if(!online){
+				if(session.isOpen){
+				  session.publish('board.connection', ['alive']);
+				  online=true;
+				}
+				
+			}
+			
+		      }
+		      
+		      
+		    });
+   
+                }, 5000);
+		//----------------------------------------------------------------------------------------------------
+		
+		
             };
             
             //This function is called if there are problems with the WAMP connection
             wampConnection.onclose = function (reason, details) {
-                logger.error('\nError in connecting to WAMP server!');
-                logger.error('Reason: ' + reason);
-                logger.error('Reconnection Details: ');
-                logger.error("- retry_delay:", details.retry_delay);
-		logger.error("- retry_count:", details.retry_count);
-		logger.error("- will_retry:", details.will_retry);
+	      
+                logger.error('WAMP: Error in connecting to WAMP server!');
+                logger.error('- Reason: ' + reason);
+                logger.error('- Reconnection Details: ');
+                logger.error("  - retry_delay:", details.retry_delay);
+		logger.error("  - retry_count:", details.retry_count);
+		logger.error("  - will_retry:", details.will_retry);
 
 		if(wampConnection.isOpen){
-		    logger.info("connection is open!");
+		    logger.info("WAMP: connection is open!");
 		}
 		else{
-		    logger.warn("connection is closed!");
+		    logger.warn("WAMP: connection is closed!");
 		}
 	
 		if(session.isOpen){
-		    logger.info("session is open!");
+		    logger.info("WAMP: session is open!");
 		}
 		else{
-		    logger.warn("session is closed!");
+		    logger.warn("WAMP: session is closed!");
 		}
-		
-		
 
-	
+		
             };
             
             //Opening the connection to the WAMP server
-            logger.info('Opening connection to WAMP server...');  
+            logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
             wampConnection.open();
             
             //Here the connection should be established or an error should have been raised
@@ -179,12 +217,6 @@ if (typeof device !== 'undefined'){
             var manageMeasure = require('./manage-measures');
             manageMeasure.restartAllActiveMeasures();
             //---------------------------------------------------------------------------------------
-	    
-
-	    
-
-            
-            
 	    
 	    
         });
