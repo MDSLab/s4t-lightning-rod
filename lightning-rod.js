@@ -234,6 +234,10 @@ if (typeof device !== 'undefined'){
             realm: wampRealm
         });
         
+	
+	var wampIP = wampUrl.split("//")[1].split(":")[0];
+	//logger.info("WAMP SERVER IP: "+wampIP);
+	    
         //This function contains the logic 
         //that has to be performed if I'm connected to the WAMP server
         function manage_WAMP_connection (session, details){
@@ -248,13 +252,13 @@ if (typeof device !== 'undefined'){
             var boardCode = nconf.get('config:board:code');
             
             //Registering the board to the Cloud by sending a message to the connection topic
-            console.log('Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
+            logger.info('Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
             session.publish(connectionTopic, [boardCode, 'connection', session._id]);
             
             //Subscribing to the command topic to receive messages for asyncronous operation to be performed
             //Maybe everything can be implemented as RPCs
             //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
-            console.log('Registering to command topic ' + commandTopic);
+            logger.info('Registering to command topic ' + commandTopic);
             var manageCommands = require('./manage-commands');
             session.subscribe(commandTopic, manageCommands.onCommand);
             
@@ -264,33 +268,86 @@ if (typeof device !== 'undefined'){
             
         }            
         
-        //This function is called as soon as the connection is created successfully
-        wampConnection.onopen = function (session, details) {
-            console.log('Connection to WAMP server '+ wampUrl + ' created successfully!');
-            console.log('Connected to realm '+ wampRealm);
-            
-            //Calling the manage_WAMP_connection function that contains the logic 
-            //that has to be performed if I'm connected to the WAMP server
-            manage_WAMP_connection(session, details);
-            
-            //THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
-            setInterval(function(){
-                session.publish('board.connection', ['alive']);
-            },5000);
-            
-        };
-        
-        //This function is called if there are problems with the WAMP connection
-        wampConnection.onclose = function (reason, details) {
-            console.log('Error in connecting to WAMP server!');
-            console.log('Reason: ' + reason);
-            console.log('Details: ');
-            console.dir(details);
-        };
-        
-        //Opening the connection to the WAMP server
-        console.log("Opening connection to WAMP server...");
-        wampConnection.open();
+	//This function is called as soon as the connection is created successfully
+	wampConnection.onopen = function (session, details) {
+
+	    logger.info('WAMP: Connection to WAMP server '+ wampUrl + ' created successfully!');
+	    logger.info('WAMP: Connected to realm '+ wampRealm);
+	    logger.info('WAMP: Session ID: '+ session._id);
+	    
+	    //Calling the manage_WAMP_connection function that contains the logic 
+	    //that has to be performed if I'm connected to the WAMP server
+	    manage_WAMP_connection(session, details);
+	    
+	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
+	    //This procedure restarts all plugins in "ON" status
+	    var managePlugins = require('./manage-plugins');
+	    //managePlugins.restartAllActivePlugins();
+	    //----------------------------------------------------------------------------------------------------
+	    
+	    
+	    
+	    //----------------------------------------------------------------------------------------------------
+	    // THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
+	    //----------------------------------------------------------------------------------------------------
+	    setInterval(function(){
+		
+		isReachable(wampIP, function (err, reachable) {
+		  if(!reachable){
+		    logger.warn("CONNECTION STATUS: "+reachable+ " - ERROR: "+err);
+		    online=false;
+		    
+		  } else {
+		    
+		    if(!online){
+			    if(session.isOpen){
+			      session.publish('board.connection', ['alive']);
+			      online=true;
+			    }
+			    
+		    }
+		    
+		  }
+		  
+		  
+		});
+
+	    }, 5000);
+	    //----------------------------------------------------------------------------------------------------
+	    
+	    
+	};
+    
+	//This function is called if there are problems with the WAMP connection
+	wampConnection.onclose = function (reason, details) {
+	  
+	    logger.error('WAMP: Error in connecting to WAMP server!');
+	    logger.error('- Reason: ' + reason);
+	    logger.error('- Reconnection Details: ');
+	    logger.error("  - retry_delay:", details.retry_delay);
+	    logger.error("  - retry_count:", details.retry_count);
+	    logger.error("  - will_retry:", details.will_retry);
+
+	    if(wampConnection.isOpen){
+		logger.info("WAMP: connection is open!");
+	    }
+	    else{
+		logger.warn("WAMP: connection is closed!");
+	    }
+    
+	    if(session.isOpen){
+		logger.info("WAMP: session is open!");
+	    }
+	    else{
+		logger.warn("WAMP: session is closed!");
+	    }
+
+	    
+	};
+	
+	//Opening the connection to the WAMP server
+	logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
+	wampConnection.open();
         
         //Here the connection should be established or an error should have been raised
         
@@ -298,11 +355,11 @@ if (typeof device !== 'undefined'){
         
     }
     else{
-        console.log('Device "' + device + '" not supported!');
-        console.log('Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
+        logger.warn('Device "' + device + '" not supported!');
+        logger.warn('Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
     }
 }
 else{
-    console.log('Please insert the kind of device in settings.json');
+    logger.warn('Please insert the kind of device in settings.json');
     process.exit();
 }

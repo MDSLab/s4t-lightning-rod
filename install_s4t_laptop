@@ -5,7 +5,7 @@
 ##### INSTALLAZIONE DIPENDENZE #####
 apt-get install -y unzip 
 
-sudo npm install -g log4js autobahn jsonfile nconf is-reachable
+sudo npm install -g log4js autobahn jsonfile nconf is-reachable when
 #npm install -g log4js jsonfile nconf
 #sudo npm install --unsafe-perm --verbose -g autobahn
 
@@ -24,9 +24,9 @@ cp /opt/stack4things/s4t-lightning-rod-master/measures.example.json /opt/stack4t
 
 #Edit plugins
 mkdir /opt/stack4things/s4t-lightning-rod-master/plugins
-echo -e "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-master/plugins.json
+echo "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-master/plugins.json
 
-mkdir /opt/stack4things/s4t-lightning-rod-master/schemas
+mkdir /opt/stack4things/s4t-lightning-rod-master/plugin_conf
 
 #Edit settings
 sed -i "s/\"device\":\"\"/\"device\":\"laptop\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json

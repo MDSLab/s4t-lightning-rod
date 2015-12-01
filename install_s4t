@@ -7,7 +7,7 @@ opkg update
 opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib socat ip -d mnt
 opkg install --force-depends kmod-tun kmod-gre
 
-npm install -g log4js is-reachable
+npm install -g log4js is-reachable when
 
 
 ##### DOWNLOAD SORGENTI #####         
@@ -27,7 +27,7 @@ cp /opt/stack4things/s4t-lightning-rod-master/measures.example.json /opt/stack4t
 mkdir /opt/stack4things/s4t-lightning-rod-master/plugins
 echo -e "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-master/plugins.json
 
-mkdir /opt/stack4things/s4t-lightning-rod-master/schemas
+mkdir /opt/stack4things/s4t-lightning-rod-master/plugin_conf
 
 #Edit settings
 sed -i "s/\"device\":\"\"/\"device\":\"arduino_yun\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
