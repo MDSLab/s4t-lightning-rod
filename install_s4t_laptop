@@ -42,7 +42,9 @@ sed -i "s/\"latitude\":/\"latitude\":$2/g" /opt/stack4things/s4t-lightning-rod-m
 sed -i "s/\"longitude\":/\"longitude\":$3/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 sed -i "s/\"altitude\":/\"altitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 
-echo -e "\t Configurazione s4t-lightning-rod completata!"
+mv /opt/stack4things/s4t-lightning-rod-master/ /opt/stack4things/s4t-lightning-rod-laptop/
+
+echo "Configurazione s4t-lightning-rod completata!"
 
 
 ##### INIT SERVIZI AND REBOOT#####
