@@ -433,7 +433,8 @@ exports.restartAllActivePlugins = function (){
 		  
 		
 			  
-	}, 5000*i);  // end of setTimeout function	
+	}, 7000*i);  // end of setTimeout function	
+	
 	
       })(i);  // end of the function(i)	
       

@@ -109,14 +109,7 @@ if (typeof device !== 'undefined'){
                 //Calling the manage_WAMP_connection function that contains the logic 
                 //that has to be performed if I'm connected to the WAMP server
                 manage_WAMP_connection(session, details);
-		
-		// PLUGINS RESTART ALL -------------------------------------------------------------------------------
-		//This procedure restarts all plugins in "ON" status
-		var managePlugins = require('./manage-plugins');
-		//managePlugins.restartAllActivePlugins();
-		//----------------------------------------------------------------------------------------------------
-		
-		
+
 		
 		//----------------------------------------------------------------------------------------------------
 		// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
@@ -220,6 +213,13 @@ if (typeof device !== 'undefined'){
             var manageMeasure = require('./manage-measures');
             manageMeasure.restartAllActiveMeasures();
             //-----------------------------------------------------------------------------------------------------
+	    
+	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
+	    //This procedure restarts all plugins in "ON" status
+	    var managePlugins = require('./manage-plugins');
+	    //managePlugins.restartAllActivePlugins();
+	    //----------------------------------------------------------------------------------------------------
+		
 	    
 	    
         });
