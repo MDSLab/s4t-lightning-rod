@@ -11,9 +11,9 @@ nconf = require('nconf');
 nconf.file ({file: 'settings.json'});
 
 //main logging configuration                                                                
-log4js = require('log4js');          
-log4js.loadAppender('file');         
-log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log '));            
+log4js = require('log4js');
+log4js.loadAppender('file');
+log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));               
 
 //service logging configuration: "main"                                                  
 var logger = log4js.getLogger('main');  
@@ -109,7 +109,6 @@ if (typeof device !== 'undefined'){
                 //Calling the manage_WAMP_connection function that contains the logic 
                 //that has to be performed if I'm connected to the WAMP server
                 manage_WAMP_connection(session, details);
-
 		
 		//----------------------------------------------------------------------------------------------------
 		// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
@@ -213,14 +212,13 @@ if (typeof device !== 'undefined'){
             var manageMeasure = require('./manage-measures');
             manageMeasure.restartAllActiveMeasures();
             //-----------------------------------------------------------------------------------------------------
-	    
+
 	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
 	    //This procedure restarts all plugins in "ON" status
 	    var managePlugins = require('./manage-plugins');
 	    //managePlugins.restartAllActivePlugins();
 	    //----------------------------------------------------------------------------------------------------
-		
-	    
+			  
 	    
         });
         

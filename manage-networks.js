@@ -3,6 +3,7 @@ exports.manageNetworks = function(args){
     var spawn = require('child_process').spawn;
     
     switch(args[1]){
+      
         case 'add-to-network':
             
             var basePort = nconf.get('config:socat:client:port');
@@ -19,10 +20,13 @@ exports.manageNetworks = function(args){
             sClientElem.process.stdout.on('data', function (data) {
                 console.log('stdout: ' + data);
             });
+	    
             sClientElem.process.stderr.on('data', function (data) {
                 var textdata = 'stderr: ' + data;
                 console.log(textdata);
+		
                 if(textdata.indexOf("starting data transfer loop") > -1) {
+		  
                     spawn('ifconfig',['socattun'+args[9],'up']);
                     
                     var testing = spawn('ip',['link','add',args[8],'type','gretap','remote',args[3],'local',args[2]]);                 
@@ -36,7 +40,9 @@ exports.manageNetworks = function(args){
                     });
                     testing.on('close', function (code) {
                         console.log('create link process exited with code ' + code);
+			
                         if(code == 0) {
+			  
                             greDevices.push(args[8]);
                             var testing2 = spawn('ip',['addr','add',args[5]+'/'+args[7],'broadcast',args[6],'dev',args[8]]); 
                             testing2.stdout.on('add ip: ', function (data) { 
@@ -46,7 +52,9 @@ exports.manageNetworks = function(args){
                                 console.log('stderr: ' + data);
                             });
                             testing2.on('close', function (code) {
+			      
                                 console.log('add ip process exited with code ' + code); 
+				
                                 var testing3 = spawn('ip',['link','set',args[8],'up']);
                                 testing3.stdout.on('data', function (data) {
                                     console.log('set link up: ' + data);
@@ -62,6 +70,7 @@ exports.manageNetworks = function(args){
                     });
                 }
             });
+	    
             sClientElem.process.on('close', function (code) { //in case of disconnection, delete all interfaces
                 console.log('socat process exited with code ' + code);
             });
@@ -87,6 +96,8 @@ exports.manageNetworks = function(args){
                 console.log('child process exited with code ' + code);
             });                                                                                                                                                                                                                                                                                                                                   //simply waiting, that's bad, but how else ?
             break;
+	    
+	    
             case 'remove-from-network':
                 var position = findValue(socatClient,args[3],'key');
                 socatClient[position].process.kill('SIGINT');
@@ -95,6 +106,8 @@ exports.manageNetworks = function(args){
                 rtClient.splice(position,1);
                 spawn('ip',['link','del',args[2]]);
                 break;
+		
+		
             case 'update-board':
                 var testing = spawn('ip',['link','set',args[3],'down']);
                 testing.on('close', function (code) {
