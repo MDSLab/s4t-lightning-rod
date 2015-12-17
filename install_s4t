@@ -2,12 +2,36 @@
 
 #EXEC: ./install_s4t 14141414 38.2587055 15.5968229 17.75
 
+
+##### DELETE OLD INSTALLATION #####                                                                                                                                                                                                          
+if [ -d /opt/stack4things ]                                                                                                                                                                                                                  
+then                                                                                                                                                                                                                                         
+        echo -e "\n\tDelete previous Lightning-Rod installation...\n" 
+        rm -rf /opt/stack4things                                                                                                                                                                                                             
+fi
+
 ##### INSTALLAZIONE DIPENDENZE #####
 opkg update
 opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib socat ip -d mnt
 opkg install --force-depends kmod-tun kmod-gre -d mnt
 
 npm install -g log4js is-reachable when
+
+
+##### MAKE MODULES BE LOADABLE AT BOOTS #####                                                                                                                                                                                                
+cp /opt/lib/modules/3.3.8/tun.ko /lib/modules/3.3.8/tun.ko                                                                                                                                                                                   
+cp /opt/lib/modules/3.3.8/gre.ko /lib/modules/3.3.8/gre.ko                                                                                                                                                                                   
+cp /opt/lib/modules/3.3.8/ip_gre.ko /lib/modules/3.3.8/ip_gre.ko                                                                                                                                                                             
+cp /opt/lib/modules/3.3.8/ipv6.ko /lib/modules/3.3.8/ipv6.ko                                                                                                                                                                                 
+                                                                                                                                                                                                                                             
+cp /opt/etc/modules.d/20-ipv6 /opt/etc/modules.d/30-tun /opt/etc/modules.d/39-gre /etc/modules.d/                                                                                                                                            
+ln -s /etc/modules.d/20-ipv6 /etc/modules-boot.d/20-ipv6                                                                                                                                                                                     
+ln -s /etc/modules.d/30-tun /etc/modules-boot.d/30-tun                                                                                                                                                                                       
+ln -s /etc/modules.d/39-gre /etc/modules-boot.d/39-gre                                                                                                                                                                                       
+                                                                                                                                                                                                                                             
+                                                                                                                                                                                                                                             
+##### LINKING IP #####                                                                                                                                                                                                                       
+ln -s /opt/usr/sbin/ip /bin/ip 
 
 
 ##### DOWNLOAD SORGENTI #####         
@@ -36,7 +60,7 @@ sed -i "s/\"latitude\":/\"latitude\":$2/g" /opt/stack4things/s4t-lightning-rod-m
 sed -i "s/\"longitude\":/\"longitude\":$3/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 sed -i "s/\"altitude\":/\"altitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 
-echo -e "\t Configurazione s4t-lightning-rod completata!"
+echo -e "\t Lightning-Rod configuration completed!"
 
 
 ##### INIT SERVIZI AND REBOOT#####
@@ -47,10 +71,10 @@ touch /var/log/s4t-lightning-rod.log
 
 cp /opt/stack4things/s4t-lightning-rod-master/crontabs/root /etc/crontabs/
 /etc/init.d/cron start
-echo -e "\t Servizio s4t-lightning-rod abilitato!"
+echo -e "\t Lightning-Rod service enabled!"
 
 
-echo "Installazione completata riavvio della board"
+echo "Installation completed...board rebooting...bye!"
 sleep 2
 
 reboot

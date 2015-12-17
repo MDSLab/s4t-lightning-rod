@@ -1,3 +1,9 @@
+
+
+//service logging configuration: "manageNetworks"   
+var logger = log4js.getLogger('manageNetworks');
+
+
 exports.manageNetworks = function(args){
   
     var spawn = require('child_process').spawn;
@@ -14,56 +20,63 @@ exports.manageNetworks = function(args){
                 key: args[9],
                 process: spawn('socat', ['-d','-d','TCP-L:'+ (parseInt(basePort)+args[9]) +',bind=localhost,reuseaddr,forever,interval=10','TUN:'+args[2]+'/30,tun-name=socattun'+args[9]+',up'])
             }
+            logger.info('SOCAT COMMAND: socat -d -d TCP-L:'+ (parseInt(basePort)+args[9]) +',bind=localhost,reuseaddr,forever,interval=10 TUN:'+args[2]+'/30,tun-name=socattun'+args[9]+',up' );
             
             socatClient.push(sClientElem);
             
             sClientElem.process.stdout.on('data', function (data) {
-                console.log('stdout: ' + data);
+                logger.info('SOCAT - stdout: ' + data);
             });
 	    
             sClientElem.process.stderr.on('data', function (data) {
                 var textdata = 'stderr: ' + data;
-                console.log(textdata);
+                logger.info("SOCAT - "+textdata);
 		
                 if(textdata.indexOf("starting data transfer loop") > -1) {
 		  
                     spawn('ifconfig',['socattun'+args[9],'up']);
                     
-                    var testing = spawn('ip',['link','add',args[8],'type','gretap','remote',args[3],'local',args[2]]);                 
+                    var testing = spawn('ip',['link','add',args[8],'type','gretap','remote',args[3],'local',args[2]]);         
+		    logger.info('NETWORK COMMAND: ip link add ' + args[8] + ' type gretap remote '+ args[3] +' local '+ args[2]);
                     
                     testing.on('error',function(err){throw err});
                     testing.stdout.on('data', function (data) {
-                        console.log('create link: ' + data);
+                        logger.info('--> create link: ' + data);
                     });
                     testing.stderr.on('data', function (data) {
-                        console.log('create link: ' + data);
+                        logger.info('--> create link: ' + data);
                     });
                     testing.on('close', function (code) {
-                        console.log('create link process exited with code ' + code);
+                        logger.info('--> create link process exited with code ' + code);
 			
                         if(code == 0) {
 			  
                             greDevices.push(args[8]);
+			    
                             var testing2 = spawn('ip',['addr','add',args[5]+'/'+args[7],'broadcast',args[6],'dev',args[8]]); 
+			    logger.info('NETWORK COMMAND: ip link add ' + args[5]+'/'+args[7] + ' broadcast '+ args[6] +' dev '+ args[8]);
+			    
                             testing2.stdout.on('add ip: ', function (data) { 
-                                console.log('stdout: ' + data); 
+                                logger.info('--> stdout: ' + data); 
                             });
                             testing2.stderr.on('add ip: ', function (data) { 
-                                console.log('stderr: ' + data);
+                                logger.info('--> stderr: ' + data);
                             });
                             testing2.on('close', function (code) {
 			      
-                                console.log('add ip process exited with code ' + code); 
+                                logger.info('--> add ip process exited with code ' + code); 
 				
                                 var testing3 = spawn('ip',['link','set',args[8],'up']);
+				logger.info('NETWORK COMMAND: ip link set ' + args[8] + ' up');
+				
                                 testing3.stdout.on('data', function (data) {
-                                    console.log('set link up: ' + data);
+                                    logger.info('--> set link up: ' + data);
                                 });
                                 testing3.stderr.on('data', function (data) {
-                                    console.log('set link up: ' + data);
+                                    logger.info('--> set link up: ' + data);
                                 });
                                 testing3.on('close', function (code) {
-                                    console.log('set link up process exited with code ' + code);
+                                    logger.info('--> set link up process exited with code ' + code);
                                 });
                             });
                         }
@@ -72,28 +85,30 @@ exports.manageNetworks = function(args){
             });
 	    
             sClientElem.process.on('close', function (code) { //in case of disconnection, delete all interfaces
-                console.log('socat process exited with code ' + code);
+                logger.info('SOCAT - process exited with code ' + code);
             });
+
             
-            //DEBUG
-            console.log(rtpath);
-            
-            //var rtpath = "/opt/demo/node-lighthing-rod-develop/node_modules/node-reverse-wstunnel/bin/wstt.js";
             
             var rtClientElem = {
                 key: args[9],
                 process: spawn(rtpath, ['-r '+args[4]+':localhost:'+(parseInt(basePort)+args[9]),reverseS_url])
             }
             
+	    //DEBUG
+	    //var rtpath = "/opt/demo/node-lighthing-rod-develop/node_modules/node-reverse-wstunnel/bin/wstt.js";
+            logger.info("WSTT - " + rtpath + ' -r '+args[4]+':localhost:'+(parseInt(basePort)+args[9]),reverseS_url);
+            
+            
             rtClient.push(rtClientElem); 
             rtClientElem.stdout.on('data', function (data) {
-                console.log('stdout: ' + data);
+                logger.info('WSTT - stdout: ' + data);
             });
             rtClientElem.stderr.on('data', function (data) {
-                console.log('stderr: ' + data);
+                logger.info('WSTT - stderr: ' + data);
             });
             rtClientElem.on('close', function (code) {
-                console.log('child process exited with code ' + code);
+                logger.warn('WSTT - process exited with code ' + code);
             });                                                                                                                                                                                                                                                                                                                                   //simply waiting, that's bad, but how else ?
             break;
 	    
