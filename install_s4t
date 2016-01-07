@@ -5,7 +5,7 @@
 ##### INSTALLAZIONE DIPENDENZE #####
 opkg update
 opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib socat ip -d mnt
-opkg install --force-depends kmod-tun kmod-gre -d mnt
+opkg install --force-depends kmod-tun kmod-gre
 
 npm install -g log4js is-reachable when
 
@@ -32,6 +32,13 @@ mkdir /opt/stack4things/s4t-lightning-rod-master/plugin_conf
 #Edit settings
 sed -i "s/\"device\":\"\"/\"device\":\"arduino_yun\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 sed -i "s/\"code\":\"\"/\"code\":\"$1\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"resource_id\":\"\"/\"resource_id\":\"$2\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"url_wamp\":\"\"/\"url_wamp\":\"ws://$3\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"port_wamp\":\"\"/\"port_wamp\":\"8181\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"realm\":\"\"/\"realm\":\"s4t\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"url_reverse\":\"\"/\"url_reverse\":\"ws://$3\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"port_reverse\":\"\"/\"port_reverse\":\"8080\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+
 sed -i "s/\"latitude\":/\"latitude\":$2/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 sed -i "s/\"longitude\":/\"longitude\":$3/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
 sed -i "s/\"altitude\":/\"altitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json

@@ -11,9 +11,9 @@ nconf = require('nconf');
 nconf.file ({file: 'settings.json'});
 
 //main logging configuration                                                                
-log4js = require('log4js');          
-log4js.loadAppender('file');         
-log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));            
+log4js = require('log4js');
+log4js.loadAppender('file');
+log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));               
 
 //service logging configuration: "main"                                                  
 var logger = log4js.getLogger('main');  
@@ -57,10 +57,10 @@ if (typeof device !== 'undefined'){
 	    var wampIP = wampUrl.split("//")[1].split(":")[0];
 	    //logger.info("WAMP SERVER IP: "+wampIP);
     
-            //This function contains the logic 
-            //that has to be performed if I'm connected to the WAMP server
+            //This function contains the logic that has to be performed if I'm connected to the WAMP server
             function manage_WAMP_connection (session, details){
                 
+		
                 //Topic on which the board can send a message to be registered 
                 var connectionTopic = 'board.connection';
                 
@@ -92,9 +92,12 @@ if (typeof device !== 'undefined'){
                 //If I'm connected to the WAMP server I can receive plugins to be scheduled as RPCs
                 var managePlugins = require('./manage-plugins');
                 managePlugins.exportPluginCommands(session);
-                
-                
-                //Function to manage messages received on the command topic
+	
+		
+		
+
+
+
             }
             
             
@@ -105,6 +108,11 @@ if (typeof device !== 'undefined'){
                 logger.info('WAMP: Connected to realm '+ wampRealm);
                 logger.info('WAMP: Session ID: '+ session._id);
 		//logger.info('Connection details: '+ JSON.stringify(details));
+		
+		//NETWORKING INITIALIZATION
+		var manageNetworks = require('./manage-networks');
+		manageNetworks.exportNetworkCommands(session);
+
 		
                 //Calling the manage_WAMP_connection function that contains the logic 
                 //that has to be performed if I'm connected to the WAMP server
@@ -201,12 +209,7 @@ if (typeof device !== 'undefined'){
             //Opening the connection to the WAMP server
             logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
             wampConnection.open();
-            
-            // Here the connection should be established or an error should have been raised --------
-            
-            //---------------------------------------------------------------------------------------
-            
-            
+
             //MEASURES --------------------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
             var manageMeasure = require('./manage-measures');
@@ -216,25 +219,27 @@ if (typeof device !== 'undefined'){
 	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
 	    //This procedure restarts all plugins in "ON" status
 	    var managePlugins = require('./manage-plugins');
-	    managePlugins.restartAllActivePlugins();
+	    //managePlugins.restartAllActivePlugins();
 	    //----------------------------------------------------------------------------------------------------
-			  
+		
+
 	    
         });
-        
-        //Here I cannot connect to the board      
+         
       
     }
     
+    
+    
     function Main_Laptop(){
+      
       	//Opening the connection to the WAMP server
 	logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
 	wampConnection.open();
         
-        // Here the connection should be established or an error should have been raised --------
-        
-        //---------------------------------------------------------------------------------------
     }
+    
+    
 	    
     switch(device){
       
