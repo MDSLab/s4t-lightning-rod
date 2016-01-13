@@ -15,6 +15,7 @@ function readDigital(args){
 function writeDigital(args){
     try{
         board.digitalWrite(args[2],parseInt(args[3]));
+	logger.info("Set PIN "+args[2]+" to "+parseInt(args[3]))
         return 0;
     }catch(ex){
         return ex.message;
