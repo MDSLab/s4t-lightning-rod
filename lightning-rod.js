@@ -11,9 +11,9 @@ nconf = require('nconf');
 nconf.file ({file: 'settings.json'});
 
 //main logging configuration                                                                
-log4js = require('log4js');          
-log4js.loadAppender('file');         
-log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));            
+log4js = require('log4js');
+log4js.loadAppender('file');
+log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));               
 
 //service logging configuration: "main"                                                  
 var logger = log4js.getLogger('main');  
