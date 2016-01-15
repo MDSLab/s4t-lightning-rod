@@ -1,0 +1,7 @@
+#! /bin/sh
+REMOTEIP="10.0.0.1"
+LOCALIP=`ip addr list socat0 |grep "inet " |cut -d' ' -f6|cut -d/ -f1`
+IFACE="gre-lr0"
+
+ip link add $IFACE type gretap remote $REMOTEIP local $LOCALIP
+ip link set $IFACE up

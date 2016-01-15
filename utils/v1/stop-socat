@@ -1,8 +1,15 @@
 #! /bin/sh
-set -o verbose
+if [ "$#" -ne 1 ]; then
+    echo "stop-stocat PORT"
+    return 1
+fi
 
-PORT="5000"
+PORT=$1
+
+#PORT="5000"
 IFACE="soc"$PORT
+
+set -o verbose
 
 PID_SOCAT=$(ps www | grep socat | grep $IFACE | awk '{print $1}')
 PID_WSTT=$(ps www | grep wstt | grep $PORT | awk '{print $1}')
