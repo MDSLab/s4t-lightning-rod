@@ -33,6 +33,7 @@ var device = nconf.get('config:device');
 //for connection test
 var isReachable = require('is-reachable');
 var online = true;
+var active = true;
 
 
 //If the device has been specified
@@ -110,8 +111,11 @@ if (typeof device !== 'undefined'){
 		//logger.info('Connection details: '+ JSON.stringify(details));
 		
 		//NETWORKING INITIALIZATION
-		var manageNetworks = require('./manage-networks');
-		manageNetworks.exportNetworkCommands(session);
+		//if(active){
+		  var manageNetworks = require('./manage-networks');
+		  manageNetworks.exportNetworkCommands(session);
+		  //active = false;
+		//}
 
 		
                 //Calling the manage_WAMP_connection function that contains the logic 
@@ -134,6 +138,7 @@ if (typeof device !== 'undefined'){
 		setInterval(function(){
 		    
 		    isReachable(wampIP, function (err, reachable) {
+		      
 		      if(!reachable){
 			logger.warn("CONNECTION STATUS: "+reachable+ " - ERROR: "+err);
 			online=false;

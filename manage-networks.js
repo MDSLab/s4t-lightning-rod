@@ -28,18 +28,28 @@ exports.setSocatOnBoard = function (args, details){
   
   var d = Q.defer();
   
+  
+  //NEW-net
+  /*
+  var socatServer_ip = args[0];
+  var socatServer_port = args[1];
+  var socatBoard_ip = args[2];
+  */
   var board_id = args[0];
   var socatServer_ip = args[1];
   var socatServer_port = args[2];
   var socatBoard_ip = args[3];
   var bSocatNum = args[4];
   
-  
+  //NEW-net
+  //var board_id = nconf.get('config:board:code');
+  //var socatRes = board_id + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip
   var socatRes = board_id + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip +" - socat_index: "+bSocatNum
   logger.info("SOCAT PARAMETERS INJECTED: " + socatRes);
   
 
-  
+  //NEW-net
+  //exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip);
   exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip, bSocatNum);
   logger.info("initNetwork CALLED!");
 
@@ -62,7 +72,8 @@ exports.setSocatOnBoard = function (args, details){
 
 	    
 	    
-
+//NEW-net
+//exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
 exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip, bSocatNum){
 
   
@@ -76,10 +87,11 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip, 
             var rtpath = nconf.get('config:reverse:lib:bin');
             var reverseS_url = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
 	    
-	    
 	    var cp = require('child_process');
             var socat = cp.fork('./network-wrapper');
 	
+	    
+	    //NEW-net: CANCELLARE ARGS
 	    /*
 	    arg0 - board: 14144545
 	    arg1 - cmd: add-to-network
@@ -92,17 +104,17 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip, 
 	    arg8 - greTap: b6f013-141445
 	    arg9 - socatPort-parseInt(basePort): 0
 	    */
-	    
-	    
 	    var args = [boardCode, "add-to-network", "10.0.0.2", "10.0.0.1", "10000", "192.168.99.1", "192.168.99.255", "24", "b6f013-141445", "0"]
+
 	    
-	    
-	    //Network clean
-	    //spawn('ip',['link','del',args[8]]);
-	    //logger.info('NETWORK COMMAND: ip link del ' + args[8]);
-	    
-	    
-	    
+	    //NEW-net: CANCELLARE "socatClient" E "ARGS" ?????
+	    /*
+	    var input_message = {
+		"socatBoard_ip": socatBoard_ip,
+                "basePort": basePort,
+		"socatClient": socatClient
+            }
+	    */
 	    var input_message = {
                 "args": args,
 		"socatBoard_ip": socatBoard_ip,
@@ -132,6 +144,7 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip, 
 			  key: args[9],
 			  process: spawn(rtpath, ['-r '+ socatServer_port +':localhost:'+basePort, reverseS_url])
 		      }
+		      
 		      
 		      //DEBUG - rtpath = "/opt/demo/node-lighthing-rod-develop/node_modules/node-reverse-wstunnel/bin/wstt.js";
 		      logger.info("WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
@@ -178,6 +191,13 @@ exports.manageNetworks = function(args){
       
         case 'add-to-network':
 		    
+		  //NEW-net
+		  //ip link add link gre-lr0 name gre-lr0.<vlan> type vlan id <vlan> 
+		  //ip addr add <ip/mask> dev gre-lr0.<vlan> 
+		  //ip link set gre-lr0.<vlan> up
+		  //logger.info("VIRTIAL NET SUCCESSFULLY CREATED!");
+	  
+	  
 		  var testing = spawn('ip',['link','add',args[8],'type','gretap','remote',args[3],'local',args[2]]);         
 		  logger.info('NETWORK COMMAND: ip link add ' + args[8] + ' type gretap remote '+ args[3] +' local '+ args[2]);
 		  
@@ -252,27 +272,9 @@ exports.manageNetworks = function(args){
 	case 'remove-from-network':
 	  
 	    logger.info("REMOVING BOARD FROM SOCAT NETWORK...");
-	    
-	    /*
-	    logger.info("--> "+JSON.stringify(socatClient)+" - socatClient to kill: "+args[3]);
-	    
-	    var position = findValue(socatClient, args[3], 'key');
-	    
-	    logger.info("--> socatClient position selected: "+position);
-	   	   
-	    //Killing Socat
-	    logger.info("--> Killing socatClient...");
-	    process.kill(socatClient[position].process);
-	    //socatClient[position].process.kill('SIGINT');
-	    
-	    //Killing WSTT
-	    logger.info("--> Killing WSTT client...");
-	    rtClient[position].process.kill('SIGTERM');
-	    
-	    socatClient.splice(position,1);
-	    
-	    rtClient.splice(position,1);
-	    */
+    
+	    //NEW-net
+	    //ip link del gre-lr0.<vlan>
 	    
 	    var testing = spawn('ip',['link','del',args[2]]);
 	    
