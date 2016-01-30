@@ -669,7 +669,7 @@ exports.kill = function (args){
 		});
 	    }
 	    
-            return 'OK - plugin killed!';
+            return 'OK - Plugin killed!';
         }
         else{
                 logger.warn("Plugin is not running on this board!");

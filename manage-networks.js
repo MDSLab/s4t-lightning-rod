@@ -28,34 +28,47 @@ exports.setSocatOnBoard = function (args, details){
   
   var d = Q.defer();
   
+  logger.info("Active flag status: " + active);
   
-  //NEW-net
-  /*
-  var socatServer_ip = args[0];
-  var socatServer_port = args[1];
-  var socatBoard_ip = args[2];
-  */
-  var board_id = args[0];
-  var socatServer_ip = args[1];
-  var socatServer_port = args[2];
-  var socatBoard_ip = args[3];
-  var bSocatNum = args[4];
+  //if(active){
+  if(true){
+    
+    logger.warn("FIRST NETWORK INITIALIZATION:");
+    active = false;
+    
+    //NEW-net
+    var socatServer_ip = args[0];
+    var socatServer_port = args[1];
+    var socatBoard_ip = args[2];
+    
+    
+    //NEW-net
+    var socatRes = boardCode + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip
+    //var socatRes = board_id + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip +" - socat_index: "+bSocatNum
+    
+    logger.info("--> SOCAT PARAMETERS INJECTED: " + socatRes);
+    
+
+    //NEW-net
+    exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip);
+    //exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip, bSocatNum);
+    
+    logger.info("initNetwork CALLED!");
   
-  //NEW-net
-  //var board_id = nconf.get('config:board:code');
-  //var socatRes = board_id + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip
-  var socatRes = board_id + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip +" - socat_index: "+bSocatNum
-  logger.info("SOCAT PARAMETERS INJECTED: " + socatRes);
+    d.resolve(socatRes);
+  
+  
+  }else{
+    var socatRes = "Network of board " +boardCode + " already configured!"
+    d.resolve(socatRes);
+    logger.warn("NETWORK FAILURE RECOVERY --- NO NEED NETWORK INITIALIZATION!");
+  }
+  
   
 
-  //NEW-net
-  //exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip);
-  exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip, bSocatNum);
-  logger.info("initNetwork CALLED!");
-
 
   
-  d.resolve(socatRes);
+ 
 
   return d.promise;
 
@@ -73,56 +86,33 @@ exports.setSocatOnBoard = function (args, details){
 	    
 	    
 //NEW-net
-//exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
-exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip, bSocatNum){
+exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
+//exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip, bSocatNum){
 
   
-	    logger.info("Network initialization...");
+	    logger.info("--> Network initialization...");
 
 	    
 	    var spawn = require('child_process').spawn;
 	    
 	    var boardCode = nconf.get('config:board:code');
 	    var basePort = nconf.get('config:socat:client:port');
-            var rtpath = nconf.get('config:reverse:lib:bin');
+            var rtpath = nconf.get('config:reverse:lib:bin');			//DEBUG - rtpath = "/opt/demo/node-lighthing-rod-develop/node_modules/node-reverse-wstunnel/bin/wstt.js";
             var reverseS_url = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
 	    
 	    var cp = require('child_process');
             var socat = cp.fork('./network-wrapper');
 	
 	    
-	    //NEW-net: CANCELLARE ARGS
-	    /*
-	    arg0 - board: 14144545
-	    arg1 - cmd: add-to-network
-	    arg2 - socatIP: 10.0.0.2
-	    arg3 - socatServ: 10.0.0.1
-	    arg4 - socatPort: 10000
-	    arg5 - greIP: 192.168.99.1
-	    arg6 - greBC: 192.168.99.255
-	    arg7 - greMask: 24
-	    arg8 - greTap: b6f013-141445
-	    arg9 - socatPort-parseInt(basePort): 0
-	    */
-	    var args = [boardCode, "add-to-network", "10.0.0.2", "10.0.0.1", "10000", "192.168.99.1", "192.168.99.255", "24", "b6f013-141445", "0"]
-
 	    
-	    //NEW-net: CANCELLARE "socatClient" E "ARGS" ?????
-	    /*
+	    //NEW-net
 	    var input_message = {
 		"socatBoard_ip": socatBoard_ip,
                 "basePort": basePort,
-		"socatClient": socatClient
+		"socatServer_ip": socatServer_ip
             }
-	    */
-	    var input_message = {
-                "args": args,
-		"socatBoard_ip": socatBoard_ip,
-                "basePort": basePort,
-		"bSocatNum": bSocatNum,
-		"socatClient": socatClient
-            }
-            
+
+
             socat.send(input_message); 
 	    
 	    
@@ -133,31 +123,36 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip, 
 		
 		  if (msg.status === "alive"){
 
-		      
-		      socatClient.push(msg.sClientElem);
-		      logger.info("--> SOCAT PID PUSHED IN socatClient LIST: "+msg.sClientElem.process);
+		      //NEW-net
+		      //socatClient.push(msg.sClientElem);
+		      //logger.info("--> SOCAT PID PUSHED IN socatClient LIST: "+msg.sClientElem.process);
      
 		      // START WSTT ------------------------------------------------------------------------------------------------
 		      logger.info("WSTT activating...");
 		      
+		      /*
+		      //NEW-net: CANECLLARE IL VETTORE????
 		      var rtClientElem = {
-			  key: args[9],
+			  //NEW-net
+			  key: "0",
 			  process: spawn(rtpath, ['-r '+ socatServer_port +':localhost:'+basePort, reverseS_url])
 		      }
+		      rtClient.push(rtClientElem); 
+		      */
 		      
 		      
-		      //DEBUG - rtpath = "/opt/demo/node-lighthing-rod-develop/node_modules/node-reverse-wstunnel/bin/wstt.js";
+		      var wstt_proc = spawn(rtpath, ['-r '+ socatServer_port +':localhost:'+basePort, reverseS_url])
+		      
 		      logger.info("WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
 		      
-		      rtClient.push(rtClientElem); 
 		     
-		      rtClientElem.process.stdout.on('data', function (data) {
+		      wstt_proc.stdout.on('data', function (data) {
 			  logger.info('WSTT - stdout: ' + data);
 		      });
-		      rtClientElem.process.stderr.on('data', function (data) {
+		      wstt_proc.stderr.on('data', function (data) {
 			  logger.info('WSTT - stderr: ' + data);
 		      });
-		      rtClientElem.process.on('close', function (code) {
+		      wstt_proc.on('close', function (code) {
 			  logger.warn('WSTT - process exited with code ' + code);
 		      });  
 		     
@@ -191,67 +186,73 @@ exports.manageNetworks = function(args){
       
         case 'add-to-network':
 		    
+		  //INPUT PARAMETERS: args[0]: boardID args[1]:'add-to-network' args[2]:vlanID - args[3]:boardVlanIP - args[4]:vlanMask - args[5]:vlanName
 		  //NEW-net
+	  
+		  var vlanID = args[2];
+		  var boardVlanIP = args[3];
+		  var vlanMask = args[4];
+		  var vlanName = args[5];
+		  
+		  logger.info("ADDING BOARD TO VLAN "+vlanName+"...");
+		  
 		  //ip link add link gre-lr0 name gre-lr0.<vlan> type vlan id <vlan> 
-		  //ip addr add <ip/mask> dev gre-lr0.<vlan> 
-		  //ip link set gre-lr0.<vlan> up
-		  //logger.info("VIRTIAL NET SUCCESSFULLY CREATED!");
-	  
-	  
-		  var testing = spawn('ip',['link','add',args[8],'type','gretap','remote',args[3],'local',args[2]]);         
-		  logger.info('NETWORK COMMAND: ip link add ' + args[8] + ' type gretap remote '+ args[3] +' local '+ args[2]);
+		  var add_vlan_iface = spawn('ip',['link', 'add', 'link', 'gre-lr0', 'name', 'gre-lr0.'+vlanID, 'type', 'vlan' ,'id', vlanID]);         
+		  logger.info('NETWORK COMMAND: ip link add link gre-lr0 name gre-lr0.'+vlanID + ' type vlan id '+ vlanID),
 		  
-		  testing.on('error',function(err){
-		    logger.error('--> create link error: ' + data);
-		    throw err
+		  add_vlan_iface.stdout.on('data', function (data) {
+		      logger.info('--> stdout - add_vlan_iface: ' + data);
 		  });
-		  testing.stdout.on('data', function (data) {
-		      logger.info('--> stdout - create link: ' + data);
-		  });
-		  testing.stderr.on('data', function (data) {
-		      logger.info('--> stderr - create link: ' + data);
+		  add_vlan_iface.stderr.on('data', function (data) {
+		      logger.info('--> stderr - add_vlan_iface: ' + data);
 		  });
 		  
-		  testing.on('close', function (code) {
+		  add_vlan_iface.on('close', function (code) {
+
 		    
-		      //logger.info('--> create link process exited with code ' + code);
-		      
-		      if(code == 0) {
-			
-			  greDevices.push(args[8]);
+		    
+			  //ip addr add <ip/mask> dev gre-lr0.<vlan> 
+			  var add_vlan_ip = spawn('ip',['addr', 'add', boardVlanIP+'/'+vlanMask ,'dev','gre-lr0.'+vlanID]);         
+			  logger.info('NETWORK COMMAND: ip addr add '+boardVlanIP+'/'+vlanMask+' dev gre-lr0.'+vlanID);
 			  
-			  var testing2 = spawn('ip',['addr','add',args[5]+'/'+args[7],'broadcast',args[6],'dev',args[8]]); 
-			  logger.info('NETWORK COMMAND: ip link add ' + args[5]+'/'+args[7] + ' broadcast '+ args[6] +' dev '+ args[8]);
-			  
-			  
-			  testing2.stdout.on('add ip: ', function (data) { 
-			      logger.info('--> stdout: ' + data); 
+			  add_vlan_ip.stdout.on('data', function (data) {
+			      logger.info('--> stdout - add_vlan_ip: ' + data);
 			  });
-			  testing2.stderr.on('add ip: ', function (data) { 
-			      logger.info('--> stderr: ' + data);
+			  add_vlan_ip.stderr.on('data', function (data) {
+			      logger.info('--> stderr - add_vlan_ip: ' + data);
 			  });
-			  
-			  testing2.on('close', function (code) {
+			  add_vlan_ip.on('close', function (code) {
 			    
-			      //logger.info('--> add ip process exited with code ' + code); 
-			      
-			      var testing3 = spawn('ip',['link','set',args[8],'up']);
-			      logger.info('NETWORK COMMAND: ip link set ' + args[8] + ' up');
-			      
-			      testing3.stdout.on('data', function (data) {
-				  logger.info('--> set link up: ' + data);
-			      });
-			      testing3.stderr.on('data', function (data) {
-				  logger.info('--> set link up: ' + data);
-			      });
-			      testing3.on('close', function (code) {
-				  //logger.info('--> set link up process exited with code ' + code);
-				  logger.info("GRE TUNNEL SUCCESSFULLY ESTABLISHED!");
-			      });
-			      
+				//ip link set gre-lr0.<vlan> up
+				var greVlan_up = spawn('ip',['link','set','gre-lr0.'+vlanID,'up']); 
+				logger.info('GRE IFACE UP: ip link set gre-lr0.'+ vlanID+ ' up');
+				
+				greVlan_up.stdout.on('data', function (data) {
+				    logger.info('--> stdout - greVlan_up: ' + data);
+				});
+				greVlan_up.stderr.on('data', function (data) {
+				    logger.info('--> stderr - greVlan_up: ' + data);
+				});
+				greVlan_up.on('close', function (code) {
+				  
+				    logger.info("--> VLAN IFACE UP!");
+				    
+				    logger.info("BOARD SUCCESSFULLY ADDED TO VLAN: "+boardVlanIP+'/'+vlanMask);
+				    
+				    
+				});
+				
+				
+			    
 			  });
-			  
-		      }
+		  
+		  
+		  
+		    
+		    
+		    
+		    
+		    
 		  });
 		    
 
@@ -271,11 +272,38 @@ exports.manageNetworks = function(args){
 	    
 	case 'remove-from-network':
 	  
-	    logger.info("REMOVING BOARD FROM SOCAT NETWORK...");
-    
+	    //INPUT PARAMETERS: args[0]: boardID args[1]:'remove-from-network' args[2]:vlanID - args[3]:boardAddr - args[4]:vlanName
+	    var vlanID = args[2];
+	    var boardVlanIP = args[3];
+	    var vlanName = args[4];
+	    
+	    logger.info("REMOVING BOARD FROM VLAN "+vlanName+"...");
+	    
 	    //NEW-net
 	    //ip link del gre-lr0.<vlan>
+	    var del_greVlan = spawn('ip',['link','del','gre-lr0.'+vlanID]); 
+	    logger.info('DEL GRE IFACE: ip link del gre-lr0.'+ vlanID);
 	    
+	    del_greVlan.stdout.on('data', function (data) {
+		logger.info('--> stdout - del_greVlan: ' + data);
+	    });
+	    del_greVlan.stderr.on('data', function (data) {
+		logger.info('--> stderr - del_greVlan: ' + data);
+	    });
+	    del_greVlan.on('close', function (code) {
+	      
+		logger.info("--> VLAN IFACE DELETED!");
+		
+		logger.info("BOARD WITH IP "+boardVlanIP+" SUCCESSFULLY REMOVED FROM VLAN "+vlanName);
+		
+	    });
+    
+	    
+	    
+	    
+	    
+	    
+	    /*
 	    var testing = spawn('ip',['link','del',args[2]]);
 	    
 	    testing.stdout.on('data', function (data) {
@@ -288,10 +316,18 @@ exports.manageNetworks = function(args){
 		logger.info('--> NETWORK COMMAND: ip link del ' + args[2]);
 		logger.info("--> BOARD SUCCESSFULLY REMOVED FROM NETWORK!");
 	    });
+	    */
+	    
+	    
 	    
 	    break;
 	    
 	    
+	    
+	    
+	    
+	    
+	/*    
 	case 'disable-network':
 	    
 	    logger.info("REMOVING BOARD FROM SOCAT NETWORK...");
@@ -330,7 +366,7 @@ exports.manageNetworks = function(args){
 	    
 	    break;	    
 	    
-	    
+	*/    
 	    
 	    
 	    

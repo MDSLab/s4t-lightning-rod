@@ -1,30 +1,25 @@
 #! /bin/sh
-#COUNT [IP/MASK]
+#COUNT
+
+#BOARD
 
 if [ "$#" -eq 1 ]; then
-    COUNT=$1
-    IPTUN="10.0.0.$COUNT/24"
-elif [ "$#" -eq 2 ]; then
-    COUNT=$1
-    IPTUN=$2
+    COUNT=$(($1*2+1))
+    IPTUN="10.0.0.$COUNT/31"
 else
     echo "start-stocat REMOTECOUNT [IP/MASK]"
     exit 1
 fi
 
-if [ "$1" -eq 1 ]; then
-    echo "REMOTECOUNT cannot be 1"
-    exit 1
-fi
-
 LOCALPORT="20000"
-REMOTEPORT=`expr $COUNT + 10000`
+REMOTEPORT=$(($COUNT+10000-1))
 echo $REMOTEPORT
 
 TUNNAME="socat0"
 WSURL="ws://212.189.207.205:8080"
+echo $REMOTEPORT $IPTUN
 
-socat -d -d TCP-L:$LOCALPORT,bind=localhost,reuseaddr,forever,interval=10 TUN:$IPTUN,tun-type=tap,tun-name=$TUNNAME,iff-up &
+socat -d -d TCP-L:$LOCALPORT,bind=localhost,reuseaddr,forever,interval=10 TUN:$IPTUN,tun-name=$TUNNAME,iff-up &
 /opt/usr/lib/node_modules/node-reverse-wstunnel/bin/wstt.js -r $REMOTEPORT:localhost:$LOCALPORT $WSURL &
 
 ifconfig $TUNNAME

@@ -23,9 +23,9 @@ logger.info('Starting Lightning-rod...');
 logger.info('#############################');  
 
 servicesProcess = [];
-socatClient = [];
-rtClient = [];
-greDevices = [];
+//socatClient = [];
+//rtClient = [];
+//greDevices = [];
 
 //Reading information about the device from configuration file
 var device = nconf.get('config:device');
@@ -33,7 +33,10 @@ var device = nconf.get('config:device');
 //for connection test
 var isReachable = require('is-reachable');
 var online = true;
-var active = true;
+active = true;
+
+//Read the board code from the configuration file
+boardCode = nconf.get('config:board:code');
 
 
 //If the device has been specified
@@ -68,8 +71,7 @@ if (typeof device !== 'undefined'){
                 //Topic on which the board can listen for commands
                 var commandTopic = 'board.command';
                 
-                //Read the board code from the configuration file
-                var boardCode = nconf.get('config:board:code');
+
                 
                 //Registering the board to the Cloud by sending a message to the connection topic
                 logger.info('WAMP: Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
@@ -110,12 +112,9 @@ if (typeof device !== 'undefined'){
                 logger.info('WAMP: Session ID: '+ session._id);
 		//logger.info('Connection details: '+ JSON.stringify(details));
 		
-		//NETWORKING INITIALIZATION
-		//if(active){
-		  var manageNetworks = require('./manage-networks');
-		  manageNetworks.exportNetworkCommands(session);
-		  //active = false;
-		//}
+		//EXPORTING NETWORK COMMANDS 
+		var manageNetworks = require('./manage-networks');
+		manageNetworks.exportNetworkCommands(session);
 
 		
                 //Calling the manage_WAMP_connection function that contains the logic 
@@ -125,15 +124,6 @@ if (typeof device !== 'undefined'){
 		//----------------------------------------------------------------------------------------------------
 		// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
 		//----------------------------------------------------------------------------------------------------
-		/*
-                setInterval(function(){
-		  
-		  if(session.isOpen){
-		    session.publish('board.connection', ['alive']);
-		  }
-                    
-                }, 5000);
-		*/	
 		
 		setInterval(function(){
 		    
