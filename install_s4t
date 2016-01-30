@@ -13,9 +13,9 @@ fi
 ##### INSTALLAZIONE DIPENDENZE #####
 opkg update
 opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib socat ip -d mnt
-opkg install --force-depends kmod-tun kmod-gre -d mnt
+opkg install --force-depends kmod-tun kmod-gre
 
-npm install -g log4js is-reachable when
+npm install -g log4js is-reachable when q
 
 
 ##### MAKE MODULES BE LOADABLE AT BOOTS #####                                                                                                                                                                                                
