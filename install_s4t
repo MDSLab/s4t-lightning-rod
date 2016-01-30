@@ -1,6 +1,6 @@
 #!/bin/sh                                                                                                                                                    
 
-#EXEC: ./install_s4t 14141414 38.2587055 15.5968229 17.75
+#EXEC: ./install_s4t 14141414 38.111111 15.111111 15.0
 
 
 ##### DELETE OLD INSTALLATION #####                                                                                                                                                                                                          
@@ -49,7 +49,7 @@ cp /opt/stack4things/s4t-lightning-rod-master/measures.example.json /opt/stack4t
 
 #Edit plugins
 mkdir /opt/stack4things/s4t-lightning-rod-master/plugins
-echo -e "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-master/plugins.json
+#echo -e "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-master/plugins.json
 
 mkdir /opt/stack4things/s4t-lightning-rod-master/plugin_conf
 
