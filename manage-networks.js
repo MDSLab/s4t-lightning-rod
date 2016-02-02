@@ -272,10 +272,9 @@ exports.manageNetworks = function(args){
 	    
 	case 'remove-from-network':
 	  
-	    //INPUT PARAMETERS: args[0]: boardID args[1]:'remove-from-network' args[2]:vlanID - args[3]:boardAddr - args[4]:vlanName
+	    //INPUT PARAMETERS: args[0]: boardID args[1]:'remove-from-network' args[2]:vlanID - args[3]:vlanName
 	    var vlanID = args[2];
-	    var boardVlanIP = args[3];
-	    var vlanName = args[4];
+	    var vlanName = args[3];
 	    
 	    logger.info("REMOVING BOARD FROM VLAN "+vlanName+"...");
 	    
@@ -294,7 +293,7 @@ exports.manageNetworks = function(args){
 	      
 		logger.info("--> VLAN IFACE DELETED!");
 		
-		logger.info("BOARD WITH IP "+boardVlanIP+" SUCCESSFULLY REMOVED FROM VLAN "+vlanName);
+		logger.info("BOARD SUCCESSFULLY REMOVED FROM VLAN "+vlanName);
 		
 	    });
     
