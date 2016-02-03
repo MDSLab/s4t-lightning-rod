@@ -16,6 +16,7 @@ exports.exportNetworkCommands = function (session){
   logger.info('Exporting network commands to the Cloud');
   session.register(boardCode+'.command.rpc.network.setSocatOnBoard', exports.setSocatOnBoard);
   
+  
 }
 
 
