@@ -17,6 +17,8 @@ opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel 
 
 npm install -g log4js is-reachable when q
 
+ln -s /opt/usr/sbin/ip /bin/ip 
+
 
 ##### DOWNLOAD SORGENTI #####         
 mkdir /opt/stack4things/
