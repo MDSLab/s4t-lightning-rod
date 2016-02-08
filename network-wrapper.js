@@ -116,6 +116,12 @@ process.once('message', function(message) {
 			    
 			      logger.info("--> GRE IFACE UP!");
 			      logger.info('TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
+			      
+			      //SEND MESSAGE TO IOTRONIC
+			      process.send({ name: "socat", status: "complete" , logmsg: "tunnels configured"});
+			      
+			      			    
+			      
 			  });
 			  
 		      });

@@ -6,7 +6,7 @@ var logger = log4js.getLogger('manageNetworks');
 
 var Q = require("q");
 
-
+var session_wamp;
 //This function exports all the functions in the module as WAMP remote procedure calls
 exports.exportNetworkCommands = function (session){
     
@@ -15,8 +15,9 @@ exports.exportNetworkCommands = function (session){
   //Register all the module functions as WAMP RPCs    
   logger.info('Exporting network commands to the Cloud');
   session.register(boardCode+'.command.rpc.network.setSocatOnBoard', exports.setSocatOnBoard);
+  session_wamp = session;
   
-  
+
 }
 
 
@@ -159,6 +160,15 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
 		     
 		      //------------------------------------------------------------------------------------------------------------
 		      
+		  } else if (msg.status === "complete"){
+		    
+		    logger.info('--> send notification to IOTRONIC: '+ msg.status+ ' - '+ msg.logmsg);
+		    
+		    var boardCode = nconf.get('config:board:code');
+		    session_wamp.call('iotronic.rpc.command.result_network_board', [msg.logmsg, boardCode] ).then( function(result){
+			      logger.info('BOARD NETWORK RESULT FROM IOTRONIC: '+ result);
+		    });
+		    
 		  }
 		  
 	      }
@@ -297,26 +307,6 @@ exports.manageNetworks = function(args){
 		logger.info("BOARD SUCCESSFULLY REMOVED FROM VLAN "+vlanName);
 		
 	    });
-    
-	    
-	    
-	    
-	    
-	    
-	    /*
-	    var testing = spawn('ip',['link','del',args[2]]);
-	    
-	    testing.stdout.on('data', function (data) {
-		logger.info('--> del link stdout: ' + data);
-	    });
-	    testing.stderr.on('data', function (data) {
-		logger.info('--> del link stderr: ' + data);
-	    });
-	    testing.on('close', function (code) {
-		logger.info('--> NETWORK COMMAND: ip link del ' + args[2]);
-		logger.info("--> BOARD SUCCESSFULLY REMOVED FROM NETWORK!");
-	    });
-	    */
 	    
 	    
 	    
