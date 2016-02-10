@@ -15,11 +15,11 @@ exports.main = function (arguments, callback){
 
     board.connect(function() {
     
-	var ADCres = 1023.0;
-	var Beta = 3950;		 
-	var Kelvin = 273.15;	  
-	var Rb = 10000;		       
-	var Ginf = 120.6685;	   
+	    var ADCres = 1023.0;
+	    var Beta = 3950;		 
+	    var Kelvin = 273.15;	  
+	    var Rb = 10000;		       
+	    var Ginf = 120.6685;	   
 	  
 	    var record = [];
 	    var sensor = board.analogRead(pin);

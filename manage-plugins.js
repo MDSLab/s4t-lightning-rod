@@ -76,8 +76,11 @@ exports.call = function (args, details){
     
     
     
-    var when = require('when');
-    var d = when.defer();
+    //var when = require('when');
+    //var d = when.defer();
+    
+    var Q = require("q");
+    var d = Q.defer();
     
     
     

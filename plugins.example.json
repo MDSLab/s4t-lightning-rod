@@ -1,11 +1,5 @@
 {
-    "plugins":{
-        
-        "my_plugin_1":{
-                "status":           "off",
-                },
-        "my_plugin_2":{
-                "status":           "off",
-                }
-    }
+	"plugins":{
+
+	}
 }
