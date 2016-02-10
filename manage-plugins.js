@@ -9,61 +9,6 @@
 var logger = log4js.getLogger('managePlugins');
 
 
-/*
-exports.call_sync = function (args, kwargs, details){
-  
-    var when = require('when');
-    var synco="rrr";
-
-    test_sync(args, function(err, result){
-	logger.info("LOG: "+result);
-	synco = result;
-    });
-
-    var n = 1;
-
-    var interval_id = null;
-
-    if (details.progress) {
-	var i = 0;
-	details.progress([i]);
-	i += 1;
-	interval_id = setInterval(function () {
-	  if (i < n) {
-	      details.progress([i]);
-	      i += 1;
-	  } else {
-	      clearInterval(interval_id);
-	  }
-	}, 1000);
-    }
-
-    logger.info("LOG: "+ n);
-    var d = when.defer();
-
-    setTimeout(function () {
-	d.resolve(synco);
-    }, 7000 * n);
-    
-    return d.promise;
-    
-    
-}
-
-function test_sync(args, callback){    
-   somma_sync(args, function(err, result){
-	  setTimeout(function(args) {   results="ciaooooooo"+result;     callback("OK", results);  }, 5000);
-    });	    
-	    
-}  
-
-function somma_sync(args, callback2){  
-  var a=1; var b=2;
-  var c=a+b;
-  callback2("OK", c);
-}
-*/
-
 
 
 //This function executes a single call
