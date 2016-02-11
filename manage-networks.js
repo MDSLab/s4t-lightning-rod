@@ -166,7 +166,7 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
 		    
 		    var boardCode = nconf.get('config:board:code');
 		    session_wamp.call('iotronic.rpc.command.result_network_board', [msg.logmsg, boardCode] ).then( function(result){
-			      logger.info('BOARD NETWORK RESULT FROM IOTRONIC: '+ result);
+			      logger.info('--> response from IOTRONIC: '+ result);
 		    });
 		    
 		  }
