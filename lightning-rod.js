@@ -23,9 +23,6 @@ logger.info('Starting Lightning-rod...');
 logger.info('#############################');  
 
 servicesProcess = [];
-//socatClient = [];
-//rtClient = [];
-//greDevices = [];
 
 //Reading information about the device from configuration file
 var device = nconf.get('config:device');
@@ -41,12 +38,10 @@ boardCode = nconf.get('config:board:code');
 
 //If the device has been specified
 if (typeof device !== 'undefined'){
-    
+
     logger.info('The device is ' + device);
     
-    
-    
-    
+
     //WAMP --------------------------------------------------------------------------------------------------------------------------------------------
     
 	    var autobahn = require('autobahn');
