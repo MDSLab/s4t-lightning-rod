@@ -1,0 +1,19 @@
+#! /bin/sh
+
+#BOARD
+
+if [ "$#" -ne 1 ]; then
+    echo "create-gre-tunnel COUNT"
+    exit 1
+fi
+
+COUNT=$(($1*2))
+REMOTEIP="10.0.0.$COUNT"
+
+LOCALIP=`ip addr list socat0 |grep "inet " |cut -d' ' -f6|cut -d/ -f1`
+IFACE="gre-lr0"
+
+echo $REMOTEIP $LOCALIP
+
+ip link add $IFACE type gretap remote $REMOTEIP local $LOCALIP
+ip link set $IFACE up

@@ -5,7 +5,11 @@ var logger = log4js.getLogger('manageCommands');
 //This function is called when a message is received on the command topic 
 exports.onCommand = function (args){
     
+<<<<<<< HEAD
     logger.info('L-R COMMAND - Received message on command topic');
+=======
+    //logger.info('L-R COMMAND - Received message on command topic');
+>>>>>>> net-dev-vlans
     
     //Read the board code in the configuration file
     var boardCode = nconf.get('config:board:code');

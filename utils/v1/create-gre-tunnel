@@ -1,0 +1,22 @@
+#! /bin/sh
+
+if [ "$#" -ne 4 ]; then
+    echo "create-gre-tunnel REMOTEIP LOCALIP IFACE VIP/MASK"
+    return 1
+fi
+
+IFACE=$3
+REMOTEIP=$1
+LOCALIP=$2
+VIP=$4
+
+#IFACE="bnetwork-141422"
+#REMOTEIP="10.0.0.5"
+#LOCALIP="10.0.0.6"
+#VIP="192.168.99.2/24"
+
+set -o verbose
+
+ip link add $IFACE type gretap remote $REMOTEIP local $LOCALIP
+ip addr add $VIP dev $IFACE
+ip link set $IFACE up

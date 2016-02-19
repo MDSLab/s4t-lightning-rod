@@ -1,9 +1,8 @@
-exports.main = function (arguments){
+exports.main = function (arguments, callback){
     
-    /* {"m_authid" : "22c5cfa7-9dea-4dd9-9f9d-eedf296852ae", "m_resourceid" : "a1d59ee7-8098-41ce-bd3a-ddafd8046104", "pin" : "A0", "timer" : "5000", "autostart":"false"} */
+    /* {"m_authid" : "22c5cfa7-9dea-4dd9-9f9d-eedf296852ae", "m_resourceid" : "a1d59ee7-8098-41ce-bd3a-ddafd8046104", "pin" : "A0", "autostart":"false"} */
     
     var pin = arguments.pin;
-    var timer = arguments.timer;
     var m_authid = arguments.m_authid;
     var m_resourceid = arguments.m_resourceid;
     
@@ -16,13 +15,11 @@ exports.main = function (arguments){
 
     board.connect(function() {
     
-	var ADCres = 1023.0;
-	var Beta = 3950;		 
-	var Kelvin = 273.15;	  
-	var Rb = 10000;		       
-	var Ginf = 120.6685;	   
-	
-	setInterval(function(){
+	    var ADCres = 1023.0;
+	    var Beta = 3950;		 
+	    var Kelvin = 273.15;	  
+	    var Rb = 10000;		       
+	    var Ginf = 120.6685;	   
 	  
 	    var record = [];
 	    var sensor = board.analogRead(pin);
@@ -41,14 +38,13 @@ exports.main = function (arguments){
 		    
 	    api.sendToCKAN(m_authid, m_resourceid, record, function(payloadJSON){
 	
+		results="Temperature " + temp + " °C sent to CKAN\n\n";
 		console.log("PAYLOAD:\n" + payloadJSON);
-		console.log("Temperature " + temp + " °C sent to CKAN\n\n");
+		console.log(results);
+		callback("OK", results);
 	
 	    });
 
-	    
-	    
-	  },timer);
 	
     });
     

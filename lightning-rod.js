@@ -23,9 +23,6 @@ logger.info('Starting Lightning-rod...');
 logger.info('#############################');  
 
 servicesProcess = [];
-socatClient = [];
-rtClient = [];
-greDevices = [];
 
 //Reading information about the device from configuration file
 var device = nconf.get('config:device');
@@ -33,16 +30,18 @@ var device = nconf.get('config:device');
 //for connection test
 var isReachable = require('is-reachable');
 var online = true;
+active = true;
+
+//Read the board code from the configuration file
+boardCode = nconf.get('config:board:code');
 
 
 //If the device has been specified
 if (typeof device !== 'undefined'){
-    
+
     logger.info('The device is ' + device);
     
-    
-    
-    
+
     //WAMP --------------------------------------------------------------------------------------------------------------------------------------------
     
 	    var autobahn = require('autobahn');
@@ -57,18 +56,17 @@ if (typeof device !== 'undefined'){
 	    var wampIP = wampUrl.split("//")[1].split(":")[0];
 	    //logger.info("WAMP SERVER IP: "+wampIP);
     
-            //This function contains the logic 
-            //that has to be performed if I'm connected to the WAMP server
+            //This function contains the logic that has to be performed if I'm connected to the WAMP server
             function manage_WAMP_connection (session, details){
                 
+		
                 //Topic on which the board can send a message to be registered 
                 var connectionTopic = 'board.connection';
                 
                 //Topic on which the board can listen for commands
                 var commandTopic = 'board.command';
                 
-                //Read the board code from the configuration file
-                var boardCode = nconf.get('config:board:code');
+
                 
                 //Registering the board to the Cloud by sending a message to the connection topic
                 logger.info('WAMP: Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
@@ -92,9 +90,12 @@ if (typeof device !== 'undefined'){
                 //If I'm connected to the WAMP server I can receive plugins to be scheduled as RPCs
                 var managePlugins = require('./manage-plugins');
                 managePlugins.exportPluginCommands(session);
-                
-                
-                //Function to manage messages received on the command topic
+	
+		
+		
+
+
+
             }
             
             
@@ -106,6 +107,11 @@ if (typeof device !== 'undefined'){
                 logger.info('WAMP: Session ID: '+ session._id);
 		//logger.info('Connection details: '+ JSON.stringify(details));
 		
+		//EXPORTING NETWORK COMMANDS 
+		var manageNetworks = require('./manage-networks');
+		manageNetworks.exportNetworkCommands(session);
+
+		
                 //Calling the manage_WAMP_connection function that contains the logic 
                 //that has to be performed if I'm connected to the WAMP server
                 manage_WAMP_connection(session, details);
@@ -113,19 +119,11 @@ if (typeof device !== 'undefined'){
 		//----------------------------------------------------------------------------------------------------
 		// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
 		//----------------------------------------------------------------------------------------------------
-		/*
-                setInterval(function(){
-		  
-		  if(session.isOpen){
-		    session.publish('board.connection', ['alive']);
-		  }
-                    
-                }, 5000);
-		*/	
 		
 		setInterval(function(){
 		    
 		    isReachable(wampIP, function (err, reachable) {
+		      
 		      if(!reachable){
 			logger.warn("CONNECTION STATUS: "+reachable+ " - ERROR: "+err);
 			online=false;
@@ -201,12 +199,7 @@ if (typeof device !== 'undefined'){
             //Opening the connection to the WAMP server
             logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
             wampConnection.open();
-            
-            // Here the connection should be established or an error should have been raised --------
-            
-            //---------------------------------------------------------------------------------------
-            
-            
+
             //MEASURES --------------------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
             var manageMeasure = require('./manage-measures');
@@ -216,25 +209,27 @@ if (typeof device !== 'undefined'){
 	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
 	    //This procedure restarts all plugins in "ON" status
 	    var managePlugins = require('./manage-plugins');
-	    managePlugins.restartAllActivePlugins();
+	    //managePlugins.restartAllActivePlugins();
 	    //----------------------------------------------------------------------------------------------------
-			  
+		
+
 	    
         });
-        
-        //Here I cannot connect to the board      
+         
       
     }
     
+    
+    
     function Main_Laptop(){
+      
       	//Opening the connection to the WAMP server
 	logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
 	wampConnection.open();
         
-        // Here the connection should be established or an error should have been raised --------
-        
-        //---------------------------------------------------------------------------------------
     }
+    
+    
 	    
     switch(device){
       

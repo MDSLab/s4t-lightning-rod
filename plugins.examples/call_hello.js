@@ -1,6 +1,8 @@
 exports.main = function (arguments, callback){ 
   
-  console.log('PLUGIN ALIVE!'); 
-  callback("OK", 'PLUGIN ALIVE!');
+  var result = 'PLUGIN ALIVE!';
+  console.log(result); 
+  callback("OK", result);
+
   
 }
