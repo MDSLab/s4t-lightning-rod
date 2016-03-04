@@ -13,6 +13,20 @@ exports.getPosition = function (){
     return position;
 }
 
+exports.getLocalTime = function (){
+
+	var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+	var localISOTime = (new Date(Date.now() - tzoffset)).toISOString();
+	
+	return localISOTime
+
+}
+
+exports.getUtcTime = function (){
+
+	return new Date().toISOString()
+
+}
 
 exports.sendToCKAN = function (m_authid, m_resourceid, record, callback){
   
