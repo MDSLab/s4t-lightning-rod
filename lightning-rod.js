@@ -27,13 +27,23 @@ servicesProcess = [];
 //Reading information about the device from configuration file
 var device = nconf.get('config:device');
 
-//for connection test
+//Read the board code from the configuration file
+boardCode = nconf.get('config:board:code');
+
+// TO connection health test (check the connection to the WAMP server)
 var isReachable = require('is-reachable');
 var online = true;
 active = true;
 
-//Read the board code from the configuration file
-boardCode = nconf.get('config:board:code');
+
+
+pinsManager = require('./manage-pins'); //managePins
+driversManager = require("./manage-drivers");
+pluginsManager = require('./manage-plugins'); //managePlugins
+networksManager = require('./manage-networks'); //manageNetworks
+commandsManager = require('./manage-commands'); //manageCommands
+//measuresManager = require('./manage-measures'); //manageMeasures
+
 
 
 //If the device has been specified
@@ -74,23 +84,25 @@ if (typeof device !== 'undefined'){
                 
                 //Subscribing to the command topic to receive messages for asyncronous operation to be performed
                 //Maybe everything can be implemented as RPCs
-                //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
+                //Right now the onCommand method of the commandsManager object is invoked as soon as a message is received on the topic
                 logger.info('WAMP: Registering to command topic ' + commandTopic);
-                var manageCommands = require('./manage-commands');
-                session.subscribe(commandTopic, manageCommands.onCommand);
+                //var commandsManager = require('./manage-commands');
+                session.subscribe(commandTopic, commandsManager.onCommand);
                 
                 //If I'm connected to the WAMP server I can export my pins on the Cloud as RPCs
-                var managePins = require('./manage-pins');
-                managePins.exportPins(session);
+                //var pinsManager = require('./manage-pins');
+                pinsManager.exportPins(session);
                 
                 //If I'm connected to the WAMP server I can receive measures to be scheduled as RPCs
-                var manageMeasures = require('./manage-measures');
-                manageMeasures.exportMeasureCommands(session);
+                //var measuresManager = require('./manage-measures');
+                //measuresManager.exportMeasureCommands(session);
                 
                 //If I'm connected to the WAMP server I can receive plugins to be scheduled as RPCs
-                var managePlugins = require('./manage-plugins');
-                managePlugins.exportPluginCommands(session);
+                //var managePlugins = require('./manage-plugins');
+                pluginsManager.exportPluginCommands(session);
 	
+		//If I'm connected to the WAMP server I can receive RPC command requests to manage drivers
+		driversManager.exportDriverCommands(session);
 		
 		
 
@@ -108,8 +120,8 @@ if (typeof device !== 'undefined'){
 		//logger.info('Connection details: '+ JSON.stringify(details));
 		
 		//EXPORTING NETWORK COMMANDS 
-		var manageNetworks = require('./manage-networks');
-		manageNetworks.exportNetworkCommands(session);
+		//var networksManager = require('./manage-networks');
+		networksManager.exportNetworkCommands(session);
 
 		
                 //Calling the manage_WAMP_connection function that contains the logic 
@@ -200,16 +212,21 @@ if (typeof device !== 'undefined'){
             logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
             wampConnection.open();
 
-            //MEASURES --------------------------------------------------------------------------------------------
+            //MEASURES MANAGER -----------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
-            var manageMeasure = require('./manage-measures');
-            manageMeasure.restartAllActiveMeasures();
-            //-----------------------------------------------------------------------------------------------------
+            //var manageMeasure = require('./manage-measures');
+            //manageMeasure.restartAllActiveMeasures();
+            //----------------------------------------------------------------------------------------------------
 
-	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
+	    // DRIVERS MANAGER -----------------------------------------------------------------------------------
+	    var driversManager = require("./manage-drivers");
+	    //driversManager.mountAllEnabledDrivers();
+	    //----------------------------------------------------------------------------------------------------	    
+	    
+	    // PLUGINS MANAGER -----------------------------------------------------------------------------------
 	    //This procedure restarts all plugins in "ON" status
-	    var managePlugins = require('./manage-plugins');
-	    managePlugins.restartAllActivePlugins();
+	    var pluginsManager = require('./manage-plugins');
+	    //pluginsManager.restartAllActivePlugins();
 	    //----------------------------------------------------------------------------------------------------
 		
 

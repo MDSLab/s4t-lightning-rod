@@ -13,9 +13,9 @@ exports.exportNetworkCommands = function (session){
   var boardCode = nconf.get('config:board:code');
   
   //Register all the module functions as WAMP RPCs    
-  logger.info('Exporting network commands to the Cloud');
   session.register(boardCode+'.command.rpc.network.setSocatOnBoard', exports.setSocatOnBoard);
   session_wamp = session;
+  logger.info('[WAMP-EXPORTS] Network commands exported to the cloud!')
   
 
 }

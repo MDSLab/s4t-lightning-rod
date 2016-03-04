@@ -703,9 +703,6 @@ exports.exportPluginCommands = function (session){
     //Read the board code in the configuration file
     var boardCode = nconf.get('config:board:code');
     
-    logger.info('Exporting plugin commands to the Cloud');
-    //console.log('Exporting plugin commands to the Cloud');
-    
     //Register all the module functions as WAMP RPCs
     //session.register(boardCode+'.command.rpc.plugin.call_sync', exports.call_sync);
     session.register(boardCode+'.command.rpc.plugin.run', exports.run);
@@ -713,5 +710,7 @@ exports.exportPluginCommands = function (session){
     session.register(boardCode+'.command.rpc.injectplugin', exports.injectPlugin);
     session.register(boardCode+'.command.rpc.restartAllActivePlugins', exports.restartAllActivePlugins);
     session.register(boardCode+'.command.rpc.plugin.call', exports.call);
+    
+    logger.info('[WAMP-EXPORTS] Plugin commands exported to the cloud!')
 }
 
