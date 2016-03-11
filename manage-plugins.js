@@ -8,7 +8,8 @@
 //service logging configuration: "managePlugins"   
 var logger = log4js.getLogger('managePlugins');
 
-
+var fs = require("fs");
+var Q = require("q");
 
 
 //This function executes a single call
@@ -697,6 +698,119 @@ exports.injectPlugin = function(args){
 }
 
 
+
+
+
+
+
+exports.removePlugin = function(args){
+    
+    // Parsing the input arguments
+    plugin_name = String(args[0]);
+    
+    logger.info("Called RPC with plugin_name = " + plugin_name);
+    
+    var pluginFileName = './plugins/' + plugin_name + '.js';
+    var pluginConfFileName = './plugin_conf/'+plugin_name+'.json';
+    var jsonPluginsFileName = './plugins.json';
+    
+    var d = Q.defer();
+
+    fs.exists(pluginFileName, function(exists) {
+      
+      if(exists) {
+	
+	  logger.info('--> File '+pluginFileName+' exists. Deleting now ...');
+	  
+	  fs.unlink(pluginFileName, function(err) {
+	    
+		if(err) {
+		      response = "--> Plugin file removing FAILED: "+err;
+		      logger.error(response);
+		      d.resolve(response);
+		      
+		}
+				
+	  });
+	
+      } else {
+	  response = "Plugin "+pluginFileName+" not found!"
+	  logger.warn(response);
+      }
+      
+      
+      logger.info('--> Plugin data cleaning...');
+		    
+      var pluginsConf = JSON.parse(fs.readFileSync(jsonPluginsFileName, 'utf8'));
+
+      if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
+	
+	  pluginsConf.plugins[plugin_name]=null;
+	  delete pluginsConf.plugins[plugin_name];
+	  logger.info("--> Plugin node successfully removed from plugins.json!" );
+	  
+	  fs.writeFile(jsonPluginsFileName, JSON.stringify(pluginsConf, null, 4), function(err) {
+	      if(err) {
+		  response = "--> plugin.json file updating FAILED: "+err;
+		  logger.error(response);
+		  d.resolve(response);
+		  
+	      } else {
+		  logger.info("--> plugins.json file updated!");
+		  
+		  fs.exists(pluginConfFileName, function(exists) {
+
+			if(exists) {
+			    
+			    fs.unlink(pluginConfFileName, function (err) {
+			      if (err){
+				  response = "--> "+pluginConfFileName+" file deleting FAILED: "+err;
+				  logger.warn(response);
+				  d.resolve(response);				    
+			      }else{
+				  logger.info("--> "+pluginConfFileName+" file successfully deleted!");
+				  response = plugin_name+" completely removed from board!";
+				  logger.info(response);
+				  d.resolve(response);	
+			      }
+			    });
+			    
+			}else{
+			    logger.warn("--> "+pluginConfFileName+" file does not exist!");
+			    response = plugin_name+" completely removed from board!";
+			    logger.info(response);
+			    d.resolve(response);						
+			}
+			
+		  });
+		  
+	      }
+	  });	
+
+      }else{
+	  logger.warn("--> plugins.json already clean!");
+	  response = plugin_name+" completely removed from board!";
+	  logger.info(response);
+	  d.resolve(response);		      
+      }
+		
+      
+      
+    });    
+ 
+
+    return d.promise;
+
+    
+}
+
+
+
+
+
+
+
+
 //This function exports all the functions in the module as WAMP remote procedure calls
 exports.exportPluginCommands = function (session){
     
@@ -713,5 +827,6 @@ exports.exportPluginCommands = function (session){
     session.register(boardCode+'.command.rpc.injectplugin', exports.injectPlugin);
     session.register(boardCode+'.command.rpc.restartAllActivePlugins', exports.restartAllActivePlugins);
     session.register(boardCode+'.command.rpc.plugin.call', exports.call);
+    session.register(boardCode+'.command.rpc.removeplugin', exports.removePlugin);
 }
 
