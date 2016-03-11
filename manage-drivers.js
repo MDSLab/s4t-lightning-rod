@@ -298,12 +298,9 @@ function LoadDriver(driver_name, mountpoint, callback){
 }
 
 
-//This function injects a driver
-exports.injectDriver = function (args, details){
-    
-   
 
-}
+
+
 
 //This function mounts a driver
 exports.mountDriver = function (args, details){
@@ -408,6 +405,106 @@ exports.unmountDriver = function (args, details){
 
 }
 
+
+
+
+
+
+//This function injects a driver
+exports.injectDriver = function (args, details){
+
+    // Parsing the input arguments
+    var driver_name = String(args[0]);
+    var driver_code = String(args[1]);
+    var driver_schema = String(args[2]);
+    var autostart = String(args[3]);  // The autostart parameter is used to set the boot execution configuration of the driver.
+    
+    var fs = require("fs");
+    var Q = require("q");
+    var d = Q.defer();
+    
+    var rpc_result = "";
+    
+    
+    
+    // Writing the driver's files (code and json schema)
+    var driver_folder = './drivers/'+driver_name;
+    var driver_file_name = driver_folder+'/' + driver_name + '.js';  
+    var driver_schema_name = driver_folder+'/' + driver_name + '.json'; 
+    
+    // Check driver folder
+    if ( fs.existsSync(driver_folder) === false ){
+      
+	logger.info("Called RPC injectDriver with driver_name = " + driver_name + ", autostart = " + autostart + ", driver_code = " + driver_code + ", driver_schema = " + driver_schema);
+      
+	// driver folder creation
+	fs.mkdir(driver_folder, function() {
+	  
+	    // driver file creation
+	    fs.writeFile(driver_file_name, driver_code, function(err) {
+	      
+		if(err) {
+		  
+		    rpc_result = 'Error writing '+ driver_file_name +' file: ' + err;
+		    logger.error(rpc_result);
+		    
+		    d.resolve(rpc_result);
+		    //return rpc_result;
+		    
+		} else {
+		  
+		  
+		  // driver schema file creation
+		  fs.writeFile(driver_schema_name, driver_schema, function(err) {
+	      
+		      if(err) {
+			
+			  rpc_result = 'Error writing '+ driver_schema +' file: ' + err;
+			  logger.error(rpc_result);
+			  
+			  d.resolve(rpc_result);
+			  //return rpc_result;
+			  
+		      } else {
+			
+			
+			  rpc_result = "Driver " + driver_name + " injected successfully!"
+			  logger.info(rpc_result);
+			  
+			  d.resolve(rpc_result);
+			  
+		      }
+		  });      
+		  
+		    
+		}
+	    });      
+
+	  
+	});
+    
+    } else{
+      
+	rpc_result = "ERROR - "+driver_name+" driver's files already injected! - Remove the previous driver installation!";
+	logger.error(rpc_result);
+	
+	d.resolve(rpc_result);      
+      
+    }
+
+    
+    return d.promise; //return "Plugin injected successfully!"; 
+    
+   
+
+}
+
+
+
+
+
+
+
 //This function mounts all enabled drivers after a crash of Lightning-rod or a reboot of the board.
 exports.mountAllEnabledDrivers = function (){
 }
@@ -418,13 +515,12 @@ exports.exportDriverCommands = function (session){
     //Read the board code in the configuration file
     var boardCode = nconf.get('config:board:code');
     
-    
-    
     //Register all the module functions as WAMP RPCs
     session.register('s4t.'+boardCode+'.driver.mountDriver', exports.mountDriver);
     session.register('s4t.'+boardCode+'.driver.unmountDriver', exports.unmountDriver); 
+    session.register('s4t.'+boardCode+'.driver.injectDriver', exports.injectDriver);
+    
     /*
-    session.register(boardCode+'.command.rpc.injectDriver', exports.injectDriver);
     session.register(boardCode+'.command.rpc.mountAllEnabledDrivers', exports.mountAllEnabledDrivers);
     */
     
