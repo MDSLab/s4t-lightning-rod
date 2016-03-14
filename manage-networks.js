@@ -35,8 +35,8 @@ exports.setSocatOnBoard = function (args, details){
   //if(active){
   if(true){
     
-    logger.warn("FIRST NETWORK INITIALIZATION:");
-    active = false;
+    //logger.warn("FIRST NETWORK INITIALIZATION:");
+    //active = false;
     
     //NEW-net
     var socatServer_ip = args[0];

@@ -10,6 +10,8 @@
 nconf = require('nconf');
 nconf.file ({file: 'settings.json'});
 
+var fs = require("fs");
+
 //main logging configuration                                                                
 log4js = require('log4js');
 log4js.loadAppender('file');
@@ -56,65 +58,83 @@ if (typeof device !== 'undefined'){
 	    var wampIP = wampUrl.split("//")[1].split(":")[0];
 	    //logger.info("WAMP SERVER IP: "+wampIP);
     
-            //This function contains the logic that has to be performed if I'm connected to the WAMP server
-            function manage_WAMP_connection (session, details){
-                
-		
-                //Topic on which the board can send a message to be registered 
-                var connectionTopic = 'board.connection';
-                
-                //Topic on which the board can listen for commands
-                var commandTopic = 'board.command';
-                
 
-                
-                //Registering the board to the Cloud by sending a message to the connection topic
-                logger.info('WAMP: Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
-                session.publish(connectionTopic, [boardCode, 'connection', session._id]);
-                
-                //Subscribing to the command topic to receive messages for asyncronous operation to be performed
-                //Maybe everything can be implemented as RPCs
-                //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
-                logger.info('WAMP: Registering to command topic ' + commandTopic);
-                var manageCommands = require('./manage-commands');
-                session.subscribe(commandTopic, manageCommands.onCommand);
-                
-                //If I'm connected to the WAMP server I can export my pins on the Cloud as RPCs
-                var managePins = require('./manage-pins');
-                managePins.exportPins(session);
-                
-                //If I'm connected to the WAMP server I can receive measures to be scheduled as RPCs
-                var manageMeasures = require('./manage-measures');
-                manageMeasures.exportMeasureCommands(session);
-                
-                //If I'm connected to the WAMP server I can receive plugins to be scheduled as RPCs
-                var managePlugins = require('./manage-plugins');
-                managePlugins.exportPluginCommands(session);
-	
-		
-		
-
-
-
-            }
-            
-            
             //This function is called as soon as the connection is created successfully
             wampConnection.onopen = function (session, details) {
-
-                logger.info('WAMP: Connection to WAMP server '+ wampUrl + ' created successfully!');
-                logger.info('WAMP: Connected to realm '+ wampRealm);
-                logger.info('WAMP: Session ID: '+ session._id);
+	      
+		logger.info('WAMP: Connection to WAMP server '+ wampUrl + ' created successfully!');
+		logger.info('WAMP: Connected to realm '+ wampRealm);
+		logger.info('WAMP: Session ID: '+ session._id);
 		//logger.info('Connection details: '+ JSON.stringify(details));
 		
-		//EXPORTING NETWORK COMMANDS 
-		var manageNetworks = require('./manage-networks');
-		manageNetworks.exportNetworkCommands(session);
-
 		
-                //Calling the manage_WAMP_connection function that contains the logic 
-                //that has to be performed if I'm connected to the WAMP server
-                manage_WAMP_connection(session, details);
+		// RPC registration of Board Management Commands
+		var manageBoard = require('./board-management');
+		manageBoard.exportManagementCommands(session);
+			
+	
+		var configFileName = './settings.json';
+		var configFile = JSON.parse(fs.readFileSync(configFileName, 'utf8'));
+		var board_config = configFile.config["board"];
+		var board_status = board_config["status"];
+		
+		var board_config = configFile.config["board"];
+		logger.info("\nBOARD CONFIGURATION " + JSON.stringify(board_config));
+				
+		//PROVISIONING: Iotronic sends coordinates to the new board	
+		if(board_status === "new"){
+		  
+			logger.info('NEW BOARD CONFIGURATION STARTED... ');
+		
+			session.call("s4t.board.provisioning", [boardCode]).then(
+			  
+			    function(result){
+
+				logger.info("\n\nPROVISIONING "+boardCode+" RECEIVED: " + JSON.stringify(result) + "\n\n")
+				
+				board_position = result[0];
+				board_config["position"]=result[0];
+				board_config["status"]="registered";
+				
+				logger.info("\nBOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]))
+				
+				
+				//Updates the settings.json file
+				fs.writeFile(configFileName, JSON.stringify(configFile, null, 4), function(err) {
+				    if(err) {
+					logger.error('Error writing settings.json file: ' + err);
+					
+				    } else {
+				      
+					
+					logger.info("settings.json configuration file saved to " + configFileName);
+					
+					manageBoard.manage_WAMP_connection(session, details);
+					
+
+			
+				    }
+				});
+
+			
+			}, session.log);
+			
+			
+		} else if(board_status === "registered"){
+		  
+		      logger.info('REGISTERED BOARD CONFIGURATION STARTED... ');
+		  
+		      //Calling the manage_WAMP_connection function that contains the logic that has to be performed if I'm connected to the WAMP server
+		      manageBoard.manage_WAMP_connection(session, details);
+		  
+		} else{
+		  
+		  logger.info('WRONG BOARD STATUS: status allowed "new" or "registerd"!');
+		  
+		  
+		}
+     
+
 		
 		//----------------------------------------------------------------------------------------------------
 		// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
@@ -200,6 +220,7 @@ if (typeof device !== 'undefined'){
             logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
             wampConnection.open();
 
+	    /*
             //MEASURES --------------------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
             var manageMeasure = require('./manage-measures');
@@ -211,7 +232,7 @@ if (typeof device !== 'undefined'){
 	    var managePlugins = require('./manage-plugins');
 	    managePlugins.restartAllActivePlugins();
 	    //----------------------------------------------------------------------------------------------------
-		
+	    */
 
 	    
         });

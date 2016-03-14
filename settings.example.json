@@ -1,10 +1,10 @@
 {
 	"config":{
 	
-		"device":"",
+		"device":"arduino_yun",
 		"wamp":
 		{
-			"url_wamp": "",
+			"url_wamp": "ws://s4t-iotronic",
 			"port_wamp": "8181",
 			"realm": "s4t"
 		},
@@ -12,7 +12,7 @@
 		"reverse":
 		{
 			"server":{
-				"url_reverse": "",
+				"url_reverse": "ws://s4t-iotronic",
 				"port_reverse": "8080"
 			},
 			"lib":{
@@ -29,6 +29,7 @@
 		"board":
 		{
 			"code":"",
+			"status": "new",
 			"services":{
 				"ssh":{
 					"port":"22"
