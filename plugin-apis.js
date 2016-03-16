@@ -1,7 +1,25 @@
 
+log4js = require('log4js');
+log4js.loadAppender('file');
+log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));   
+var logger = log4js.getLogger('plugin-apis');
+
+
+var requestify = require('requestify');
+var Q = require("q");
 
 nconf = require('nconf');
 nconf.file ({file: 'settings.json'});
+
+var ckan_host = 'http://smartme-data.unime.it';
+
+exports.getLogger = function (){
+    
+    return logger;
+    
+}
+
+
     
 exports.getPosition = function (){
     var altitude = nconf.get('config:board:position:altitude');
@@ -12,6 +30,13 @@ exports.getPosition = function (){
     
     return position;
 }
+
+exports.getBoardId = function (){
+    var boardID = nconf.get('config:board:code');
+    
+    return boardID;
+}
+
 
 exports.getLocalTime = function (){
 
@@ -84,3 +109,16 @@ exports.sendToCKAN = function (m_authid, m_resourceid, record, callback){
 	callback(payloadJSON);
 	
 }
+
+
+exports.getCKANdataset = function(id, callback){  
+
+	requestify.get(ckan_host + '/api/rest/dataset/'+id).then( function(response) {
+
+	  var dataCKAN = response.getBody();
+
+	  callback(dataCKAN);
+	  
+	});
+ 
+} 

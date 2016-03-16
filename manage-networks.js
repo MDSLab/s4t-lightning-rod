@@ -275,16 +275,3 @@ exports.manageNetworks = function(args){
 }
 
 
-/*
-// myArray is the array being searched
-// value is the value we want to find
-// property is the name of the field in which to search
-function findValue(myArray, value, property) {
-    for(var i = 0, len = myArray.length; i < len; i++) {
-       if (myArray[i][property] === value) {
-          return i;
-       }
-    }
-    return -1;
-}
-*/
