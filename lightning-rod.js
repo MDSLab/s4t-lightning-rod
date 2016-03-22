@@ -21,7 +21,7 @@ log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));
 var logger = log4js.getLogger('main');  
 
 logger.info('#############################');  
-logger.info('Starting Lightning-rod...');  
+logger.info(' Stack4Things Lightning-rod');  
 logger.info('#############################');  
 
 servicesProcess = [];
@@ -220,7 +220,7 @@ if (typeof device !== 'undefined'){
             logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
             wampConnection.open();
 
-	    /*
+	    
             //MEASURES --------------------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
             var manageMeasure = require('./manage-measures');
@@ -232,7 +232,7 @@ if (typeof device !== 'undefined'){
 	    var managePlugins = require('./manage-plugins');
 	    managePlugins.restartAllActivePlugins();
 	    //----------------------------------------------------------------------------------------------------
-	    */
+	    
 
 	    
         });

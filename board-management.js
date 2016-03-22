@@ -59,6 +59,7 @@ exports.manage_WAMP_connection = function  (session, details){
       managePlugins.exportPluginCommands(session);
 
 
+      /*
       //MEASURES --------------------------------------------------------------------------------------------
       //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
       var manageMeasure = require('./manage-measures');
@@ -70,7 +71,7 @@ exports.manage_WAMP_connection = function  (session, details){
       var managePlugins = require('./manage-plugins');
       managePlugins.restartAllActivePlugins();
       //-----------------------------------------------------------------------------------------------------
-		
+      */
 
 		
 
