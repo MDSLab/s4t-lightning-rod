@@ -52,7 +52,8 @@ if (typeof device !== 'undefined'){
 	    var wampRealm = nconf.get('config:wamp:realm');
 	    var wampConnection = new autobahn.Connection({
 		url: wampUrl,
-		realm: wampRealm
+		realm: wampRealm,
+		max_retries: -1
 	    });
 	    
 	    var wampIP = wampUrl.split("//")[1].split(":")[0];
@@ -142,6 +143,8 @@ if (typeof device !== 'undefined'){
 		
 		setInterval(function(){
 		    
+		    session.publish('board.connection', ['alive']);
+		    /*
 		    isReachable(wampIP, function (err, reachable) {
 		      
 		      if(!reachable){
@@ -162,6 +165,7 @@ if (typeof device !== 'undefined'){
 		      
 		      
 		    });
+		    */
    
                 }, 5000);
 		//----------------------------------------------------------------------------------------------------
