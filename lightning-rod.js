@@ -20,9 +20,9 @@ log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));
 //service logging configuration: "main"                                                  
 var logger = log4js.getLogger('main');  
 
-logger.info('#############################');  
-logger.info(' Stack4Things Lightning-rod');  
-logger.info('#############################');  
+logger.info('##############################');  
+logger.info('  Stack4Things Lightning-rod');  
+logger.info('##############################');  
 
 servicesProcess = [];
 
@@ -33,6 +33,7 @@ var device = nconf.get('config:device');
 var isReachable = require('is-reachable');
 var online = true;
 active = true;
+var keepWampAlive = null;
 
 //Read the board code from the configuration file
 boardCode = nconf.get('config:board:code');
@@ -63,6 +64,11 @@ if (typeof device !== 'undefined'){
             //This function is called as soon as the connection is created successfully
             wampConnection.onopen = function (session, details) {
 	      
+	      
+		if (keepWampAlive != null){
+		  clearInterval( keepWampAlive );
+		}
+	      
 		logger.info('WAMP: Connection to WAMP server '+ wampUrl + ' created successfully!');
 		logger.info('WAMP: Connected to realm '+ wampRealm);
 		logger.info('WAMP: Session ID: '+ session._id);
@@ -80,7 +86,7 @@ if (typeof device !== 'undefined'){
 		var board_status = board_config["status"];
 		
 		var board_config = configFile.config["board"];
-		logger.info("\nBOARD CONFIGURATION " + JSON.stringify(board_config));
+		logger.info("BOARD CONFIGURATION PARAMETERS: " + JSON.stringify(board_config));
 				
 		//PROVISIONING: Iotronic sends coordinates to the new board	
 		if(board_status === "new"){
@@ -123,7 +129,7 @@ if (typeof device !== 'undefined'){
 			
 		} else if(board_status === "registered"){
 		  
-		      logger.info('REGISTERED BOARD CONFIGURATION STARTED... ');
+		      logger.info('REGISTERED BOARD CONFIGURATION STARTING ');
 		  
 		      //Calling the manage_WAMP_connection function that contains the logic that has to be performed if I'm connected to the WAMP server
 		      manageBoard.manage_WAMP_connection(session, details);
@@ -141,10 +147,29 @@ if (typeof device !== 'undefined'){
 		// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
 		//----------------------------------------------------------------------------------------------------
 		
-		setInterval(function(){
+		keepWampAlive = setInterval(function(){
+		  
+		    // TO CHECK WAMP CONNECTION
+		    try{
+			if(session.isOpen){
+			    session.publish('board.connection', ['alive']);
+			}
+		    }  
+		    catch(err){
+			logger.warn('Error keeping alive wamp connection: '+ err);
+		    }
 		    
-		    session.publish('board.connection', ['alive']);
-		    /*
+		    // TO CHECK SERVER CONNECTION
+		    isReachable(wampIP, function (err, reachable) {
+		      
+			if(!reachable){
+			  logger.warn("CONNECTION STATUS: "+reachable+ " - ERROR: "+err);
+			  
+			} 
+			
+		    });
+		    
+		    /* DEPRECATED
 		    isReachable(wampIP, function (err, reachable) {
 		      
 		      if(!reachable){
@@ -176,25 +201,30 @@ if (typeof device !== 'undefined'){
             //This function is called if there are problems with the WAMP connection
             wampConnection.onclose = function (reason, details) {
 	      
-                logger.error('WAMP: Error in connecting to WAMP server!');
-                logger.error('- Reason: ' + reason);
-                logger.error('- Reconnection Details: ');
-                logger.error("  - retry_delay:", details.retry_delay);
-		logger.error("  - retry_count:", details.retry_count);
-		logger.error("  - will_retry:", details.will_retry);
+		try{
+		      logger.error('WAMP: Error in connecting to WAMP server!');
+		      logger.error('- Reason: ' + reason);
+		      logger.error('- Reconnection Details: ');
+		      logger.error("  - retry_delay:", details.retry_delay);
+		      logger.error("  - retry_count:", details.retry_count);
+		      logger.error("  - will_retry:", details.will_retry);
 
-		if(wampConnection.isOpen){
-		    logger.info("WAMP: connection is open!");
-		}
-		else{
-		    logger.warn("WAMP: connection is closed!");
-		}
-	
-		if(session.isOpen){
-		    logger.info("WAMP: session is open!");
-		}
-		else{
-		    logger.warn("WAMP: session is closed!");
+		      if(wampConnection.isOpen){
+			  logger.info("WAMP: connection is open!");
+		      }
+		      else{
+			  logger.warn("WAMP: connection is closed!");
+		      }
+	      
+		      if(session.isOpen){
+			  logger.info("WAMP: session is open!");
+		      }
+		      else{
+			  logger.warn("WAMP: session is closed!");
+		      }
+		}  
+		catch(err){
+		    logger.warn('Error in wamp connection: '+ err);
 		}
 
 		
@@ -228,15 +258,15 @@ if (typeof device !== 'undefined'){
             //MEASURES --------------------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
             var manageMeasure = require('./manage-measures');
-            manageMeasure.restartAllActiveMeasures();
+            //manageMeasure.restartAllActiveMeasures();
             //-----------------------------------------------------------------------------------------------------
 
 	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
 	    //This procedure restarts all plugins in "ON" status
 	    var managePlugins = require('./manage-plugins');
-	    managePlugins.restartAllActivePlugins();
+	    //managePlugins.restartAllActivePlugins();  //OLD approach
+	    managePlugins.pluginsLoader();
 	    //----------------------------------------------------------------------------------------------------
-	    
 
 	    
         });
