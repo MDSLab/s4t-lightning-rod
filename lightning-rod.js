@@ -17,12 +17,50 @@ log4js = require('log4js');
 log4js.loadAppender('file');
 log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));               
 
+
 //service logging configuration: "main"                                                  
 var logger = log4js.getLogger('main');  
 
 logger.info('##############################');  
 logger.info('  Stack4Things Lightning-rod');  
-logger.info('##############################');  
+logger.info('##############################');
+
+try{
+  
+    loglevel = nconf.get('config:loglevel');
+
+    /*
+    OFF		nothing is logged
+    FATAL	fatal errors are logged
+    ERROR	errors are logged
+    WARN	warnings are logged
+    INFO	infos are logged
+    DEBUG	debug infos are logged
+    TRACE	traces are logged
+    ALL		everything is logged
+    */
+
+    if (loglevel === undefined){
+      logger.setLevel('INFO');
+      logger.warn('[SYSTEM] - LOG LEVEL not specified... default has been set: INFO'); 
+    }else{
+      logger.setLevel(loglevel);
+      logger.info('[SYSTEM] - LOG LEVEL: ' + loglevel); 
+    }
+    
+     
+
+}
+catch(err){
+    logger.error('[SYSTEM] - Error in parsing loglevel parameter from settings.json: '+ err);
+    logger.setLevel('INFO');
+    logger.warn('[SYSTEM] - Log level applied: INFO');
+
+}
+
+ 
+
+
 
 servicesProcess = [];
 
@@ -42,7 +80,7 @@ boardCode = nconf.get('config:board:code');
 //If the device has been specified
 if (typeof device !== 'undefined'){
 
-    logger.info('The device is ' + device);
+    logger.info('[SYSTEM] - DEVICE: ' + device);
     
 
     //WAMP --------------------------------------------------------------------------------------------------------------------------------------------
@@ -58,21 +96,25 @@ if (typeof device !== 'undefined'){
 	    });
 	    
 	    var wampIP = wampUrl.split("//")[1].split(":")[0];
-	    //logger.info("WAMP SERVER IP: "+wampIP);
+	    logger.debug("[SYSTEM] - WAMP server IP: "+wampIP);
     
 
             //This function is called as soon as the connection is created successfully
             wampConnection.onopen = function (session, details) {
 	      
-	      
+		
 		if (keepWampAlive != null){
+		  
 		  clearInterval( keepWampAlive );
+		  logger.info('[WAMP-RECOVERY] - WAMP CONNECTION RECOVERED!');
+		  logger.debug('[WAMP-RECOVERY] - OLD TIMER to keep alive WAMP connection cleared!');
+		  
 		}
 	      
-		logger.info('WAMP: Connection to WAMP server '+ wampUrl + ' created successfully!');
-		logger.info('WAMP: Connected to realm '+ wampRealm);
-		logger.info('WAMP: Session ID: '+ session._id);
-		//logger.info('Connection details: '+ JSON.stringify(details));
+		logger.info('[WAMP-STATUS] - Connection to WAMP server '+ wampUrl + ' created successfully:');
+		logger.info('--> Realm: '+ wampRealm);
+		logger.info('--> Session ID: '+ session._id);
+		logger.debug('--> Connection details:\n'+ JSON.stringify(details));
 		
 		
 		// RPC registration of Board Management Commands
@@ -86,12 +128,12 @@ if (typeof device !== 'undefined'){
 		var board_status = board_config["status"];
 		
 		var board_config = configFile.config["board"];
-		logger.info("BOARD CONFIGURATION PARAMETERS: " + JSON.stringify(board_config));
+		logger.info("[CONFIGURATION] - Board configuration parameters: " + JSON.stringify(board_config));
 				
 		//PROVISIONING: Iotronic sends coordinates to the new board	
 		if(board_status === "new"){
 		  
-			logger.info('NEW BOARD CONFIGURATION STARTED... ');
+			logger.info('[CONFIGURATION] - NEW BOARD CONFIGURATION STARTED... ');
 		
 			session.call("s4t.board.provisioning", [boardCode]).then(
 			  
@@ -103,7 +145,7 @@ if (typeof device !== 'undefined'){
 				board_config["position"]=result[0];
 				board_config["status"]="registered";
 				
-				logger.info("\nBOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]))
+				logger.info("\n[CONFIGURATION] - BOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]))
 				
 				
 				//Updates the settings.json file
@@ -129,14 +171,14 @@ if (typeof device !== 'undefined'){
 			
 		} else if(board_status === "registered"){
 		  
-		      logger.info('REGISTERED BOARD CONFIGURATION STARTING ');
+		      logger.info('[CONFIGURATION] - REGISTERED BOARD CONFIGURATION STARTING...');
 		  
 		      //Calling the manage_WAMP_connection function that contains the logic that has to be performed if I'm connected to the WAMP server
 		      manageBoard.manage_WAMP_connection(session, details);
 		  
 		} else{
 		  
-		  logger.info('WRONG BOARD STATUS: status allowed "new" or "registerd"!');
+		  logger.error('[CONFIGURATION] - WRONG BOARD STATUS: status allowed "new" or "registerd"!');
 		  
 		  
 		}
@@ -146,9 +188,64 @@ if (typeof device !== 'undefined'){
 		//----------------------------------------------------------------------------------------------------
 		// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
 		//----------------------------------------------------------------------------------------------------
+		var connectionTester = require('connection-tester');
 		
 		keepWampAlive = setInterval(function(){
 		  
+		  
+		    //NEW type of connection tester
+		    connectionTester.test(wampIP, 8888, 1000, function (err, output) {
+		      
+			//logger.debug("[WAMP-STATUS] - CONNECTION STATUS: "+JSON.stringify(output));
+			
+			var reachable = output.success;
+			var error_test = output.error;
+			//logger.debug("[WAMP-STATUS] - CONNECTION STATUS: "+reachable);
+			
+			if(!reachable){
+			  
+			      logger.warn("[CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: "+reachable+ " - ERROR: "+error_test);
+			      
+			      online=false;
+			  
+			} else {
+				
+				try{
+			  
+					if(!online){
+					  
+					    logger.info("[CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: "+reachable);
+					    logger.info("[CONNECTION-STATUS] - INTERNET CONNECTION RECOVERED!");
+					  
+					    session.publish ('board.connection', [ 'alive-'+boardCode ], {}, { acknowledge: true}).then(
+									
+						  function(publication) {
+							  logger.info("[WAMP-ALIVE-STATUS] - WAMP ALIVE MESSAGE RESPONSE: published -> publication ID is " + JSON.stringify(publication));
+						  },
+						  function(error) {
+							  logger.warn("[WAMP-RECOVERY] - WAMP ALIVE MESSAGE: publication error " + JSON.stringify(error));
+						  }
+															
+					    );				  
+					    
+					    online=true;
+					    
+					}
+
+				  
+				}
+				catch(err){
+					logger.warn('[CONNECTION-RECOVERY] - Error keeping alive WAMP connection: '+ err);
+					logger.warn("[CONNECTION-RECOVERY] - WAMP CONNECTION RECOVERING...");
+				}
+				      
+			}
+			
+		    });
+	    
+		  
+		    /*
+		    //OFFICIAL VERSION
 		    // TO CHECK WAMP CONNECTION
 		    try{
 			if(session.isOpen){
@@ -168,8 +265,10 @@ if (typeof device !== 'undefined'){
 			} 
 			
 		    });
+		    */
 		    
-		    /* DEPRECATED
+		    
+		    /*DEPRECATED
 		    isReachable(wampIP, function (err, reachable) {
 		      
 		      if(!reachable){
@@ -190,9 +289,13 @@ if (typeof device !== 'undefined'){
 		      
 		      
 		    });
-		    */
+		   */
+		   
    
-                }, 5000);
+                }, 10 * 1000);
+		
+		logger.info('[WAMP] - Timer to check connection started!');
+		
 		//----------------------------------------------------------------------------------------------------
 		
 		
@@ -202,7 +305,8 @@ if (typeof device !== 'undefined'){
             wampConnection.onclose = function (reason, details) {
 	      
 		try{
-		      logger.error('WAMP: Error in connecting to WAMP server!');
+		  
+		      logger.error('[WAMP-STATUS] - Error in connecting to WAMP server!');
 		      logger.error('- Reason: ' + reason);
 		      logger.error('- Reconnection Details: ');
 		      logger.error("  - retry_delay:", details.retry_delay);
@@ -210,21 +314,15 @@ if (typeof device !== 'undefined'){
 		      logger.error("  - will_retry:", details.will_retry);
 
 		      if(wampConnection.isOpen){
-			  logger.info("WAMP: connection is open!");
+			  logger.info("[WAMP-STATUS] - connection is open!");
 		      }
 		      else{
-			  logger.warn("WAMP: connection is closed!");
+			  logger.warn("[WAMP-STATUS] - connection is closed!");
 		      }
-	      
-		      if(session.isOpen){
-			  logger.info("WAMP: session is open!");
-		      }
-		      else{
-			  logger.warn("WAMP: session is closed!");
-		      }
+
 		}  
 		catch(err){
-		    logger.warn('Error in wamp connection: '+ err);
+		    logger.warn('[WAMP-STATUS] - Error in WAMP connection: '+ err);
 		}
 
 		
@@ -244,27 +342,28 @@ if (typeof device !== 'undefined'){
         //Connecting to the board
         var linino = require('ideino-linino-lib');
         board = new linino.Board();
-        logger.info('Board initialization...');  
+        logger.info('[SYSTEM] - Board initialization...');  
         
         //Given the way linino lib is designed we first need to connect to the board and only then we can do anything else
         board.connect(function() {
 
             
-            //Opening the connection to the WAMP server
-            logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
+            // CONNECTION TO WAMP SERVER --------------------------------------------------------------------------
+            logger.info('[WAMP-STATUS] - Opening connection to WAMP server ('+ wampIP +')...');  
             wampConnection.open();
+	    //-----------------------------------------------------------------------------------------------------
 
 	    
             //MEASURES --------------------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
             var manageMeasure = require('./manage-measures');
-            //manageMeasure.restartAllActiveMeasures();
+            manageMeasure.restartAllActiveMeasures();
             //-----------------------------------------------------------------------------------------------------
 
 	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
 	    //This procedure restarts all plugins in "ON" status
 	    var managePlugins = require('./manage-plugins');
-	    //managePlugins.restartAllActivePlugins();  //OLD approach
+	    //managePlugins.restartAllActivePlugins();  //DEPRECATED
 	    managePlugins.pluginsLoader();
 	    //----------------------------------------------------------------------------------------------------
 
@@ -279,7 +378,7 @@ if (typeof device !== 'undefined'){
     function Main_Laptop(){
       
       	//Opening the connection to the WAMP server
-	logger.info('WAMP: Opening connection to WAMP server ('+ wampIP +')...');  
+	logger.info('[WAMP-STATUS] - Opening connection to WAMP server ('+ wampIP +')...');  
 	wampConnection.open();
         
     }
@@ -289,20 +388,20 @@ if (typeof device !== 'undefined'){
     switch(device){
       
 	case 'arduino_yun':
-	    logger.info("L-R Arduino Yun starting...");
+	    logger.info("[SYSTEM] - L-R Arduino Yun starting...");
 	    Main_Arduino_Yun();
 	    break
 	case 'laptop':
-	    logger.info("L-R laptop starting...");
+	    logger.info("[SYSTEM] - L-R laptop starting...");
 	    Main_Laptop();
 	    break                         
 	case 'raspberry_pi':
-	    logger.info("L-R Raspberry Pi starting...");
+	    logger.info("[SYSTEM] - L-R Raspberry Pi starting...");
 	    break   	    
 	default:
 	    //DEBUG MESSAGE
-	    logger.warn('Device "' + device + '" not supported!');
-	    logger.warn('Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
+	    logger.warn('[SYSTEM] - Device "' + device + '" not supported!');
+	    logger.warn('[SYSTEM] - Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
 	    process.exit();
 	    break;
 	    
@@ -314,6 +413,6 @@ if (typeof device !== 'undefined'){
     
 }
 else{
-    logger.warn('Please insert the kind of device in settings.json');
+    logger.warn('[SYSTEM] - Please insert the kind of device in settings.json');
     process.exit();
 }

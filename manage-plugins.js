@@ -1066,7 +1066,7 @@ exports.exportPluginCommands = function (session){
     session.register(boardCode+'.command.rpc.plugin.call', exports.call);
     session.register(boardCode+'.command.rpc.removeplugin', exports.removePlugin);
     
-    logger.info('[WAMP-EXPORTS] Plugin commands exported to the cloud!')
+    logger.info('[WAMP-EXPORTS] Plugin commands exported to the cloud!');
     
 }
 

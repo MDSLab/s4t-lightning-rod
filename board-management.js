@@ -8,7 +8,7 @@ exports.exportManagementCommands = function (session){
       var boardCode = nconf.get('config:board:code');
       
       //Register all the module functions as WAMP RPCs    
-      logger.info('Exporting management commands to the Cloud');
+      logger.info('[WAMP-EXPORTS] Management commands exported to the cloud!');
       session.register(boardCode+'.command.setBoardPosition', exports.setBoardPosition);
 
 }
@@ -36,13 +36,13 @@ exports.manage_WAMP_connection = function  (session, details){
 
 
       //Registering the board to the Cloud by sending a message to the connection topic
-      logger.info('WAMP: Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
+      logger.info('[WAMP] - Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
       session.publish(connectionTopic, [boardCode, 'connection', session._id]);
 
       //Subscribing to the command topic to receive messages for asyncronous operation to be performed
       //Maybe everything can be implemented as RPCs
       //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
-      logger.info('WAMP: Registering to command topic ' + commandTopic);
+      logger.info('[WAMP] - Registering to command topic ' + commandTopic);
       var manageCommands = require('./manage-commands');
       session.subscribe(commandTopic, manageCommands.onCommand);
 
@@ -58,6 +58,7 @@ exports.manage_WAMP_connection = function  (session, details){
       var managePlugins = require('./manage-plugins');
       managePlugins.exportPluginCommands(session);
 
+
       /*
       //MEASURES --------------------------------------------------------------------------------------------
       //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
@@ -70,7 +71,7 @@ exports.manage_WAMP_connection = function  (session, details){
       var managePlugins = require('./manage-plugins');
       managePlugins.restartAllActivePlugins();
       //-----------------------------------------------------------------------------------------------------
-      */		
+      */
 
 		
 
