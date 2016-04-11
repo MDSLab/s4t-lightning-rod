@@ -46,8 +46,7 @@ exports.call = function (args, details){
         //Check the status to be decided
 	var status = pluginsConf.plugins[plugin_name].status;
 	
-	//if (status == "off" || status == "on"){
-        if (status == "off"){
+        if (status == "off" || status == "injected"){
             
             logger.info("Plugin " + plugin_name + " being started");
             
