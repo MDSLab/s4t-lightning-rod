@@ -30,6 +30,7 @@
 		"board":
 		{
 			"code":"",
+			"status": "new",
 			"services":{
 				"ssh":{
 					"port":"22"
