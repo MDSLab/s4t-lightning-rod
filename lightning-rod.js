@@ -269,6 +269,7 @@ if (typeof device !== 'undefined'){
 						}else if (data.toString().indexOf("win 0") > -1){
 						  tcpkill.kill();
 						  logger.debug('[WAMP-RECOVERY] ... tcpkill killed!');
+						  logger.info("[WAMP-RECOVERY] - WAMP socket cleaned!");
 						}
 						
 						
@@ -278,7 +279,7 @@ if (typeof device !== 'undefined'){
 
 					    tcpkill.on('close', function (code) {
 					      
-						logger.info("[WAMP-RECOVERY] - WAMP socket cleaned!");
+						logger.info("[WAMP-RECOVERY] - WAMP tcpkill closed!");
 								      
 						
 					    });
