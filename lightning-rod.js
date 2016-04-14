@@ -1,9 +1,9 @@
 /*
- * Apache License
+ * 				  Apache License
  *                           Version 2.0, January 2004
  *                        http://www.apache.org/licenses/
  * 
- * Copyright (c) 2014 2015 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
+ * Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
  */
 
 //Loading configuration file
@@ -15,7 +15,9 @@ var fs = require("fs");
 //main logging configuration                                                                
 log4js = require('log4js');
 log4js.loadAppender('file');
-log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));               
+
+logfile = nconf.get('config:log:logfile');
+log4js.addAppender(log4js.appenders.file(logfile));               
 
 
 //service logging configuration: "main"                                                  
@@ -27,7 +29,7 @@ logger.info('##############################');
 
 try{
   
-    loglevel = nconf.get('config:loglevel');
+    loglevel = nconf.get('config:log:loglevel');
 
     /*
     OFF		nothing is logged
@@ -107,7 +109,7 @@ if (typeof device !== 'undefined'){
 		  
 		  clearInterval( keepWampAlive );
 		  logger.info('[WAMP-RECOVERY] - WAMP CONNECTION RECOVERED!');
-		  logger.debug('[WAMP-RECOVERY] - OLD TIMER to keep alive WAMP connection cleared!');
+		  logger.debug('[WAMP-RECOVERY] - Old timer to keep alive WAMP connection cleared!');
 		  
 		}
 	      
@@ -217,6 +219,7 @@ if (typeof device !== 'undefined'){
 					    logger.info("[CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: "+reachable);
 					    logger.info("[CONNECTION-STATUS] - INTERNET CONNECTION RECOVERED!");
 					  
+					    /*
 					    session.publish ('board.connection', [ 'alive-'+boardCode ], {}, { acknowledge: true}).then(
 									
 						  function(publication) {
@@ -226,7 +229,60 @@ if (typeof device !== 'undefined'){
 							  logger.warn("[WAMP-RECOVERY] - WAMP ALIVE MESSAGE: publication error " + JSON.stringify(error));
 						  }
 															
-					    );				  
+					    );
+					    */
+					    
+					    logger.info("[WAMP-RECOVERY] - Cleaning WAMP socket...");
+					    
+					    var spawn = require('child_process').spawn;
+			  
+					    //tcpkill -9 port 8181
+					    var tcpkill = spawn('tcpkill',['-9','port','8181']); 
+					    logger.debug('[WAMP-RECOVERY] ... tcpkill -9 port 8181');
+					    
+
+										    
+					    
+					    tcpkill.stdout.on('data', function (data) {
+						logger.debug('[WAMP-RECOVERY] ... tcpkill stdout: ' + data);
+					    });
+					    tcpkill.stderr.on('data', function (data) {
+						logger.debug('[WAMP-RECOVERY] ... tcpkill stderr: ' + data);
+						
+						
+						if(data.toString().indexOf("listening") > -1){
+						    logger.debug('[WAMP-RECOVERY] ... tcpkill listening...');
+						  
+						    
+						    session.publish ('board.connection', [ 'alive-'+boardCode ], {}, { acknowledge: true}).then(
+									
+							  function(publication) {
+								  logger.info("[WAMP-ALIVE-STATUS] - WAMP ALIVE MESSAGE RESPONSE: published -> publication ID is " + JSON.stringify(publication));
+							  },
+							  function(error) {
+								  logger.warn("[WAMP-RECOVERY] - WAMP ALIVE MESSAGE: publication error " + JSON.stringify(error));
+							  }
+																
+						    );
+						    
+						    
+						}else if (data.toString().indexOf("win 0") > -1){
+						  tcpkill.kill();
+						  logger.debug('[WAMP-RECOVERY] ... tcpkill killed!');
+						}
+						
+						
+					    });
+	
+					    
+
+					    tcpkill.on('close', function (code) {
+					      
+						logger.info("[WAMP-RECOVERY] - WAMP socket cleaned!");
+								      
+						
+					    });
+					    
 					    
 					    online=true;
 					    
@@ -235,8 +291,8 @@ if (typeof device !== 'undefined'){
 				  
 				}
 				catch(err){
-					logger.warn('[CONNECTION-RECOVERY] - Error keeping alive WAMP connection: '+ err);
-					logger.warn("[CONNECTION-RECOVERY] - WAMP CONNECTION RECOVERING...");
+					logger.warn('[CONNECTION-RECOVERY] - Error keeping alive wamp connection: '+ err);
+					//logger.warn("[CONNECTION-RECOVERY] - WAMP CONNECTION RECOVERING...");
 				}
 				      
 			}
@@ -294,7 +350,7 @@ if (typeof device !== 'undefined'){
    
                 }, 10 * 1000);
 		
-		logger.info('[WAMP] - Timer to check connection started!');
+		logger.info('[WAMP] - TIMER to keep alive WAMP connection setup!');
 		
 		//----------------------------------------------------------------------------------------------------
 		

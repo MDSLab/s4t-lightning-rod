@@ -35,7 +35,7 @@ exports.call = function (args, details){
     }
     catch(err){
         logger.error('Error parsing JSON file ./plugins.json');
-        //return 'Internal server error';
+        //return 'Error parsing JSON file ./plugins.json'';
     }
     
     //If the plugin exists

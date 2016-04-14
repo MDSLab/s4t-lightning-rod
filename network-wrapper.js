@@ -1,8 +1,11 @@
 
+nconf = require('nconf');
+nconf.file ({file: 'settings.json'});
 
 log4js = require('log4js');
 log4js.loadAppender('file');
-log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));  
+logfile = nconf.get('config:log:logfile');
+log4js.addAppender(log4js.appenders.file(logfile));    
 
 
 //service logging configuration: "network-wrapper"
