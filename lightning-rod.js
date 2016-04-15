@@ -3,7 +3,9 @@
  *                           Version 2.0, January 2004
  *                        http://www.apache.org/licenses/
  * 
- * Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
+ * Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
+ * 
+ * 
  */
 
 //Loading configuration file
@@ -11,6 +13,11 @@ nconf = require('nconf');
 nconf.file ({file: 'settings.json'});
 
 var fs = require("fs");
+
+var running = require('is-running');
+
+var wamp_check = false;
+
 
 //main logging configuration                                                                
 log4js = require('log4js');
@@ -74,6 +81,7 @@ var isReachable = require('is-reachable');
 var online = true;
 active = true;
 var keepWampAlive = null;
+var tcpkill_pid = null;
 
 //Read the board code from the configuration file
 boardCode = nconf.get('config:board:code');
@@ -202,12 +210,13 @@ if (typeof device !== 'undefined'){
 			
 			var reachable = output.success;
 			var error_test = output.error;
+			
 			//logger.debug("[WAMP-STATUS] - CONNECTION STATUS: "+reachable);
 			
 			if(!reachable){
 			  
 			      logger.warn("[CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: "+reachable+ " - ERROR: "+error_test);
-			      
+			      wamp_check = false;
 			      online=false;
 			  
 			} else {
@@ -218,74 +227,108 @@ if (typeof device !== 'undefined'){
 					  
 					    logger.info("[CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: "+reachable);
 					    logger.info("[CONNECTION-STATUS] - INTERNET CONNECTION RECOVERED!");
-					  
-					    /*
+					    
+					    //wamp_check = false;
+					    
 					    session.publish ('board.connection', [ 'alive-'+boardCode ], {}, { acknowledge: true}).then(
-									
+								
 						  function(publication) {
 							  logger.info("[WAMP-ALIVE-STATUS] - WAMP ALIVE MESSAGE RESPONSE: published -> publication ID is " + JSON.stringify(publication));
+							  wamp_check = true;
+							  
 						  },
 						  function(error) {
 							  logger.warn("[WAMP-RECOVERY] - WAMP ALIVE MESSAGE: publication error " + JSON.stringify(error));
+							  wamp_check = false;
 						  }
 															
-					    );
-					    */
+					    );	
 					    
-					    logger.info("[WAMP-RECOVERY] - Cleaning WAMP socket...");
+					    setTimeout(function(){
 					    
-					    var spawn = require('child_process').spawn;
-			  
-					    //tcpkill -9 port 8181
-					    var tcpkill = spawn('tcpkill',['-9','port','8181']); 
-					    logger.debug('[WAMP-RECOVERY] ... tcpkill -9 port 8181');
-					    
-
-										    
-					    
-					    tcpkill.stdout.on('data', function (data) {
-						logger.debug('[WAMP-RECOVERY] ... tcpkill stdout: ' + data);
-					    });
-					    tcpkill.stderr.on('data', function (data) {
-						logger.debug('[WAMP-RECOVERY] ... tcpkill stderr: ' + data);
-						
-						
-						if(data.toString().indexOf("listening") > -1){
-						    logger.debug('[WAMP-RECOVERY] ... tcpkill listening...');
-						  
-						    
-						    session.publish ('board.connection', [ 'alive-'+boardCode ], {}, { acknowledge: true}).then(
-									
-							  function(publication) {
-								  logger.info("[WAMP-ALIVE-STATUS] - WAMP ALIVE MESSAGE RESPONSE: published -> publication ID is " + JSON.stringify(publication));
-							  },
-							  function(error) {
-								  logger.warn("[WAMP-RECOVERY] - WAMP ALIVE MESSAGE: publication error " + JSON.stringify(error));
-							  }
-																
-						    );
-						    
-						    
-						}else if (data.toString().indexOf("win 0") > -1){
-						  tcpkill.kill();
-						  logger.debug('[WAMP-RECOVERY] ... tcpkill killed!');
-						  logger.info("[WAMP-RECOVERY] - WAMP socket cleaned!");
+						if (wamp_check){
+						    logger.info("[WAMP-ALIVE-STATUS] - WAMP CONNECTION STATUS: " + wamp_check);
+						    online=true;
 						}
-						
-						
-					    });
-	
-					    
+						else{
+						  
+						      logger.warn("[WAMP-ALIVE-STATUS] - WAMP CONNECTION STATUS: " + wamp_check);
+						      logger.warn("[WAMP-RECOVERY] - Cleaning WAMP socket...");
+						      
+						      var tcpkill_kill_count = 0;
+						      
+						      var spawn = require('child_process').spawn;
+				    
+						      //tcpkill -9 port 8181
+						      var tcpkill = spawn('tcpkill',['-9','port','8181']); 
+						      
+						      tcpkill.stdout.on('data', function (data) {
+							  logger.debug('[WAMP-RECOVERY] ... tcpkill stdout: ' + data);
+						      });
+						      tcpkill.stderr.on('data', function (data) {
+							
+							  logger.debug('[WAMP-RECOVERY] ... tcpkill stderr:\n' + data);
+							  
+							  
+							  if(data.toString().indexOf("listening") > -1){
+							    
+							      logger.debug('[WAMP-RECOVERY] ... tcpkill listening...');
+							    
+							      tcpkill_pid = tcpkill.pid;
+							      logger.debug('[WAMP-RECOVERY] ... tcpkill -9 port 8181 - PID ['+tcpkill_pid+']');
+							      
+							      /*
+							      session.publish ('board.connection', [ 'alive-'+boardCode ], {}, { acknowledge: true}).then(
+										  
+								    function(publication) {
+									    logger.info("[WAMP-ALIVE-STATUS] - WAMP ALIVE MESSAGE RESPONSE: published -> publication ID is " + JSON.stringify(publication));
+								    },
+								    function(error) {
+									    logger.warn("[WAMP-RECOVERY] - WAMP ALIVE MESSAGE: publication error " + JSON.stringify(error));
+								    }
+																	  
+							      );
+							      */
+							      
+							  }else if (data.toString().indexOf("win 0") > -1){
+							    
+							    tcpkill.kill('SIGINT');
+							    
+							    setTimeout(function(){  
+							      
+								if (running(tcpkill_pid)){
 
-					    tcpkill.on('close', function (code) {
-					      
-						logger.info("[WAMP-RECOVERY] - WAMP tcpkill closed!");
-								      
-						
-					    });
+									tcpkill_kill_count = tcpkill_kill_count + 1;
+									
+									logger.warn("[WAMP-RECOVERY] ... tcpkill still running!!! PID ["+tcpkill_pid+"]");
+									logger.debug('[WAMP-RECOVERY] ... tcpkill killing retry_count '+ tcpkill_kill_count);
+									
+									tcpkill.kill('SIGINT');
+			  
+				      
+								}
+				
+							    }, 3000);
+							    
+							  }
+							  
+							  
+						      });
+		  
+						      
+
+						      tcpkill.on('close', function (code) {
+							
+							  logger.debug('[WAMP-RECOVERY] ... tcpkill killed!');
+							  logger.info("[WAMP-RECOVERY] - WAMP socket cleaned!");
+							  
+						      });
+						      
+						      
+						      online=true;
+						}
 					    
-					    
-					    online=true;
+					    }, 2 * 1000);
 					    
 					}
 
@@ -293,36 +336,12 @@ if (typeof device !== 'undefined'){
 				}
 				catch(err){
 					logger.warn('[CONNECTION-RECOVERY] - Error keeping alive wamp connection: '+ err);
-					//logger.warn("[CONNECTION-RECOVERY] - WAMP CONNECTION RECOVERING...");
 				}
 				      
 			}
 			
 		    });
-	    
-		  
-		    /*
-		    //OFFICIAL VERSION
-		    // TO CHECK WAMP CONNECTION
-		    try{
-			if(session.isOpen){
-			    session.publish('board.connection', ['alive']);
-			}
-		    }  
-		    catch(err){
-			logger.warn('Error keeping alive wamp connection: '+ err);
-		    }
-		    
-		    // TO CHECK SERVER CONNECTION
-		    isReachable(wampIP, function (err, reachable) {
-		      
-			if(!reachable){
-			  logger.warn("CONNECTION STATUS: "+reachable+ " - ERROR: "+err);
-			  
-			} 
-			
-		    });
-		    */
+
 		    
 		    
 		    /*DEPRECATED
@@ -362,7 +381,9 @@ if (typeof device !== 'undefined'){
             wampConnection.onclose = function (reason, details) {
 	      
 		try{
-		  
+
+		      wamp_check = true;
+		      
 		      logger.error('[WAMP-STATUS] - Error in connecting to WAMP server!');
 		      logger.error('- Reason: ' + reason);
 		      logger.error('- Reconnection Details: ');
@@ -376,6 +397,9 @@ if (typeof device !== 'undefined'){
 		      else{
 			  logger.warn("[WAMP-STATUS] - connection is closed!");
 		      }
+		      
+		      
+		      
 
 		}  
 		catch(err){
