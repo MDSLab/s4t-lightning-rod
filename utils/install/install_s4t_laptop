@@ -1,5 +1,7 @@
 #!/bin/sh                                                                                                                                                    
 
+#Copyright (c) 2016 Nicola Peditto
+
 #EXEC: ./install_s4t_laptop 14143131 38.1836489 15.5513039 148
 
 ##### INSTALLAZIONE DIPENDENZE #####
