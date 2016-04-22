@@ -71,24 +71,47 @@ function openFunction(){
 
 
 
-function readFunction(driver_name){
+function readFunction(driver_name, filename, mirror_board){
   
     var read_function = function (mountpoint, fd, buf, len, pos, cb) {
       
-	  logger.debug('Read(%s, %d, %d, %d)', mountpoint, fd, len, pos);
-
 	  driver_mp_node = mp_list[driver_name];
-	  
+	      
 	  var driver = drivers[driver_name];
-	  
-	  driver[driver_mp_node[mountpoint].read_function]( function(read_content){
-		var buffer = new Buffer(read_content.toString(), 'utf-8');
-		var str = ''+buffer.slice(pos);
-		if (!str)
-		    return cb(0);     
-		buf.write(str);
-		return cb(str.length);
-	  });      
+	      
+	  if (driver_mp_node['/'].remote === "false"){
+	      
+	      logger.debug('Read(%s, %d, %d, %d)', mountpoint, fd, len, pos);
+	      
+	      driver[driver_mp_node[mountpoint].read_function]( function(read_content){
+		    var buffer = new Buffer(read_content.toString(), 'utf-8');
+		    var str = ''+buffer.slice(pos);
+		    if (!str)
+			return cb(0);     
+		    buf.write(str);
+		    return cb(str.length);
+	      });  
+	      
+	      
+	  }else{
+	    
+	      logger.debug('REMOTE CALLING DRIVER to '+mirror_board + ' RPC called: s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read');
+	      
+	      session_drivers.call('s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read', [driver_name, filename]).then(
+					
+		  function(read_content){
+		    
+		      var buffer = new Buffer(read_content.toString(), 'utf-8');
+		      var str = ''+buffer.slice(pos);
+		      if (!str)
+			  return cb(0);     
+		      buf.write(str);
+		      return cb(str.length);
+
+		  }
+	      );	
+	    
+	  }
 
 	
     }  
@@ -105,8 +128,6 @@ exports.readRemote = function (args){
   var driver_name = String(args[0]);
   var filename = String(args[1]);
   
-  
-
   driver_mp_node = mp_list[driver_name];  
   
   var driver = drivers[driver_name];
@@ -200,7 +221,7 @@ function HumanMaskConversion(mode){
 
 
 
-function LoadDriver(driver_name, mountpoint, callback){
+function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, callback){
   
     
     var driver_path = "./drivers/"+driver_name;
@@ -240,7 +261,8 @@ function LoadDriver(driver_name, mountpoint, callback){
 	}
 	driver_mp_node[fuse_root_path]={
 	    name: driver_name,
-	    mp: {}
+	    mp: {},
+	    remote: remote
 	}
 	
 	driver_mp_node[fuse_root_path].mp=root_mp;
@@ -330,6 +352,8 @@ function LoadDriver(driver_name, mountpoint, callback){
 	
 	
 	logger.info("DRIVER "+driver_name+" MOUNTING...");
+	
+	// ENABLING YUN DEVICE "device_0"
 	fs.writeFile(device0_file, '1', function(err) {
 	  
 	    if(err) {
@@ -344,14 +368,15 @@ function LoadDriver(driver_name, mountpoint, callback){
 		//logger.info("FULL FILE LIST %s", JSON.stringify(file_list))
 		
 		try{
+		  
+		      
 		      fuse.mount(mountpoint, {
 			readdir: readdirFunction(driver_name),
 			getattr: getattrFunction(driver_name),
 			open: openFunction(),
-			read: readFunction(driver_name),
+			read: readFunction(driver_name, filename, mirror_board),
 			write: writeFunction(driver, driver_name) 
 		      })
-		      
 	
 		      drivers[driver_name] = driver;
 		      
@@ -392,10 +417,14 @@ function LoadDriver(driver_name, mountpoint, callback){
 
 
 //This function mounts a driver
-exports.mountDriver = function (args, details){
+exports.mountDriver = function (args){
     
     //Parsing the input arguments
     var driver_name = String(args[0]);
+    var filename = String(args[1]);
+    var remote = String(args[2]);
+    var mirror_board = String(args[3]);
+
 
     var rest_response = {};
 
@@ -415,7 +444,7 @@ exports.mountDriver = function (args, details){
 		fs.mkdir(mountpoint, 0755, function() {
 
 		    logger.debug("----> folder "+mountpoint+" CREATED!");
-		    LoadDriver(driver_name, mountpoint, function(load_result){
+		    LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, function(load_result){
 
 			d.resolve(load_result);
 			logger.info("--> "+ JSON.stringify(load_result));
@@ -427,10 +456,10 @@ exports.mountDriver = function (args, details){
 	  }else{
 	    
 		logger.debug("----> folder "+mountpoint+" EXISTS!");
-		LoadDriver(driver_name, mountpoint, function(load_result){
+		LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, function(load_result){
 		    
 		    d.resolve(load_result);
-		    logger.info("--> "+ JSON.stringify(load_result));
+		    logger.info("--> "+ JSON.stringify(load_result.message));
 		  
 		});
 	  }
@@ -447,7 +476,7 @@ exports.mountDriver = function (args, details){
 }
 
 //This function unmounts a driver
-exports.unmountDriver = function (args, details){
+exports.unmountDriver = function (args){
     
     //Parsing the input arguments
     var driver_name = String(args[0])
@@ -493,7 +522,7 @@ exports.unmountDriver = function (args, details){
 	    
 	      rest_response.message = "ERROR during '"+driver_name+"' (fuse) unmounting: " +err;
 	      rest_response.result = "ERROR";
-	      logger.error("--> "+JSON.stringify(rest_response));
+	      logger.error("--> "+JSON.stringify(rest_response.message));
 	      d.resolve(rest_response);
 
 	  }
@@ -510,7 +539,7 @@ exports.unmountDriver = function (args, details){
 
 
 //This function injects a driver
-exports.injectDriver = function (args, details){
+exports.injectDriver = function (args){
 
     // Parsing the input arguments
     var driver_name = String(args[0]);
