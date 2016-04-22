@@ -1,0 +1,11 @@
+#! /bin/sh
+
+if [ "$#" -ne 1 ]; then
+    echo "remove-network VLAN"
+    exit 1
+fi
+
+VLAN=$1
+
+IFACE="gre-lr0"
+ip link del $IFACE.$VLAN 
