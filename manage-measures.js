@@ -285,8 +285,7 @@ exports.exportMeasureCommands = function (session){
     //Read the board code in the configuration file
     var boardCode = nconf.get('config:board:code');
     
-    logger.info('Exporting measure commands to the Cloud');
-    //console.log('Exporting measure commands to the Cloud');
+    //logger.info('Exporting measure commands to the Cloud');
     
     //Register all the module functions as WAMP RPCs
     session.register(boardCode+'.command.rpc.measure.start', exports.start);
@@ -295,6 +294,8 @@ exports.exportMeasureCommands = function (session){
     session.register(boardCode+'.command.rpc.measure.restartallactivemeasures', exports.restartAllActiveMeasures);
     session.register(boardCode+'.command.rpc.measure.stopallmeasures', exports.stopAllMeasures);
     session.register(boardCode+'.command.rpc.injectmeasure', exports.injectMeasure);
+    
+    logger.info('[WAMP-EXPORTS] Measures management commands exported to the cloud!')
 
 }
 

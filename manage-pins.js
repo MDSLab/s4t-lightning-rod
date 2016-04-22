@@ -55,6 +55,8 @@ exports.exportPins = function (session){
     //Read the board code in the configuration file
     var boardCode = nconf.get('config:board:code');
     
+    //logger.info('Exporting pins to the Cloud')
+    
     //Register all the module functions as WAMP RPCs
     session.register(boardCode+'.command.rpc.setmode', setMode);
     session.register(boardCode+'.command.rpc.read.digital', readDigital);

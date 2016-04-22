@@ -7,6 +7,7 @@ var logger = log4js.getLogger('manageNetworks');
 var Q = require("q");
 
 var session_wamp;
+
 //This function exports all the functions in the module as WAMP remote procedure calls
 exports.exportNetworkCommands = function (session){
     
@@ -16,7 +17,6 @@ exports.exportNetworkCommands = function (session){
   session.register(boardCode+'.command.rpc.network.setSocatOnBoard', exports.setSocatOnBoard);
   session_wamp = session;
   logger.info('[WAMP-EXPORTS] Network commands exported to the cloud!')
-  
 
 }
 
@@ -28,15 +28,17 @@ exports.exportNetworkCommands = function (session){
 
 exports.setSocatOnBoard = function (args, details){
   
+  logger.info("[NETWORK-MANAGER] - Network manager loaded!");
+  
   var d = Q.defer();
   
-  logger.info("Active flag status: " + active);
+  //logger.info("Active flag status: " + active);
   
   //if(active){
   if(true){
     
-    logger.warn("FIRST NETWORK INITIALIZATION:");
-    active = false;
+    //logger.warn("FIRST NETWORK INITIALIZATION:");
+    //active = false;
     
     //NEW-net
     var socatServer_ip = args[0];
@@ -44,13 +46,13 @@ exports.setSocatOnBoard = function (args, details){
     var socatBoard_ip = args[2];
     var socatRes = boardCode + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip
     
-    logger.info("--> SOCAT PARAMETERS INJECTED: " + socatRes);
+    logger.info("[NETWORK-MANAGER] - SOCAT PARAMETERS INJECTED: " + socatRes);
     
 
     //NEW-net
     exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip);
     
-    logger.info("initNetwork CALLED!");
+    //logger.debug("[NETWORK-MANAGER] - Network initialization called!");
   
     d.resolve(socatRes);
   
@@ -58,7 +60,7 @@ exports.setSocatOnBoard = function (args, details){
   }else{
     var socatRes = "Network of board " +boardCode + " already configured!"
     d.resolve(socatRes);
-    logger.warn("NETWORK FAILURE RECOVERY --- NO NEED NETWORK INITIALIZATION!");
+    logger.warn("[NETWORK-MANAGER] - NETWORK RECOVERY --- NO NEED NETWORK INITIALIZATION!");
   }
 
 
@@ -72,7 +74,7 @@ exports.setSocatOnBoard = function (args, details){
 //NEW-net
 exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
   
-	logger.info("--> Network initialization...");
+	logger.info("[NETWORK-MANAGER] - Network initialization...");
 
 	var spawn = require('child_process').spawn;
 	
@@ -101,31 +103,31 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
 
   
 		  // START WSTT ------------------------------------------------------------------------------------------------
-		  logger.info("WSTT activating...");
+		  logger.info("[NETWORK-MANAGER] - WSTT activating...");
 
 		  var wstt_proc = spawn(rtpath, ['-r '+ socatServer_port +':localhost:'+basePort, reverseS_url])
-		  logger.info("WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
+		  logger.info("[NETWORK-MANAGER] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
 		  
 		  wstt_proc.stdout.on('data', function (data) {
-		      logger.info('WSTT - stdout: ' + data);
+		      logger.info('[NETWORK-MANAGER] - WSTT - stdout: ' + data);
 		  });
 		  wstt_proc.stderr.on('data', function (data) {
-		      logger.info('WSTT - stderr: ' + data);
+		      logger.info('[NETWORK-MANAGER] - WSTT - stderr: ' + data);
 		  });
 		  wstt_proc.on('close', function (code) {
-		      logger.warn('WSTT - process exited with code ' + code);
+		      logger.warn('[NETWORK-MANAGER] - WSTT - process exited with code ' + code);
 		  });  
 		  
 		  //------------------------------------------------------------------------------------------------------------
 		  
 	      } else if (msg.status === "complete"){
 		
-		logger.info('--> send notification to IOTRONIC: '+ msg.status+ ' - '+ msg.logmsg);
+		logger.info('[NETWORK-MANAGER] - Sending notification to IOTRONIC: '+ msg.status+ ' - '+ msg.logmsg);
 		
 		var boardCode = nconf.get('config:board:code');
 		session_wamp.call('iotronic.rpc.command.result_network_board', [msg.logmsg, boardCode] ).then( function(result){
-			  logger.info('--> response from IOTRONIC: '+ result);
-			  logger.info('TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
+			  logger.info('[NETWORK-MANAGER] --> response from IOTRONIC: '+ result);
+			  logger.info('[NETWORK-MANAGER] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
 		});
 		
 	      }
@@ -275,16 +277,3 @@ exports.manageNetworks = function(args){
 }
 
 
-/*
-// myArray is the array being searched
-// value is the value we want to find
-// property is the name of the field in which to search
-function findValue(myArray, value, property) {
-    for(var i = 0, len = myArray.length; i < len; i++) {
-       if (myArray[i][property] === value) {
-          return i;
-       }
-    }
-    return -1;
-}
-*/

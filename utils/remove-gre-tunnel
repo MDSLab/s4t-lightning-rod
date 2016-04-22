@@ -1,3 +1,0 @@
-#! /bin/sh
-IFACE="gre-lr0"
-ip link del $IFACE

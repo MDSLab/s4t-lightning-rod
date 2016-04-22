@@ -1,8 +1,11 @@
 
+nconf = require('nconf');
+nconf.file ({file: 'settings.json'});
 
 log4js = require('log4js');
 log4js.loadAppender('file');
-log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));  
+logfile = nconf.get('config:log:logfile');
+log4js.addAppender(log4js.appenders.file(logfile));    
 
 
 //service logging configuration: "network-wrapper"
@@ -31,7 +34,8 @@ process.once('message', function(message) {
       var socatServer_ip = message.socatServer_ip;
       //var logger = log4js.getLogger('network-wrapper');
       
-      logger.info("NetWRAPPER: SOCAT starting...");
+      logger.info("[NETWORK-MANAGER] - NetWRAPPER loaded!");
+      logger.info("[NETWORK-MANAGER] - SOCAT starting...");
       
 	    //NEW-net
 	    //socat -d -d \ TCP-L:<basePort>,bind=localhost,reuseaddr,forever,interval=10 \ TUN:<socatBoard_ip>,tun-name=socat0,iff-up &
