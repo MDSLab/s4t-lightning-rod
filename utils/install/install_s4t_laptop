@@ -1,0 +1,64 @@
+#!/bin/sh                                                                                                                                                    
+
+#Copyright (c) 2016 Nicola Peditto
+
+#EXEC: ./install_s4t_laptop 14143131 38.1836489 15.5513039 148
+
+##### INSTALLAZIONE DIPENDENZE #####
+apt-get install -y unzip 
+
+sudo npm install -g log4js autobahn jsonfile nconf is-reachable when
+#npm install -g log4js jsonfile nconf
+#sudo npm install --unsafe-perm --verbose -g autobahn
+
+##### DOWNLOAD SORGENTI #####         
+mkdir /opt/stack4things/
+cd /opt/stack4things/            
+wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
+unzip master.zip && rm -f master.zip
+cd s4t-lightning-rod-master
+
+
+
+##### CONFIGURAZIONE JSON #####
+cp /opt/stack4things/s4t-lightning-rod-master/settings.example.json /opt/stack4things/s4t-lightning-rod-master/settings.json
+cp /opt/stack4things/s4t-lightning-rod-master/measures.example.json /opt/stack4things/s4t-lightning-rod-master/measures.json
+
+#Edit plugins
+mkdir /opt/stack4things/s4t-lightning-rod-master/plugins
+echo "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-master/plugins.json
+
+mkdir /opt/stack4things/s4t-lightning-rod-master/plugin_conf
+
+#Edit settings
+sed -i "s/\"device\":\"\"/\"device\":\"laptop\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"code\":\"\"/\"code\":\"$1\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"resource_id\":\"\"/\"resource_id\":\"$2\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"url_wamp\":\"\"/\"url_wamp\":\"ws://$3\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"port_wamp\":\"\"/\"port_wamp\":\"8181\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"realm\":\"\"/\"realm\":\"s4t\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"url_reverse\":\"\"/\"url_reverse\":\"ws://$3\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+#sed -i "s/\"port_reverse\":\"\"/\"port_reverse\":\"8080\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+
+sed -i "s/\"latitude\":/\"latitude\":$2/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"longitude\":/\"longitude\":$3/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"altitude\":/\"altitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+
+mv /opt/stack4things/s4t-lightning-rod-master/ /opt/stack4things/s4t-lightning-rod-laptop/
+
+echo "Configurazione s4t-lightning-rod completata!"
+
+
+##### INIT SERVIZI AND REBOOT#####
+#cp /opt/stack4things/s4t-lightning-rod-master/init.d/s4t-lightning-rod /etc/init.d/
+#chmod +x /etc/init.d/s4t-lightning-rod
+#touch /var/log/s4t-lightning-rod.log
+#/etc/init.d/s4t-lightning-rod enable
+
+#cp /opt/stack4things/s4t-lightning-rod-master/crontabs/root /etc/crontabs/
+#/etc/init.d/cron start
+#echo -e "\t Servizio s4t-lightning-rod abilitato!"
+
+
+echo "Installazione versione laptop completata!"
+

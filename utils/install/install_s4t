@@ -1,0 +1,70 @@
+#!/bin/sh                                                                                                                                                    
+
+#Copyright (c) 2016 Nicola Peditto
+
+
+#EXEC: ./install_s4t 14141414 38.111111 15.111111 15.0
+
+
+##### DELETE OLD INSTALLATION #####                                                                                                                                                                                                          
+if [ -d /opt/stack4things ]                                                                                                                                                                                                                  
+then                                                                                                                                                                                                                                         
+        echo -e "\n\tDelete previous Lightning-Rod installation...\n" 
+        rm -rf /opt/stack4things                                                                                                                                                                                                             
+fi
+
+##### INSTALLAZIONE DIPENDENZE #####
+opkg update
+opkg install unzip node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib socat ip -d mnt
+#opkg install --force-depends kmod-tun kmod-gre
+
+npm install -g log4js is-reachable q
+
+ln -s /opt/usr/sbin/ip /bin/ip 
+
+
+##### DOWNLOAD SORGENTI #####         
+mkdir /opt/stack4things/
+cd /opt/stack4things/            
+wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
+unzip master.zip && rm -f master.zip
+cd s4t-lightning-rod-master
+
+
+
+##### CONFIGURAZIONE JSON #####
+cp /opt/stack4things/s4t-lightning-rod-master/settings.example.json /opt/stack4things/s4t-lightning-rod-master/settings.json
+cp /opt/stack4things/s4t-lightning-rod-master/measures.example.json /opt/stack4things/s4t-lightning-rod-master/measures.json
+cp /opt/stack4things/s4t-lightning-rod-master/plugins.example.json /opt/stack4things/s4t-lightning-rod-master/plugins.json
+
+mkdir /opt/stack4things/s4t-lightning-rod-master/plugin_conf
+mkdir /opt/stack4things/s4t-lightning-rod-master/plugins
+#echo -e "{\n\t\"plugins\":{\n\n\t}\n}" > /opt/stack4things/s4t-lightning-rod-master/plugins.json
+
+
+
+#Edit settings
+sed -i "s/\"device\":\"\"/\"device\":\"arduino_yun\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"code\":\"\"/\"code\":\"$1\"/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"latitude\":/\"latitude\":$2/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"longitude\":/\"longitude\":$3/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+sed -i "s/\"altitude\":/\"altitude\":$4/g" /opt/stack4things/s4t-lightning-rod-master/settings.json
+
+echo -e "\t Lightning-Rod configuration completed!"
+
+
+##### INIT SERVIZI AND REBOOT#####
+cp /opt/stack4things/s4t-lightning-rod-master/init.d/s4t-lightning-rod /etc/init.d/
+chmod +x /etc/init.d/s4t-lightning-rod
+touch /var/log/s4t-lightning-rod.log
+/etc/init.d/s4t-lightning-rod enable
+
+cp /opt/stack4things/s4t-lightning-rod-master/crontabs/root /etc/crontabs/
+/etc/init.d/cron start
+echo -e "\t Lightning-Rod service enabled!"
+
+
+echo "Installation completed...board rebooting...bye!"
+sleep 2
+
+reboot
