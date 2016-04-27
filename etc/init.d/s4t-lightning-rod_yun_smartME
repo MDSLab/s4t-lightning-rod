@@ -28,7 +28,7 @@ start () {
         MYPID=`ps www | grep lightning-rod.js | grep -v grep | awk {'print $1'}`                                                         
                                                                                                                                          
         if [ -r $MYPID ]; then                                                                                                           
-                cd /opt/stack4things/lightning-rod                                                                            
+                cd /opt/stack4things/s4t-lightning-rod-master                                                                            
                 node lightning-rod.js >> /dev/null & # /var/log/s4t-lightning-rod.log &                                                                
                 echo "Lightning-rod is started"                                                                                          
         else                                                                                                                             
