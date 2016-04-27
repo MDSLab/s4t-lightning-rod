@@ -74,7 +74,7 @@ servicesProcess = [];
 var device = nconf.get('config:device');
 
 //for connection test
-//var isReachable = require('is-reachable');
+var isReachable = require('is-reachable');
 var running = require('is-running');
 var online = true;
 active = true;
