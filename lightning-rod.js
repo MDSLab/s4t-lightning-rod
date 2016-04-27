@@ -74,7 +74,7 @@ servicesProcess = [];
 var device = nconf.get('config:device');
 
 //for connection test
-var isReachable = require('is-reachable');
+//var isReachable = require('is-reachable');
 var running = require('is-running');
 var online = true;
 active = true;
@@ -455,13 +455,15 @@ if (typeof device !== 'undefined'){
             wampConnection.open();
 	    //-----------------------------------------------------------------------------------------------------
 
-	    
+	    /*
+	    // MEASURES management not supported yet
             //MEASURES --------------------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
             var manageMeasure = require('./manage-measures');
             manageMeasure.restartAllActiveMeasures();
             //-----------------------------------------------------------------------------------------------------
-
+	    */
+	    
 	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
 	    //This procedure restarts all plugins in "ON" status
 	    var managePlugins = require('./manage-plugins');
