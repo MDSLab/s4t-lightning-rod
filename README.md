@@ -16,20 +16,20 @@ Lightning-rod has been tested to work on:
 
 We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed. Everything needs to be run as root.
 
-Install dependencies via apt-get:
+####Install dependencies via apt-get:
 
 ```
 # apt-get install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev
 ```
 
-Install necessary node.js modules via npm:
+####Install necessary node.js modules via npm:
 
 ```
 # npm install -g npm
 # npm install -g gyp autobahn jsonfile nconf reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
 ```
 
-Install the Lightning-rod:
+####Install the Lightning-rod:
 
 ```
 # mkdir /opt/stack4things/ && cd /opt/stack4things/
@@ -43,7 +43,8 @@ Install the Lightning-rod:
 # touch /var/log/s4t-lightning-rod.log
 ```
 
-Configure the Lightning-rod (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
+####Configure the Lightning-rod 
+(note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
@@ -51,14 +52,14 @@ Configure the Lightning-rod (note that you need the NODE_ID that is the code ret
 # sed -i "s/\"code\":\"\"/\"code\":\"NODE_ID\"/g" /opt/stack4things/lightning-rod/settings.json
 ```
 
-Start the Lightning-rod and configure it to start at boot:
+####Start the Lightning-rod and configure it to start at boot:
 
 ```
 # /etc/init.d/s4t-lightning-rod enable
 # /etc/init.d/s4t-lightning-rod start
 ```
 
-Configure cron to launch the Lightinig-rod if not yet running:
+####Configure cron to launch the Lightinig-rod if not yet running:
 
 ```
 # /etc/init.d/cron stop
@@ -70,20 +71,20 @@ Configure cron to launch the Lightinig-rod if not yet running:
 
 We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed. Everything needs to be run as root. For the installation to be completed successfully, you need a working Node.js environment and a working kernel with gre, tun, ipv6, tunnel4, tunnel6, and ip6_tunnel module packages (kmod-*) installed.
 
-Install dependencies via opkg:
+####Install dependencies via opkg:
 
 ```
 # opkg update
 # opkg install unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib node-fuse-bindings -d mnt
 ```
 
-Install necessary node.js modules via npm:
+####Install necessary node.js modules via npm:
 
 ```
 # npm install -g requestify is-running connection-tester log4js q
 ```
 
-Install the Lightning-rod:
+####Install the Lightning-rod:
 
 ```
 # mkdir /opt/stack4things/ && cd /opt/stack4things/
@@ -96,7 +97,8 @@ Install the Lightning-rod:
 # touch /var/log/s4t-lightning-rod.log
 ```
 
-Configure the Lightning-rod (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
+####Configure the Lightning-rod 
+(note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
@@ -105,14 +107,14 @@ Configure the Lightning-rod (note that you need the NODE_ID that is the code ret
 # sed -i "s/\"code\":\"\"/\"code\":\"NODE_ID\"/g" /opt/stack4things/lightning-rod/settings.json
 ```
 
-Start the Lightning-rod and configure it to start at boot:
+####Start the Lightning-rod and configure it to start at boot:
 
 ```
 # /etc/init.d/s4t-lightning-rod enable
 # /etc/init.d/s4t-lightning-rod start
 ```
 
-Configure cron to launch the Lightinig-rod if not yet running:
+####Configure cron to launch the Lightinig-rod if not yet running:
 
 ```
 # /etc/init.d/cron stop
