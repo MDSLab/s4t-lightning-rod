@@ -118,7 +118,7 @@ Configure cron to launch the Lightinig-rod if not yet running:
 # /etc/init.d/cron stop
 # cp /opt/stack4things/lightning-rod/etc/cron.d/root_yun /etc/crontabs/root
 # /etc/init.d/cron start
-
+```
 
 ##Scientific References
 Scientific papers describing the work on Stack4Things by the University of Messina can be found here:
