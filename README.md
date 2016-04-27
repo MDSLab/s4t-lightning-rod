@@ -1,54 +1,85 @@
-#node-lighthing-rod
+#Stack4Things Lightning-rod
 
-**node-lighthing-rod** is the client to connect Arduino YUN/Linino One or Raspberry Pi to [**s4t-node-cloud**](https://github.com/MDSLab/s4t-node-cloud), to works corrctly there is some specification for the devices:
+Stack4Things is an Internet of Things framework developed by the Mobile and Distributed Systems Lab (MDSLab) at the University of Messina, Italy. Stack4Things is an open source project that helps you in managing IoT device fleets without caring about their physical location, their network configuration, their underlying technology. It is a Cloud-oriented horizontal solution providing IoT object virtualization, customization, and orchestration. Stack4Things provides you with an out-of-the-box experience on several of the most popular embedded and mobile systems.
 
-* Arduino YUN/Linino ONE:
+Lighthing-rod is the node-side component in the Stack4Things architecture. It acts as a probe in the IoT node and interacts with the IoTronic service connecting the node to the Cloud. This version is the one that works with the standalone version of the IoTronic service that you can find [here] (https://github.com/MDSLab/s4t-iotronic-standalone).
 
-	* LininoIO O.S.;
+Lightning-rod has been tested to work on:
 
-	* Nodejs;
+* Raspberry Pi 2
+* Arduino YUN
+* Linino ONE
 
-* Raspebery Pi:
-	
-	* Nodejs;
+##Installation instructions
 
-##Arudino YUN/Linino One Installation Dependencies
-To install the last version of LininoIO O.S. on Arduino YUN/Linino ONE it is usefull to consult the Linino wiki where there is a [guide](http://wiki.linino.org/doku.php?id=wiki:upgradetolininoio) to upgrade the board to LininoIO O.S. . 
+###Raspberry Pi 2
 
-After the LininoIO O.S. is installed on the board you need to install Nodejs on the board, you can use the [guide](http://wiki.linino.org/doku.php?id=wiki:nodejscript) to install Nodejs using a simple bash script on the official Linino wiki page. 
+We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed. Everything needs to be run as root.
 
-##Raspberry Pi Installation Dependencies
-You can use a Rapseberry Pi with any kind of O.S. we have tested the **node-lighthig-rod** on Rasperry Pi with *Raspbian*. To install Nodejs on Raspberry Pi with *Raspbian* just use the package manager of the O.S. using the follow command:
+Install dependencies via apt-get:
 
 ```
-suo apt-get install nodejs
+# apt-get install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev
 ```
 
-##Install node-lighthing-rod##
-
-To install the client **node-lighthing-rod** you need to copy on the board all the source code in the github repository, after you have copied the source code, you can use the python script *install.py*, at the root directory of the source code, to install the client and the boot service on the board, to do this you can use the follow command:
+Install necessary node.js modules via npm:
 
 ```
-python install.py yun|rasp
+# npm install -g npm
+# npm install -g gyp autobahn jsonfile nconf reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
 ```
 
-*yun* paramiter for Arduino YUN/Linino One devices or *rasp* paramiter for Raspberry Pi devices.
+Install the Lightning-rod:
 
-##Configuration
-After you have installed the client **node-lighthing-rod** you need to edit the configuration file:
 ```
-/opt/node-lighthing-rod/setting.json
+# mkdir /opt/stack4things/ && cd /opt/stack4things/
+# wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
+# unzip master.zip && rm -f master.zip
+# mv s4t-lightning-rod-master lightning-rod
+# cd lightning-rod && mkdir plugins && mkdir plugin_conf
+# sudo npm link autobahn jsonfile nconf reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
+# cp /opt/stack4things/lightning-rod/etc/init.d/s4t-lightning-rod_raspberry /etc/init.d/s4t-lightning-rod
+# chmod +x /etc/init.d/s4t-lightning-rod
+# touch /var/log/s4t-lightning-rod.log
 ```
-You need to change the value of the IP and the PORT of the WAMP Router, Reverse Websocket Tunnel Server and other configuration paramiters 
+
+Configure the Lightning-rod (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
+
+```
+# cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"device\":\"\"/\"device\":\"raspberry\"/g" /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"code\":\"\"/\"code\":\"NODE_ID\"/g" /opt/stack4things/lightning-rod/settings.json
+```
+
+Start the Lightning-rod and configure it to start at boot:
+
+```
+# /etc/init.d/s4t-lightning-rod enable
+# /etc/init.d/s4t-lightning-rod start
+```
+
+Force cron to launch the Lightinig-rod if not yet running:
+
+```
+# /etc/init.d/cron stop
+# cp /opt/stack4things/lightning-rod/etc/cron.d/root /etc/cron.d/
+# /etc/init.d/cron start
+```
+
+###Arduino YUN/Linino ONE
+
+ToDo
+
+
 
 ##Scientific References
-Scientific papers describing the University of Messina work on Stack4Thing can be found here:
+Scientific papers describing the work on Stack4Things by the University of Messina can be found here:
 
 [**MDSL**] (http://mdslab.unime.it/biblio)
 
-In particular, you can find details about Stack4Thing in the following papers:
+In particular, you can find details about Stack4Things in the following papers:
 
-G. Merlino, D. Bruneo, S. Distefano, F. Longo, A. Puliafito - Stack4Things: integrating IoT with OpenStack in a Smart City context. Published on Sensors and Smart Cities, Smart Computing Workshops (SMARTCOMP Workshops), 2014 International Conference on, pp. 21,28, 5-5 Nov. 2014. 
+G. Merlino, D. Bruneo, S. Distefano, F. Longo, A. Puliafito - Stack4Things: integrating IoT with OpenStack in a Smart City context. Published on Sensors and Smart Cities, Smart Computing Workshops (SMARTCOMP Workshops), 2014 International Conference on, pp. 21,28, 5-5 Nov. 2014.
 
-Giovanni Merlino,  Dario Bruneo,  Salvatore Distefano,  Francesco Longo,  Antonio Puliafito, and Adnan Al-Anbuky - A Smart City Lighting Case Study on an OpenStack-Powered Infrastructure, Sensors 2015, 15(7), pp. 16314-16335.
+G. Merlino,  D. Bruneo,  S. Distefano,  F. Longo,  A. Puliafito, and A. Al-Anbuky - A Smart City Lighting Case Study on an OpenStack-Powered Infrastructure, Published on Sensors 2015, 15(7), pp. 16314-16335.
 
