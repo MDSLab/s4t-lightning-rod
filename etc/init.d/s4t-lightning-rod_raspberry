@@ -8,7 +8,7 @@
 # Description:       The\\\ IoTronic\\\ node-side\\\ probe
 ### END INIT INFO
 
-SCRIPT=node\\\ /opt/stack4things/lightning-rod/lightning-rod.js
+SCRIPT="node /opt/stack4things/lightning-rod/lightning-rod.js"
 RUNAS=root
 NAME=s4t-lightning-rod
 
@@ -21,7 +21,7 @@ start() {
     return 1
   fi
   echo 'Starting service…' >&2
-  local CMD="$SCRIPT &> \"$LOGFILE\" & echo \$!"
+  local CMD="$SCRIPT &>> \"$LOGFILE\" & echo \$!"
   su -c "$CMD" $RUNAS > "$PIDFILE"
   echo 'Service started' >&2
 }

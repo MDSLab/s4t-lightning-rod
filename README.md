@@ -37,7 +37,7 @@ Install the Lightning-rod:
 # unzip master.zip && rm -f master.zip
 # mv s4t-lightning-rod-master lightning-rod
 # cd lightning-rod && mkdir plugins && mkdir plugin_conf
-# sudo npm link autobahn jsonfile nconf reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
+# npm link autobahn jsonfile nconf reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
 # cp /opt/stack4things/lightning-rod/etc/init.d/s4t-lightning-rod_raspberry /etc/init.d/s4t-lightning-rod
 # chmod +x /etc/init.d/s4t-lightning-rod
 # touch /var/log/s4t-lightning-rod.log
