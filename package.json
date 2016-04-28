@@ -1,0 +1,35 @@
+{
+  "name": "s4t-lighthing-rod",
+  "version": "0.0.1",
+  "description": "node-lighthing-rod is the client to connect Arduino YUN/Linino One or Raspberry Pi to s4t-node-cloud",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies":{
+    "node-reverse-wstunnel": ">=0.1.2",
+    "autobahn": ">=0.9.6",
+    "nconf":">=0.7.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MDSLab/s4t-lighthing-rod.git"
+  },
+  "keywords": [
+    "WAMP",
+    "IoT",
+    "WebSocket",
+    "Cloud"
+  ],
+  "author": "Andrea Rocco Lotronto <andrealotronto@gmail.com>",
+  "license": [
+    {
+      "type": "Apache-2.0",
+      "url": "https://github.com/MDSLab/s4t-lighthing-rod/LICENSE"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/MDSLab/s4t-lighthing-rod/issues"
+  },
+  "homepage": "https://github.com/MDSLab/s4t-lighthing-rod"
+}

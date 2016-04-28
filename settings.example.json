@@ -1,18 +1,23 @@
 {
 	"config":{
-		
+	
+		"device":"",
+		"log": {
+		    "logfile": "/var/log/s4t-lightning-rod.log",
+		    "loglevel": "info"
+		},
 		"wamp":
 		{
-			"url": "",
-			"port": "",
-			"realm": ""
+			"url_wamp": "",
+			"port_wamp": "8181",
+			"realm": "s4t"
 		},
 
 		"reverse":
 		{
 			"server":{
-				"url": "",
-				"port": ""
+				"url_reverse": "",
+				"port_reverse": "8080"
 			},
 			"lib":{
 				"bin":"/opt/usr/lib/node_modules/node-reverse-wstunnel/bin/wstt.js"
@@ -27,6 +32,8 @@
 
 		"board":
 		{
+			"code":"",
+			"status": "new",
 			"services":{
 				"ssh":{
 					"port":"22"
@@ -41,14 +48,11 @@
 					"port":"8000"
 				}
 			},
-			"code":"",
-			"sensors":{
-				"temp":{
-					"resource_id":"",
-					"auth_id":"",
-					"time":"60000",
-					"status":"on"
-				}
+			
+			"position":{
+				"altitude":0,
+				"longitude":0,
+				"latitude":0
 				
 			}
 		}

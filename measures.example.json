@@ -1,0 +1,19 @@
+{
+    "measures":{
+        
+        "my_lux":{
+                "status":           "off",
+                "pin":              "A1",
+                "period":           "1000",
+                "read_plugin":      "./plugins/read-lux",
+                "elaborate_plugin": "./plugins/elaborate-lux"
+                },
+        "my_temp":{
+                "status":           "off",
+                "pin":              "A0",
+                "period":           "1000",
+                "read_plugin":      "./plugins/read-temp",
+                "elaborate_plugin": "./plugins/elaborate-temp"
+        }
+    }
+}
