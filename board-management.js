@@ -1,5 +1,6 @@
 //service logging configuration: "board-management"   
 var logger = log4js.getLogger('board-management');
+logger.setLevel(loglevel);
 
 var fs = require("fs");
 
@@ -99,11 +100,7 @@ exports.setBoardPosition = function (args){
 	  
       } else {
 	
-	  
 	  logger.info("settings.json configuration file saved to " + configFileName);
-	  
-	  
-
 
       }
   });

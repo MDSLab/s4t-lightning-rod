@@ -3,6 +3,7 @@
 
 //service logging configuration: "manageNetworks"   
 var logger = log4js.getLogger('manageNetworks');
+logger.setLevel(loglevel);
 
 var Q = require("q");
 
@@ -106,13 +107,13 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
 		  logger.info("[NETWORK-MANAGER] - WSTT activating...");
 
 		  var wstt_proc = spawn(rtpath, ['-r '+ socatServer_port +':localhost:'+basePort, reverseS_url])
-		  logger.info("[NETWORK-MANAGER] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
+		  logger.debug("[NETWORK-MANAGER] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
 		  
 		  wstt_proc.stdout.on('data', function (data) {
-		      logger.info('[NETWORK-MANAGER] - WSTT - stdout: ' + data);
+		      logger.debug('[NETWORK-MANAGER] - WSTT - stdout: ' + data);
 		  });
 		  wstt_proc.stderr.on('data', function (data) {
-		      logger.info('[NETWORK-MANAGER] - WSTT - stderr: ' + data);
+		      logger.debug('[NETWORK-MANAGER] - WSTT - stderr: ' + data);
 		  });
 		  wstt_proc.on('close', function (code) {
 		      logger.warn('[NETWORK-MANAGER] - WSTT - process exited with code ' + code);
@@ -164,7 +165,7 @@ exports.manageNetworks = function(args){
 		  
 		  //ip link add link gre-lr0 name gre-lr0.<vlan> type vlan id <vlan> 
 		  var add_vlan_iface = spawn('ip',['link', 'add', 'link', 'gre-lr0', 'name', 'gre-lr0.'+vlanID, 'type', 'vlan' ,'id', vlanID]);         
-		  logger.info('NETWORK COMMAND: ip link add link gre-lr0 name gre-lr0.'+vlanID + ' type vlan id '+ vlanID),
+		  logger.debug('NETWORK COMMAND: ip link add link gre-lr0 name gre-lr0.'+vlanID + ' type vlan id '+ vlanID),
 		  
 		  add_vlan_iface.stdout.on('data', function (data) {
 		      logger.info('--> stdout - add_vlan_iface: ' + data);
@@ -178,7 +179,7 @@ exports.manageNetworks = function(args){
 		    
 			  //ip addr add <ip/mask> dev gre-lr0.<vlan> 
 			  var add_vlan_ip = spawn('ip',['addr', 'add', boardVlanIP+'/'+vlanMask ,'dev','gre-lr0.'+vlanID]);         
-			  logger.info('NETWORK COMMAND: ip addr add '+boardVlanIP+'/'+vlanMask+' dev gre-lr0.'+vlanID);
+			  logger.debug('NETWORK COMMAND: ip addr add '+boardVlanIP+'/'+vlanMask+' dev gre-lr0.'+vlanID);
 			  
 			  add_vlan_ip.stdout.on('data', function (data) {
 			      logger.info('--> stdout - add_vlan_ip: ' + data);
@@ -190,7 +191,7 @@ exports.manageNetworks = function(args){
 			    
 				//ip link set gre-lr0.<vlan> up
 				var greVlan_up = spawn('ip',['link','set','gre-lr0.'+vlanID,'up']); 
-				logger.info('GRE IFACE UP: ip link set gre-lr0.'+ vlanID+ ' up');
+				logger.debug('GRE IFACE UP: ip link set gre-lr0.'+ vlanID+ ' up');
 				
 				greVlan_up.stdout.on('data', function (data) {
 				    logger.info('--> stdout - greVlan_up: ' + data);
@@ -200,9 +201,9 @@ exports.manageNetworks = function(args){
 				});
 				greVlan_up.on('close', function (code) {
 				  
-				    logger.info("--> VLAN IFACE UP!");
+				    logger.info('--> VLAN IFACE gre-lr0.'+ vlanID+ ' is UP!');
 				    
-				    logger.info("BOARD SUCCESSFULLY ADDED TO VLAN: "+boardVlanIP+'/'+vlanMask);
+				    logger.info("BOARD SUCCESSFULLY ADDED TO VLAN "+vlanName+" with IP "+boardVlanIP);
 				    
 				    
 				});
@@ -232,7 +233,7 @@ exports.manageNetworks = function(args){
 	    //NEW-net
 	    //ip link del gre-lr0.<vlan>
 	    var del_greVlan = spawn('ip',['link','del','gre-lr0.'+vlanID]); 
-	    logger.info('DEL GRE IFACE: ip link del gre-lr0.'+ vlanID);
+	    logger.debug('DEL GRE IFACE: ip link del gre-lr0.'+ vlanID);
 	    
 	    del_greVlan.stdout.on('data', function (data) {
 		logger.info('--> stdout - del_greVlan: ' + data);
@@ -242,7 +243,7 @@ exports.manageNetworks = function(args){
 	    });
 	    del_greVlan.on('close', function (code) {
 	      
-		logger.info("--> VLAN IFACE DELETED!");
+		logger.info("--> VLAN IFACE gre-lr0."+ vlanID +" DELETED!");
 		
 		logger.info("BOARD SUCCESSFULLY REMOVED FROM VLAN "+vlanName);
 		

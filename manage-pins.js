@@ -1,5 +1,6 @@
 //service logging configuration: "managePins"
 var logger = log4js.getLogger('managePins');
+logger.setLevel(loglevel);
 
 //Function to read data from a digital pin
 function readDigital(args){

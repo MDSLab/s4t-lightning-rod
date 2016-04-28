@@ -1,6 +1,7 @@
 
 //service logging configuration: "managePlugins"   
 var logger = log4js.getLogger('managePlugins');
+logger.setLevel(loglevel);
 
 var fs = require("fs");
 var Q = require("q");
@@ -35,7 +36,6 @@ exports.call = function (args, details){
     }
     catch(err){
         logger.error('Error parsing JSON file ./plugins.json');
-        //return 'Error parsing JSON file ./plugins.json'';
     }
     
     //If the plugin exists
@@ -268,7 +268,7 @@ function pluginStarter(plugin_name, timer, pluginsConf, plugin_json_name, skip) 
 				  if(err) {
 				      logger.error('|----> '+ plugin_name + ' - Error writing JSON file ' + outputFilename + ': ' + err);
 				  } else {
-				      logger.info("|----> "+ plugin_name + " - JSON file " + outputFilename + " updated!");
+				      logger.debug("|----> "+ plugin_name + " - JSON file " + outputFilename + " updated!");
 				  }
 			      });
 			  
@@ -339,7 +339,7 @@ function clearPluginTimer(plugin_name) {
 	  }else{
 	      clearInterval( plugins[plugin_name].timer );
 
-	      logger.info("|--> " + plugin_name +" - "+ JSON.stringify(plugins[plugin_name]) + " timer cleared!");
+	      logger.debug("|--> " + plugin_name +" - "+ JSON.stringify(plugins[plugin_name]) + " timer cleared!");
 	  }
 	  
     }  
@@ -571,7 +571,7 @@ exports.restartAllActivePlugins = function (){
 			  if(err) {
 			      logger.error(err);
 			  } else {
-			      logger.info("|----> JSON file " + outputFilename + " updated!");
+			      logger.debug("|----> JSON file " + outputFilename + " updated!");
 			  }
 		      });
 		      
@@ -642,7 +642,7 @@ exports.run = function (args){
 
     
     logger.info('Run plugin RPC called for plugin '+ plugin_name +'...');
-    logger.info("|--> Input parameters: "+plugin_json);
+    logger.info("|--> Input parameters: "+ plugin_json);
     
     
     try{
@@ -839,7 +839,7 @@ exports.kill = function (args){
 			  
 		      } else {
 			
-			  logger.info("|--> " + outputFilename + " updated!");
+			  logger.debug("|--> " + outputFilename + " updated!");
 			  
 			  clearPluginTimer(plugin_name);
 			  
@@ -891,7 +891,7 @@ exports.injectPlugin = function(args){
     
     logger.info("Inject plugin RPC called for "+plugin_name+" plugin...");
     logger.info("|--> Parameters injected: { plugin_name : " + plugin_name + ", autostart : " + autostart + " }");
-    logger.info("|--> plugin code:\n\n" + JSON.stringify(plugin_code) + "\n\n");
+    logger.debug("|--> plugin code:\n\n" + JSON.stringify(plugin_code) + "\n\n");
     
     // Writing the file
     var fileName = './plugins/' + plugin_name + '.js';
@@ -929,7 +929,7 @@ exports.injectPlugin = function(args){
 		    return 'Error writing ./plugins.json file: ' + err;
 		    
                 } else {
-		    logger.info("|--> Plugins configuration file saved to " + outputFilename);
+		    logger.debug("|--> Plugins configuration file saved to " + outputFilename);
 
                 }
             });
@@ -958,7 +958,7 @@ exports.removePlugin = function(args){
       
       if(exists) {
 	
-	  logger.info('|--> File '+pluginFileName+' exists. Deleting now ...');
+	  logger.debug('|--> File '+pluginFileName+' exists. Deleting now ...');
 	  
 	  fs.unlink(pluginFileName, function(err) {
 	    
@@ -977,7 +977,7 @@ exports.removePlugin = function(args){
       }
       
       
-      logger.info('|--> Plugin data cleaning...');
+      logger.debug('|--> Plugin data cleaning...');
 		    
       var pluginsConf = JSON.parse(fs.readFileSync(jsonPluginsFileName, 'utf8'));
 
@@ -985,7 +985,7 @@ exports.removePlugin = function(args){
 	
 	  pluginsConf.plugins[plugin_name]=null;
 	  delete pluginsConf.plugins[plugin_name];
-	  logger.info("|--> Plugin node successfully removed from plugins.json!" );
+	  logger.debug("|--> Plugin node successfully removed from plugins.json!" );
 	  
 	  fs.writeFile(jsonPluginsFileName, JSON.stringify(pluginsConf, null, 4), function(err) {
 	      if(err) {
@@ -994,7 +994,7 @@ exports.removePlugin = function(args){
 		  d.resolve(response);
 		  
 	      } else {
-		  logger.info("|--> plugins.json file updated!");
+		  logger.debug("|--> plugins.json file updated!");
 		  
 		  fs.exists(pluginConfFileName, function(exists) {
 
@@ -1006,7 +1006,7 @@ exports.removePlugin = function(args){
 				  logger.warn("|--> "+pluginConfFileName+" file deleting FAILED: "+err);
 				  d.resolve(response);				    
 			      }else{
-				  logger.info("|--> "+pluginConfFileName+" file successfully deleted!");
+				  logger.debug("|--> "+pluginConfFileName+" file successfully deleted!");
 				  response = plugin_name+" completely removed from board!";
 				  logger.info("|--> " + plugin_name + " - plugin completely removed from board!");
 				  d.resolve(response);	

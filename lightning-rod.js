@@ -74,7 +74,7 @@ servicesProcess = [];
 var device = nconf.get('config:device');
 
 //for connection test
-var isReachable = require('is-reachable');
+//var isReachable = require('is-reachable');
 var running = require('is-running');
 var online = true;
 active = true;
@@ -391,7 +391,7 @@ if (typeof device !== 'undefined'){
    
                 }, 10 * 1000);
 		
-		logger.info('[WAMP] - TIMER to keep alive WAMP connection setup!');
+		logger.info('[WAMP] - TIMER to keep alive WAMP connection set up!');
 		
 		//----------------------------------------------------------------------------------------------------
 		

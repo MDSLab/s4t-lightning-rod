@@ -9,6 +9,23 @@ log4js.loadAppender('file');
 logfile = nconf.get('config:log:logfile');
 log4js.addAppender(log4js.appenders.file(logfile));    
 var logger = log4js.getLogger('plugin-apis');
+try{
+  
+    loglevel = nconf.get('config:log:loglevel');
+    if (loglevel === undefined){
+      logger.setLevel('INFO');
+      //logger.warn('[SYSTEM] - LOG LEVEL not specified... default has been set: INFO'); 
+    }else{
+      logger.setLevel(loglevel);
+      //logger.info('[SYSTEM] - LOG LEVEL: ' + loglevel); 
+    }
+}
+catch(err){
+    //logger.error('[SYSTEM] - Error in parsing loglevel parameter from settings.json: '+ err);
+    logger.setLevel('INFO');
+    //logger.warn('[SYSTEM] - Log level applied: INFO');
+
+}
 
 
 var requestify = require('requestify');
