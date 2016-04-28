@@ -132,22 +132,53 @@ exports.readRemote = function (args){
   driver_mp_node = mp_list[driver_name];  
   
   var driver = drivers[driver_name];
+  var remote = driver_mp_node['/'].remote;
+  var mirror_board = driver_mp_node['/'].mirror_board;
   
-  driver[ driver_mp_node['/'+filename].read_function ](
-  
-      function(read_content){
-
-	  var buffer = new Buffer(read_content.toString(), 'utf-8');
-	  var str = ''+buffer.slice(0);
-	  if (!str)
-	      return d.resolve(0); 
-	  //var str = read_content.toString();
-	  logger.info('Read REMOTE: '+driver_name+'['+filename+'] -> '+ str);
-	  d.resolve(str);
-		
-      }
+  if (remote === "false"){
     
-  );      
+      driver[ driver_mp_node['/'+filename].read_function ](
+      
+	  function(read_content){
+
+	      var buffer = new Buffer(read_content.toString(), 'utf-8');
+	      var str = ''+buffer.slice(0);
+	      if (!str)
+		  return d.resolve(0); 
+	      //var str = read_content.toString();
+	      logger.info('Read REMOTE: '+driver_name+'['+filename+'] -> '+ str);
+	      d.resolve(str);
+		    
+	  }
+	
+      ); 
+      
+
+  }else{
+    
+      logger.debug('REMOTE CALLING DRIVER to '+mirror_board + ' RPC called: s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read');
+      
+      session_drivers.call('s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read', [driver_name, filename]).then(
+				
+	  function(read_content){
+	    
+	      var buffer = new Buffer(read_content.toString(), 'utf-8');
+	      var str = ''+buffer.slice(0);
+	      if (!str)
+		  return d.resolve(0);      
+	      logger.info('Read REMOTE mirrored from '+mirror_board+': '+driver_name+'['+filename+'] -> '+ str);
+	      d.resolve(str);
+
+	  },
+	  function (error) {
+	      // call failed
+	      logger.warn('Read REMOTE mirrored from '+mirror_board+' failed! - Error: '+ JSON.stringify(error));
+	      var error_log = "ERROR: " + error["error"]
+	      d.resolve( error_log );
+	  }
+      );	
+    
+  }
   
     
   return d.promise;
@@ -270,7 +301,8 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 	driver_mp_node[fuse_root_path]={
 	    name: driver_name,
 	    mp: {},
-	    remote: remote
+	    remote: remote,
+	    mirror_board: mirror_board
 	}
 	
 	driver_mp_node[fuse_root_path].mp=root_mp;
