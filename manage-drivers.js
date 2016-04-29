@@ -1,3 +1,12 @@
+/*
+*				 Apache License
+*                           Version 2.0, January 2004
+*                        http://www.apache.org/licenses/
+*
+*      Copyright (c) 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Nicola Peditto
+* 
+*/
+
 //service logging configuration: "manageDrivers"   
 var logger = log4js.getLogger('manageDrivers');
 logger.setLevel(loglevel);
@@ -156,9 +165,11 @@ exports.readRemote = function (args){
 
   }else{
     
-      logger.debug('REMOTE CALLING DRIVER to '+mirror_board + ' RPC called: s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read');
+      var read_rpc_call = 's4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read';
       
-      session_drivers.call('s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read', [driver_name, filename]).then(
+      logger.debug('REMOTE READ CALLING DRIVER to '+mirror_board + ' RPC called: '+ read_rpc_call);
+      
+      session_drivers.call( read_rpc_call, [driver_name, filename]).then(
 				
 	  function(read_content){
 	    
@@ -185,31 +196,6 @@ exports.readRemote = function (args){
     
 }
 
-/* DEPRECATED
-function readFunction(driver, driver_name){
-  
-    var read_function = function (mountpoint, fd, buf, len, pos, cb) {
-      
-	  logger.debug('Read(%s, %d, %d, %d)', mountpoint, fd, len, pos);
-
-	  driver_mp_node = mp_list[driver_name]	  
-	  
-	  driver[driver_mp_node[mountpoint].read_function]( function(read_content){
-		var buffer = new Buffer(read_content.toString(), 'utf-8');
-		var str = ''+buffer.slice(pos);
-		if (!str)
-		    return cb(0);     
-		buf.write(str);
-		return cb(str.length);
-	  });      
-
-	
-    }  
-    
-    return read_function
-    
-}
-*/
  
 function writeFunction(driver, driver_name){
   
@@ -227,7 +213,7 @@ function writeFunction(driver, driver_name){
 		cb(fuse.EACCES);
 		
 	    } else {
-		driver[driver_mp_node[mountpoint].write_function]( content, function(){
+		driver[driver_mp_node[mountpoint].write_function ]( content, function(){
 		    cb(length);
 		});
 	    }
@@ -236,6 +222,67 @@ function writeFunction(driver, driver_name){
       
       return write_function
 }
+
+exports.NotAllowedRemoteFunction = function (args){
+  
+  return "Remote operation not allowed!"
+  
+  
+}
+
+exports.writeRemote = function (args){
+
+  var d = Q.defer();
+  
+  var driver_name = String(args[0]);
+  var filename = String(args[1]);
+  var filecontent = String(args[2]); 
+  
+  driver_mp_node = mp_list[driver_name];  
+  
+  var driver = drivers[driver_name];
+  var remote = driver_mp_node['/'].remote;
+  var mirror_board = driver_mp_node['/'].mirror_board;
+  
+  if (remote === "false"){
+    
+      driver[ driver_mp_node['/'+filename].write_function ]( filecontent, function(){
+	
+	      logger.info('Write REMOTE: '+driver_name+'['+filename+'] -> completed!');
+	      d.resolve("writing completed");	  
+	
+      });
+      
+
+  }else{
+    
+      var write_rpc_call = 's4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.write';
+      
+      logger.debug('REMOTE WRITE CALLING DRIVER to '+mirror_board + ' RPC called: '+ write_rpc_call);
+      
+      session_drivers.call(write_rpc_call, [driver_name, filename, filecontent]).then(
+				
+	  function(result){
+     
+	      logger.info('Write REMOTE mirrored from '+mirror_board+': '+driver_name+'['+filename+'] -> '+ result);
+	      d.resolve(result);
+
+	  },
+	  function (error) {
+	      // call failed
+	      logger.warn('Write REMOTE mirrored from '+mirror_board+' failed! - Error: '+ JSON.stringify(error));
+	      var error_log = "ERROR: " + error["error"]
+	      d.resolve( error_log );
+	  }
+      );	
+    
+  }
+  
+    
+  return d.promise;
+    
+}
+
 
 
 function MaskConversion(mode_b10){
@@ -378,7 +425,6 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 				  mp_list[driver_name] = driver_mp_node;
 				  
 				  logger.info("--> driver "+driver_name+" RPC read functions successfully registered!");
-				  logger.info("--> Available files for "+driver_name+" %s", JSON.stringify(file_list[driver_name]))
 				  				  
 			      }
 			    
@@ -387,7 +433,83 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 		    );
 		
 		
+	      }else{
+		
+		    session_drivers.register('s4t.'+boardCode+'.driver.'+driver_name+'.'+file.name+'.read', exports.NotAllowedRemoteFunction ).then(
+	      
+			  function(registration){
+
+			      driver_mp_node['/'+file.name].reg_read_function = registration;
+
+			      logger.debug('[WAMP] - '+driver_name+' - ' + file.name + ' read function registered!');
+			      
+			      if (idx === list.length - 1){ 
+				
+				  mp_list[driver_name] = driver_mp_node;
+				  
+				  logger.info("--> driver "+driver_name+" RPC read functions successfully registered!");
+				  				  
+			      }
+			    
+			  }
+		      
+		    );		    
 	      }	  
+	      
+	      if(file.write_function != undefined){  
+
+		    session_drivers.register('s4t.'+boardCode+'.driver.'+driver_name+'.'+file.name+'.write', exports.writeRemote ).then(
+	      
+			  function(registration){
+
+			      driver_mp_node['/'+file.name].reg_write_function = registration;
+
+			      logger.debug('[WAMP] - '+driver_name+' - ' + file.name + ' write function registered!');
+			      
+			      if (idx === list.length - 1){ 
+				
+				  mp_list[driver_name] = driver_mp_node;
+				  
+				  logger.info("--> driver "+driver_name+" RPC write functions successfully registered!");
+				  				  
+			      }
+			    
+			  }
+		      
+		    );
+		
+		    
+	      }else{
+		
+		    session_drivers.register('s4t.'+boardCode+'.driver.'+driver_name+'.'+file.name+'.write', exports.NotAllowedRemoteFunction ).then(
+	      
+			  function(registration){
+
+			      driver_mp_node['/'+file.name].reg_write_function = registration;
+
+			      logger.debug('[WAMP] - '+driver_name+' - ' + file.name + ' write function registered!');
+			      
+			      if (idx === list.length - 1){ 
+				
+				  mp_list[driver_name] = driver_mp_node;
+				  
+				  logger.info("--> driver "+driver_name+" RPC write functions successfully registered!");
+				  				  
+			      }
+			    
+			  }
+		      
+		    );		    
+	      }
+	      
+
+	      if (idx === list.length - 1){ 
+		
+		  logger.info("--> Available files for "+driver_name+" %s", JSON.stringify(file_list[driver_name]))
+						  
+	      }
+			      
+			      
 	   
 
 	      
@@ -456,9 +578,6 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 
 
 
-
-
-
 //This function mounts a driver
 exports.mountDriver = function (args){
       
@@ -478,7 +597,6 @@ exports.mountDriver = function (args){
     
     var d = Q.defer();
     
-    //logger.info("DRIVER "+driver_name+" ENV LOADING...");
     logger.debug("--> Driver folder ("+mountpoint+") checking...")
     
     try{
@@ -574,7 +692,20 @@ exports.unmountDriver = function (args){
 				      }
 				    
 				  );
-				
+
+				  session_drivers.unregister(driver_mp_node['/'+file.name].reg_write_function).then(
+				    
+				      function () {
+					  // successfully unregistered
+					  logger.debug("--> RPC write function of "+file.name +" unregistered!");
+					
+				      },
+				      function (error) {
+					  // unregister failed
+					  logger.error("--> Error unregistering RPC write function of "+file);
+				      }
+				    
+				  );
 				 
 			    }
 			    else{
