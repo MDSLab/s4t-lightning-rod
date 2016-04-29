@@ -105,6 +105,8 @@ function readFunction(driver_name, filename, mirror_board){
 	      
 	  }else{
 	    
+	      var filename = mountpoint.replace('/','');
+	    
 	      logger.debug('REMOTE CALLING DRIVER to '+mirror_board + ' RPC called: s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read');
 	      
 	      session_drivers.call('s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read', [driver_name, filename]).then(
