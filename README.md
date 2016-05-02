@@ -29,6 +29,14 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 # npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
 ```
 
+####Configure npm NODE_PATH variable
+
+```
+# echo "export NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/profile
+# source /etc/profile > /dev/null
+# echo $NODE_PATH
+```
+
 ####Install the Lightning-rod:
 
 ```
@@ -37,34 +45,21 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 # unzip master.zip && rm -f master.zip
 # mv s4t-lightning-rod-master lightning-rod
 # cd lightning-rod && mkdir plugins && mkdir plugin_conf
-# npm link autobahn jsonfile nconf reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
-# cp /opt/stack4things/lightning-rod/etc/init.d/s4t-lightning-rod_raspberry /etc/init.d/s4t-lightning-rod
-# chmod +x /etc/init.d/s4t-lightning-rod
+# cp /opt/stack4things/lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/s4t-lightning-rod.service
+# chmod +x /etc/systemd/system/s4t-lightning-rod.service
+# systemctl daemon-reload
+# systemctl enable s4t-lightning-rod.service
 # touch /var/log/s4t-lightning-rod.log
 ```
 
-####Configure the Lightning-rod
+####Configure and start the Lightning-rod 
 (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"device\":\"\"/\"device\":\"<raspberry>\"/g" /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"device\":\"\"/\"device\":\"raspberry\"/g" /opt/stack4things/lightning-rod/settings.json
 # sed -i "s/\"code\":\"\"/\"code\":\"<NODE_ID>\"/g" /opt/stack4things/lightning-rod/settings.json
-```
-
-####Start the Lightning-rod and configure it to start at boot:
-
-```
-# /etc/init.d/s4t-lightning-rod enable
-# /etc/init.d/s4t-lightning-rod start
-```
-
-####Configure cron to launch the Lightning-rod if not yet running:
-
-```
-# /etc/init.d/cron stop
-# cp /opt/stack4things/lightning-rod/etc/cron.d/root /etc/cron.d/
-# /etc/init.d/cron start
+# systemctl start s4t-iotronic
 ```
 
 ###Arduino YUN/Linino ONE
