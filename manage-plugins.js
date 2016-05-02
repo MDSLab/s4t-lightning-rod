@@ -1,3 +1,12 @@
+/*
+*				 Apache License
+*                           Version 2.0, January 2004
+*                        http://www.apache.org/licenses/
+*
+*      Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Andrea Rocco Lotronto,, Nicola Peditto
+* 
+*/
+
 
 //service logging configuration: "managePlugins"   
 var logger = log4js.getLogger('managePlugins');
@@ -35,7 +44,7 @@ exports.call = function (args, details){
     }
     catch(err){
         logger.error('Error parsing JSON file ./plugins.json');
-        //return 'Internal server error';
+        //return 'Error parsing JSON file ./plugins.json'';
     }
     
     //If the plugin exists
@@ -46,8 +55,7 @@ exports.call = function (args, details){
         //Check the status to be decided
 	var status = pluginsConf.plugins[plugin_name].status;
 	
-	//if (status == "off" || status == "on"){
-        if (status == "off"){
+        if (status == "off" || status == "injected"){
             
             logger.info("Plugin " + plugin_name + " being started");
             

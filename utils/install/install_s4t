@@ -1,5 +1,8 @@
 #!/bin/sh                                                                                                                                                    
 
+#Copyright (c) 2016 Nicola Peditto
+
+
 #EXEC: ./install_s4t 14141414 38.111111 15.111111 15.0
 
 

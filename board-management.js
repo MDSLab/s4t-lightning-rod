@@ -1,3 +1,12 @@
+/*
+*				 Apache License
+*                           Version 2.0, January 2004
+*                        http://www.apache.org/licenses/
+*
+*      Copyright (c) 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Andrea Rocco Lotronto, Nicola Peditto
+* 
+*/
+
 //service logging configuration: "board-management"   
 var logger = log4js.getLogger('board-management');
 
@@ -34,7 +43,6 @@ exports.manage_WAMP_connection = function  (session, details){
       var commandTopic = 'board.command';
 
 
-
       //Registering the board to the Cloud by sending a message to the connection topic
       logger.info('[WAMP] - Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
       session.publish(connectionTopic, [boardCode, 'connection', session._id]);
@@ -50,30 +58,16 @@ exports.manage_WAMP_connection = function  (session, details){
       var managePins = require('./manage-pins');
       managePins.exportPins(session);
 
+      /*
+      // MEASURES management not supported yet
       //If I'm connected to the WAMP server I can receive measures to be scheduled as RPCs
       var manageMeasures = require('./manage-measures');
       manageMeasures.exportMeasureCommands(session);
+      */
 
       //If I'm connected to the WAMP server I can receive plugins to be scheduled as RPCs
       var managePlugins = require('./manage-plugins');
       managePlugins.exportPluginCommands(session);
-
-
-      /*
-      //MEASURES --------------------------------------------------------------------------------------------
-      //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
-      var manageMeasure = require('./manage-measures');
-      manageMeasure.restartAllActiveMeasures();
-      //-----------------------------------------------------------------------------------------------------
-
-      // PLUGINS RESTART ALL --------------------------------------------------------------------------------
-      //This procedure restarts all plugins in "ON" status
-      var managePlugins = require('./manage-plugins');
-      managePlugins.restartAllActivePlugins();
-      //-----------------------------------------------------------------------------------------------------
-      */
-
-		
 
 
 

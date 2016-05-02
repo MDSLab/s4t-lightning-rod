@@ -1,8 +1,21 @@
+/*
+*				 Apache License
+*                           Version 2.0, January 2004
+*                        http://www.apache.org/licenses/
+*
+*      Copyright (c) 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Fabio Verboso, Nicola Peditto
+* 
+*/
 
+
+
+nconf = require('nconf');
+nconf.file ({file: 'settings.json'});
 
 log4js = require('log4js');
 log4js.loadAppender('file');
-log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));  
+logfile = nconf.get('config:log:logfile');
+log4js.addAppender(log4js.appenders.file(logfile));    
 
 
 //service logging configuration: "network-wrapper"

@@ -2,7 +2,10 @@
 	"config":{
 	
 		"device":"",
-		"loglevel": "info",
+		"log": {
+		    "logfile": "/var/log/s4t-lightning-rod.log",
+		    "loglevel": "info"
+		},
 		"wamp":
 		{
 			"url_wamp": "",
@@ -30,6 +33,7 @@
 		"board":
 		{
 			"code":"",
+			"status": "new",
 			"services":{
 				"ssh":{
 					"port":"22"

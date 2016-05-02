@@ -1,10 +1,12 @@
 /*
- * Apache License
- *                           Version 2.0, January 2004
- *                        http://www.apache.org/licenses/
- * 
- * Copyright (c) 2014 2015 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
- */
+*				 Apache License
+*                           Version 2.0, January 2004
+*                        http://www.apache.org/licenses/
+*
+*      Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
+* 
+*/
+
 
 //Loading configuration file
 nconf = require('nconf');
@@ -12,10 +14,14 @@ nconf.file ({file: 'settings.json'});
 
 var fs = require("fs");
 
+
+
 //main logging configuration                                                                
 log4js = require('log4js');
 log4js.loadAppender('file');
-log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));               
+
+logfile = nconf.get('config:log:logfile');
+log4js.addAppender(log4js.appenders.file(logfile));               
 
 
 //service logging configuration: "main"                                                  
@@ -27,7 +33,7 @@ logger.info('##############################');
 
 try{
   
-    loglevel = nconf.get('config:loglevel');
+    loglevel = nconf.get('config:log:loglevel');
 
     /*
     OFF		nothing is logged
@@ -68,10 +74,15 @@ servicesProcess = [];
 var device = nconf.get('config:device');
 
 //for connection test
-var isReachable = require('is-reachable');
+//var isReachable = require('is-reachable');
+var running = require('is-running');
 var online = true;
 active = true;
 var keepWampAlive = null;
+var tcpkill_pid = null;
+var wamp_check = null;		// "false" = we need to restore the WAMP connection (with tcpkill). 
+				// "true" = the WAMP connection is enstablished or the standard reconnection procedure was triggered by the WAMP client and managed by "onclose" precedure.
+
 
 //Read the board code from the configuration file
 boardCode = nconf.get('config:board:code');
@@ -107,7 +118,7 @@ if (typeof device !== 'undefined'){
 		  
 		  clearInterval( keepWampAlive );
 		  logger.info('[WAMP-RECOVERY] - WAMP CONNECTION RECOVERED!');
-		  logger.debug('[WAMP-RECOVERY] - OLD TIMER to keep alive WAMP connection cleared!');
+		  logger.debug('[WAMP-RECOVERY] - Old timer to keep alive WAMP connection cleared!');
 		  
 		}
 	      
@@ -200,12 +211,13 @@ if (typeof device !== 'undefined'){
 			
 			var reachable = output.success;
 			var error_test = output.error;
+			
 			//logger.debug("[WAMP-STATUS] - CONNECTION STATUS: "+reachable);
 			
 			if(!reachable){
 			  
 			      logger.warn("[CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: "+reachable+ " - ERROR: "+error_test);
-			      
+			      wamp_check = false;
 			      online=false;
 			  
 			} else {
@@ -215,57 +227,142 @@ if (typeof device !== 'undefined'){
 					if(!online){
 					  
 					    logger.info("[CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: "+reachable);
-					    logger.info("[CONNECTION-STATUS] - INTERNET CONNECTION RECOVERED!");
-					  
+					    logger.info("[CONNECTION-RECOVERY] - INTERNET CONNECTION RECOVERED!");
+
 					    session.publish ('board.connection', [ 'alive-'+boardCode ], {}, { acknowledge: true}).then(
-									
+								
 						  function(publication) {
 							  logger.info("[WAMP-ALIVE-STATUS] - WAMP ALIVE MESSAGE RESPONSE: published -> publication ID is " + JSON.stringify(publication));
+							  wamp_check = true;
+							  
 						  },
 						  function(error) {
 							  logger.warn("[WAMP-RECOVERY] - WAMP ALIVE MESSAGE: publication error " + JSON.stringify(error));
+							  wamp_check = false;
 						  }
 															
-					    );				  
+					    );	
 					    
-					    online=true;
+					    //It will wait the WAMP alive message response
+					    setTimeout(function(){
+					    
+						if (wamp_check){
+						  
+						    // WAMP CONNECTION IS OK
+						  
+						    logger.info("[WAMP-ALIVE-STATUS] - WAMP CONNECTION STATUS: " + wamp_check);
+						    online=true;
+						    
+						}
+						else{
+						  
+						      // WAMP CONNECTION IS NOT ESTABLISHED
+						  
+						      logger.warn("[WAMP-ALIVE-STATUS] - WAMP CONNECTION STATUS: " + wamp_check);
+						      
+						      // Check if the tcpkill process was killed after a previous connection recovery 
+						      // Through this check we will avoid to start another tcpkill process
+						      var tcpkill_status = running(tcpkill_pid);
+						      logger.warn("[WAMP-ALIVE-STATUS] - TCPKILL STATUS: " + tcpkill_status + " - PID: " +tcpkill_pid);
+						      
+						      
+						      //at LR startup "tcpkill_pid" is NULL and in this condition "is-running" module return "true" that is a WRONG result!
+						      if (tcpkill_status === false || tcpkill_pid == null){ 
+						      
+							    logger.warn("[WAMP-RECOVERY] - Cleaning WAMP socket...");
+							    
+							    var tcpkill_kill_count = 0;
+							    
+							    var spawn = require('child_process').spawn;
+					  
+							    //tcpkill -9 port 8181
+							    var tcpkill = spawn('tcpkill',['-9','port','8181']); 
+							    
+							    tcpkill.stdout.on('data', function (data) {
+								logger.debug('[WAMP-RECOVERY] ... tcpkill stdout: ' + data);
+							    });
+							    
+							    tcpkill.stderr.on('data', function (data) {
+							      
+								logger.debug('[WAMP-RECOVERY] ... tcpkill stderr:\n' + data);
+								
+							
+								if(data.toString().indexOf("listening") > -1){
+								  
+								    // LISTENING
+								    // To manage the starting of tcpkill (listening on port 8181)
+								    logger.debug('[WAMP-RECOVERY] ... tcpkill listening...');
+								  
+								    tcpkill_pid = tcpkill.pid;
+								    logger.debug('[WAMP-RECOVERY] ... tcpkill -9 port 8181 - PID ['+tcpkill_pid+']');
+								    
+								    
+								}else if (data.toString().indexOf("win 0") > -1){
+								  
+								    // TCPKILL DETECT WAMP ACTIVITY (WAMP reconnection attempts)
+								    // This is the stage triggered when the WAMP socket was killed by tcpkill and wamp reconnection process automaticcally started:
+								    // in this phase we need to kill tcpkill to allow wamp reconnection.
+								    tcpkill.kill('SIGINT');
+								    
+								    //double check: It will test after a while if the tcpkill process has been killed
+								    setTimeout(function(){  
+								      
+									if (running(tcpkill_pid || tcpkill_pid == null)){
+
+										tcpkill_kill_count = tcpkill_kill_count + 1;
+										
+										logger.warn("[WAMP-RECOVERY] ... tcpkill still running!!! PID ["+tcpkill_pid+"]");
+										logger.debug('[WAMP-RECOVERY] ... tcpkill killing retry_count '+ tcpkill_kill_count);
+										
+										tcpkill.kill('SIGINT');
+					      
+									}
+					
+								    }, 3000);
+								  
+								}
+								
+								
+							    });
+			
+							    
+							    tcpkill.on('close', function (code) {
+							      
+								logger.debug('[WAMP-RECOVERY] ... tcpkill killed!');
+								logger.info("[WAMP-RECOVERY] - WAMP socket cleaned!");
+								
+								online=true;
+								
+							    });
+							    
+							    
+							    //online=true;
+						      
+						      }else{
+							
+							    logger.warn('[WAMP-RECOVERY] ...tcpkill already started!');
+							
+						      }
+						      
+						}
+					    
+					    
+					    
+					    
+					    }, 2 * 1000);  //time to wait WAMP alive message response
 					    
 					}
 
 				  
 				}
 				catch(err){
-					logger.warn('[CONNECTION-RECOVERY] - Error keeping alive WAMP connection: '+ err);
-					logger.warn("[CONNECTION-RECOVERY] - WAMP CONNECTION RECOVERING...");
+					logger.warn('[CONNECTION-RECOVERY] - Error keeping alive wamp connection: '+ err);
 				}
 				      
 			}
 			
 		    });
-	    
-		  
-		    /*
-		    //OFFICIAL VERSION
-		    // TO CHECK WAMP CONNECTION
-		    try{
-			if(session.isOpen){
-			    session.publish('board.connection', ['alive']);
-			}
-		    }  
-		    catch(err){
-			logger.warn('Error keeping alive wamp connection: '+ err);
-		    }
-		    
-		    // TO CHECK SERVER CONNECTION
-		    isReachable(wampIP, function (err, reachable) {
-		      
-			if(!reachable){
-			  logger.warn("CONNECTION STATUS: "+reachable+ " - ERROR: "+err);
-			  
-			} 
-			
-		    });
-		    */
+
 		    
 		    
 		    /*DEPRECATED
@@ -294,7 +391,7 @@ if (typeof device !== 'undefined'){
    
                 }, 10 * 1000);
 		
-		logger.info('[WAMP] - Timer to check connection started!');
+		logger.info('[WAMP] - TIMER to keep alive WAMP connection setup!');
 		
 		//----------------------------------------------------------------------------------------------------
 		
@@ -305,7 +402,9 @@ if (typeof device !== 'undefined'){
             wampConnection.onclose = function (reason, details) {
 	      
 		try{
-		  
+
+		      wamp_check = true;  // IMPORTANT: for ethernet connections this flag avoid to start recovery procedure (tcpkill will not start!)
+		      
 		      logger.error('[WAMP-STATUS] - Error in connecting to WAMP server!');
 		      logger.error('- Reason: ' + reason);
 		      logger.error('- Reconnection Details: ');
@@ -319,6 +418,9 @@ if (typeof device !== 'undefined'){
 		      else{
 			  logger.warn("[WAMP-STATUS] - connection is closed!");
 		      }
+		      
+		      
+		      
 
 		}  
 		catch(err){
@@ -353,13 +455,15 @@ if (typeof device !== 'undefined'){
             wampConnection.open();
 	    //-----------------------------------------------------------------------------------------------------
 
-	    
+	    /*
+	    // MEASURES management not supported yet
             //MEASURES --------------------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
             var manageMeasure = require('./manage-measures');
             manageMeasure.restartAllActiveMeasures();
             //-----------------------------------------------------------------------------------------------------
-
+	    */
+	    
 	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
 	    //This procedure restarts all plugins in "ON" status
 	    var managePlugins = require('./manage-plugins');

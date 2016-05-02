@@ -1,15 +1,29 @@
+/*
+*				 Apache License
+*                           Version 2.0, January 2004
+*                        http://www.apache.org/licenses/
+*
+*      Copyright (c) 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Nicola Peditto
+* 
+*/
+
+
+nconf = require('nconf');
+nconf.file ({file: 'settings.json'});
 
 log4js = require('log4js');
 log4js.loadAppender('file');
-log4js.addAppender(log4js.appenders.file('/var/log/s4t-lightning-rod.log'));   
+
+
+logfile = nconf.get('config:log:logfile');
+log4js.addAppender(log4js.appenders.file(logfile));    
 var logger = log4js.getLogger('plugin-apis');
 
 
 var requestify = require('requestify');
 var Q = require("q");
 
-nconf = require('nconf');
-nconf.file ({file: 'settings.json'});
+
 
 var ckan_host = 'http://smartme-data.unime.it';
 
