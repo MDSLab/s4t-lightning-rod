@@ -2,7 +2,7 @@
 
 Stack4Things is an Internet of Things framework developed by the Mobile and Distributed Systems Lab (MDSLab) at the University of Messina, Italy. Stack4Things is an open source project that helps you in managing IoT device fleets without caring about their physical location, their network configuration, their underlying technology. It is a Cloud-oriented horizontal solution providing IoT object virtualization, customization, and orchestration. Stack4Things provides you with an out-of-the-box experience on several of the most popular embedded and mobile systems.
 
-Lighthing-rod is the node-side component in the Stack4Things architecture. It acts as a probe in the IoT node and interacts with the IoTronic service connecting the node to the Cloud. This version is the one that works with the standalone version of the IoTronic service that you can find [here] (https://github.com/MDSLab/s4t-iotronic-standalone).
+Lighthing-rod is the node-side component in the Stack4Things architecture. It acts as a probe in the IoT node and interacts with the IoTronic service connecting the node to the Cloud. This version is the one that works with the standalone version of the IoTronic service that you can find [**here**](https://github.com/MDSLab/s4t-iotronic-standalone).
 
 Lightning-rod has been tested to work on:
 
@@ -26,7 +26,7 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 
 ```
 # npm install -g npm
-# npm install -g gyp autobahn jsonfile nconf reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
+# npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
 ```
 
 ####Install the Lightning-rod:
@@ -43,13 +43,13 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 # touch /var/log/s4t-lightning-rod.log
 ```
 
-####Configure the Lightning-rod 
+####Configure the Lightning-rod
 (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"device\":\"\"/\"device\":\"raspberry\"/g" /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"code\":\"\"/\"code\":\"NODE_ID\"/g" /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"device\":\"\"/\"device\":\"<raspberry>\"/g" /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"code\":\"\"/\"code\":\"<NODE_ID>\"/g" /opt/stack4things/lightning-rod/settings.json
 ```
 
 ####Start the Lightning-rod and configure it to start at boot:
@@ -59,7 +59,7 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 # /etc/init.d/s4t-lightning-rod start
 ```
 
-####Configure cron to launch the Lightinig-rod if not yet running:
+####Configure cron to launch the Lightning-rod if not yet running:
 
 ```
 # /etc/init.d/cron stop
@@ -97,7 +97,7 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 # touch /var/log/s4t-lightning-rod.log
 ```
 
-####Configure the Lightning-rod 
+####Configure the Lightning-rod
 (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
@@ -114,7 +114,7 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 # /etc/init.d/s4t-lightning-rod start
 ```
 
-####Configure cron to launch the Lightinig-rod if not yet running:
+####Configure cron to launch the Lightning-rod if not yet running:
 
 ```
 # /etc/init.d/cron stop
@@ -123,9 +123,7 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 ```
 
 ##Scientific References
-Scientific papers describing the work on Stack4Things by the University of Messina can be found here:
-
-[**MDSL**] (http://mdslab.unime.it/biblio)
+Scientific papers describing the work on Stack4Things by the University of Messina can be found [**here**](http://mdslab.unime.it/biblio).
 
 In particular, you can find details about Stack4Things in the following papers:
 
