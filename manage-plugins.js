@@ -229,7 +229,7 @@ function pluginStarter(plugin_name, timer, pluginsConf, plugin_json_name, skip) 
 				
 		if( plugins[plugin_name].alive === true ){
 		    // the plugin is normally running
-		    logger.info( 'PluginChecker - '+ plugin_name + ' with PID: ' + plugins[plugin_name].pid + ' alive: '+ plugins[plugin_name].alive );
+		    logger.debug( 'PluginChecker - '+ plugin_name + ' with PID: ' + plugins[plugin_name].pid + ' alive: '+ plugins[plugin_name].alive );
 		    
 		}
 		else if( skip === "true") {
