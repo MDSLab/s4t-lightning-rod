@@ -26,13 +26,13 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 
 ```
 # npm install -g npm
-# npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q
+# npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys
 ```
 
 ####Configure npm NODE_PATH variable
 
 ```
-# echo "export NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/profile
+# echo "export NODE_PATH=/usr/lib/node_modules" | sudo tee -a /etc/profile
 # source /etc/profile > /dev/null
 # echo $NODE_PATH
 ```
@@ -52,14 +52,14 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 # touch /var/log/s4t-lightning-rod.log
 ```
 
-####Configure and start the Lightning-rod 
+####Configure and start the Lightning-rod
 (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"device\":\"\"/\"device\":\"raspberry\"/g" /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"device\":\"\"/\"device\":\"raspberry_pi\"/g" /opt/stack4things/lightning-rod/settings.json
 # sed -i "s/\"code\":\"\"/\"code\":\"<NODE_ID>\"/g" /opt/stack4things/lightning-rod/settings.json
-# systemctl start s4t-iotronic
+# systemctl start s4t-lightning-rod
 ```
 
 ###Arduino YUN/Linino ONE
