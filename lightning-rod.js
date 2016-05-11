@@ -8,11 +8,37 @@
 */
 
 
+var fs = require("fs");
+
+//main logging configuration                                                                
+log4js = require('log4js');
+log4js.loadAppender('file');
+
 //Loading configuration file
 nconf = require('nconf');
-nconf.file ({file: 'settings.json'});
 
-var fs = require("fs");
+try{
+  
+    nconf.file ({file: 'settings.json'});
+    logfile = nconf.get('config:log:logfile');
+    log4js.addAppender(log4js.appenders.file(logfile));               
+
+    //service logging configuration: "main"                                                  
+    var logger = log4js.getLogger('main');  
+    
+    
+    
+}
+catch(err){
+    // DEFAULT LOGGING
+    logfile = './s4t-lightning-rod.log';
+    log4js.addAppender(log4js.appenders.file(logfile));  
+    logger = log4js.getLogger('main');  
+    logger.error('[SYSTEM] - '+ err);
+    process.exit();
+}
+
+
 
 servicesProcess = [];
 
@@ -26,25 +52,11 @@ var wamp_check = null;		// "false" = we need to restore the WAMP connection (wit
 				// "true" = the WAMP connection is enstablished or the standard reconnection procedure was triggered by the WAMP client and managed by "onclose" precedure.
 
 
-
-//main logging configuration                                                                
-log4js = require('log4js');
-log4js.loadAppender('file');
-
-logfile = nconf.get('config:log:logfile');
-log4js.addAppender(log4js.appenders.file(logfile));               
-
-
-//service logging configuration: "main"                                                  
-var logger = log4js.getLogger('main');  
-
-var manageBoard = require('./board-management');
-
 logger.info('##############################');  
 logger.info('  Stack4Things Lightning-rod');  
 logger.info('##############################');
 
-
+var manageBoard = require('./board-management');
 
 manageBoard.checkSettings(function(check){
   
