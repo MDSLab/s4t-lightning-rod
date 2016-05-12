@@ -24,8 +24,9 @@ var requestify = require('requestify');
 var Q = require("q");
 
 
+var ckan_addr = '';
+var ckan_host = 'http://'+ckan_addr;
 
-var ckan_host = 'http://smartme-data.unime.it';
 
 exports.getLogger = function (){
     
@@ -71,14 +72,22 @@ exports.sendToCKAN = function (m_authid, m_resourceid, record, callback){
   
 	var http = require('http');
 	
+        var payload = {                
+              resource_id : m_resourceid,
+              method: 'insert',
+              records : record
+        };
+        
+	var payloadJSON = JSON.stringify(payload);                                                    	
 	
 	var header = {
 	  'Content-Type': "application/json", 
-	  'Authorization' : m_authid
+	  'Authorization' : m_authid,
+	  'Content-Length': Buffer.byteLength(payloadJSON)
 	};	
 	
 	var options = {
-	    host: 'smartme-data.unime.it',
+	    host: ckan_addr,
 	    port: 80,
 	    path: '/api/3/action/datastore_upsert',
 	    method: 'POST',
@@ -86,16 +95,6 @@ exports.sendToCKAN = function (m_authid, m_resourceid, record, callback){
 	};	
 
 
-	var payload = {
-	    resource_id : m_resourceid, 
-	    method: 'insert', 
-	    records : record
-	};	
-	
-	
-	var payloadJSON = JSON.stringify(payload);
-	
-	
 	var req = http.request(options, function(res) {
 	  
 	    res.setEncoding('utf-8');
@@ -104,6 +103,7 @@ exports.sendToCKAN = function (m_authid, m_resourceid, record, callback){
 
 	    res.on('data', function(data) {
 
+		console.log('On data:' + data);
 	    });
 
 	    res.on('end', function() {
@@ -119,7 +119,7 @@ exports.sendToCKAN = function (m_authid, m_resourceid, record, callback){
 	req.write(payloadJSON);
 
 	req.end();	
-	
+
 	callback(payloadJSON);
 	
 }
