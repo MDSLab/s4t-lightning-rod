@@ -20,7 +20,7 @@
 				"port_reverse": "8080"
 			},
 			"lib":{
-				"bin":"/opt/usr/lib/node_modules/node-reverse-wstunnel/bin/wstt.js"
+				"bin":""
 			}
 		},
 
