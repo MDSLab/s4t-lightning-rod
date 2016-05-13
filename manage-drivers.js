@@ -520,55 +520,113 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 
 	
 	
+	var device = nconf.get('config:device');
+	logger.info('[SYSTEM] - GPIO device for '+device+': ' + device0_file);
 	
-	
-	// ENABLING YUN DEVICE "device_0"
-	fs.writeFile(device0_file, '1', function(err) {
+	switch(device){
 	  
-	    if(err) {
-	      
-		logger.error('Error writing device0 file: ' + err);
-		
-	    } else {
-	      
-		logger.debug("--> device0 successfully enabled!");
-		
-		//logger.info("FULL FILE LIST %s", JSON.stringify(file_list))
-		
-		try{
+	    case 'arduino_yun':
+
+
+		  // ENABLING YUN DEVICE "device_0"
+		  fs.writeFile(device0_file, '1', function(err) {
+		    
+		      if(err) {
+			
+			  logger.error('Error writing device0 file: ' + err);
+			  
+		      } else {
+			
+			  logger.debug("--> device0 successfully enabled!");
+			  
+			  //logger.info("FULL FILE LIST %s", JSON.stringify(file_list))
+			  
+			  try{
+				
+				fuse.mount(mountpoint, {
+				  readdir: readdirFunction(driver_name),
+				  getattr: getattrFunction(driver_name),
+				  open: openFunction(),
+				  read: readFunction(driver_name, filename, mirror_board),
+				  write: writeFunction(driver, driver_name) 
+				})
+		  
+				drivers[driver_name] = driver;
+				
+				rest_response.message = 'driver '+driver_name+' successfully mounted!';
+				rest_response.result = "SUCCESS";
+				
+				callback(rest_response)
+				
+			  }
+			  catch(err){
+			      
+			      rest_response.message = "ERROR during "+driver_name+" (fuse) mounting: " +err;
+			      rest_response.result = "ERROR";
+				
+			      logger.error(rest_response.message);
+			      
+			      callback(rest_response)
+			      
+			  }
+			  
+			  
+			  
+		      }
 		      
-		      fuse.mount(mountpoint, {
-			readdir: readdirFunction(driver_name),
-			getattr: getattrFunction(driver_name),
-			open: openFunction(),
-			read: readFunction(driver_name, filename, mirror_board),
-			write: writeFunction(driver, driver_name) 
-		      })
-	
-		      drivers[driver_name] = driver;
+		  }); 
+
+
+	      
+		break
+		
+	    case 'laptop':                      
+	    case 'raspberry_pi':
+		  
+		  try{
+			
+			fuse.mount(mountpoint, {
+			  readdir: readdirFunction(driver_name),
+			  getattr: getattrFunction(driver_name),
+			  open: openFunction(),
+			  read: readFunction(driver_name, filename, mirror_board),
+			  write: writeFunction(driver, driver_name) 
+			})
+	  
+			drivers[driver_name] = driver;
+			
+			rest_response.message = 'driver '+driver_name+' successfully mounted!';
+			rest_response.result = "SUCCESS";
+			
+			callback(rest_response)
+			
+		  }
+		  catch(err){
 		      
-		      rest_response.message = 'driver '+driver_name+' successfully mounted!';
-		      rest_response.result = "SUCCESS";
+		      rest_response.message = "ERROR during "+driver_name+" (fuse) mounting: " +err;
+		      rest_response.result = "ERROR";
+			
+		      logger.error(rest_response.message);
 		      
 		      callback(rest_response)
 		      
-		}
-		catch(err){
-		    
-		    rest_response.message = "ERROR during "+driver_name+" (fuse) mounting: " +err;
-		    rest_response.result = "ERROR";
-		      
-		    logger.error(rest_response.message);
-		    
-		    callback(rest_response)
-		    
-		}
+		  }
+	      
+		break  
+		
+	    default:
+		//DEBUG MESSAGE
+		logger.warn('[SYSTEM] - Device "' + device + '" not supported!');
+		logger.warn('[SYSTEM] - Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
+		break;
 		
 		
-		
-	    }
-	    
-	}); 
+	}
+	
+
+	
+	
+
 	
 
     }
