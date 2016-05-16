@@ -24,7 +24,7 @@ var requestify = require('requestify');
 var Q = require("q");
 
 
-var ckan_addr = '';
+var ckan_addr = 'smartme-data.unime.it';
 var ckan_host = 'http://'+ckan_addr;
 
 

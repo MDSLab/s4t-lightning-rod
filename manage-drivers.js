@@ -36,7 +36,7 @@ function readdirFunction(driver_name){
   
     var readdir_function = function (mountpoint, cb) {
       
-	logger.debug('readdir(%s) - files list: %s', mountpoint, JSON.stringify(file_list[driver_name]) )
+	logger.debug('[DRIVER] --> readdir(%s) - files list: %s', mountpoint, JSON.stringify(file_list[driver_name]) )
 	//if (mountpoint === '/') return cb(0, [driver_name]);
 	//if (mountpoint === '/'+driver_name) return cb(0, file_list[driver_name] );
 	  
@@ -50,7 +50,7 @@ function readdirFunction(driver_name){
 function getattrFunction(driver_name){
     var getattr_function = function (mountpoint, cb) {
       
-	logger.debug('getattr(%s)', mountpoint)
+	logger.debug('[DRIVER] --> getattr(%s)', mountpoint)
 	
 	driver_mp_node = mp_list[driver_name]
 	
@@ -72,7 +72,7 @@ function openFunction(){
       
 	fd_index = fd_index + 1
 	
-	logger.debug('Open(%s, %d) - fd = %s', mountpoint, flags, fd_index);
+	logger.debug('[DRIVER] --> Open(%s, %d) - fd = %s', mountpoint, flags, fd_index);
 	
 	cb(0, fd_index) //cb(0, 42) // 42 is an fd
     }
@@ -91,7 +91,7 @@ function readFunction(driver_name, filename, mirror_board){
 	      
 	  if (driver_mp_node['/'].remote === "false"){
 	      
-	      logger.debug('Read(%s, %d, %d, %d)', mountpoint, fd, len, pos);
+	      logger.debug('[DRIVER] --> Read(%s, %d, %d, %d)', mountpoint, fd, len, pos);
 	      
 	      driver[driver_mp_node[mountpoint].read_function]( function(read_content){
 		    var buffer = new Buffer(read_content.toString(), 'utf-8');
@@ -107,7 +107,7 @@ function readFunction(driver_name, filename, mirror_board){
 	    
 	      var filename = mountpoint.replace('/','');
 	    
-	      logger.debug('REMOTE CALLING DRIVER to '+mirror_board + ' RPC called: s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read');
+	      logger.debug('[DRIVER] - REMOTE CALLING DRIVER to '+mirror_board + ' RPC called: s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read');
 	      
 	      session_drivers.call('s4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read', [driver_name, filename]).then(
 					
@@ -157,7 +157,7 @@ exports.readRemote = function (args){
 	      if (!str)
 		  return d.resolve(0); 
 	      //var str = read_content.toString();
-	      logger.info('Read REMOTE: '+driver_name+'['+filename+'] -> '+ str);
+	      logger.info('[DRIVER] - Read REMOTE: '+driver_name+'['+filename+'] -> '+ str);
 	      d.resolve(str);
 		    
 	  }
@@ -169,7 +169,7 @@ exports.readRemote = function (args){
     
       var read_rpc_call = 's4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.read';
       
-      logger.debug('REMOTE READ CALLING DRIVER to '+mirror_board + ' RPC called: '+ read_rpc_call);
+      logger.debug('[DRIVER] - REMOTE READ CALLING DRIVER to '+mirror_board + ' RPC called: '+ read_rpc_call);
       
       session_drivers.call( read_rpc_call, [driver_name, filename]).then(
 				
@@ -179,13 +179,13 @@ exports.readRemote = function (args){
 	      var str = ''+buffer.slice(0);
 	      if (!str)
 		  return d.resolve(0);      
-	      logger.info('Read REMOTE mirrored from '+mirror_board+': '+driver_name+'['+filename+'] -> '+ str);
+	      logger.info('[DRIVER] --> Read REMOTE mirrored from '+mirror_board+': '+driver_name+'['+filename+'] -> '+ str);
 	      d.resolve(str);
 
 	  },
 	  function (error) {
 	      // call failed
-	      logger.warn('Read REMOTE mirrored from '+mirror_board+' failed! - Error: '+ JSON.stringify(error));
+	      logger.warn('[DRIVER] --> Read REMOTE mirrored from '+mirror_board+' failed! - Error: '+ JSON.stringify(error));
 	      var error_log = "ERROR: " + error["error"]
 	      d.resolve( error_log );
 	  }
@@ -203,10 +203,10 @@ function writeFunction(driver, driver_name){
   
       var write_function = function (mountpoint, fd, buffer, length, position, cb) {
 	
-	    logger.debug('Writing', buffer.slice(0, length));
+	    logger.debug('[DRIVER] - Writing', buffer.slice(0, length));
 	    content = buffer.slice(0, length);
-	    logger.debug("--> buffer content: " + content.toString());
-	    logger.debug("--> buffer length: " + length.toString());
+	    logger.debug("[DRIVER] --> buffer content: " + content.toString());
+	    logger.debug("[DRIVER] --> buffer length: " + length.toString());
 	    
 	    driver_mp_node = mp_list[driver_name]	  
 	  
@@ -250,7 +250,7 @@ exports.writeRemote = function (args){
     
       driver[ driver_mp_node['/'+filename].write_function ]( filecontent, function(){
 	
-	      logger.info('Write REMOTE: '+driver_name+'['+filename+'] -> completed!');
+	      logger.info('[DRIVER] - Write REMOTE: '+driver_name+'['+filename+'] -> completed!');
 	      d.resolve("writing completed");	  
 	
       });
@@ -260,19 +260,19 @@ exports.writeRemote = function (args){
     
       var write_rpc_call = 's4t.'+mirror_board+'.driver.'+driver_name+'.'+filename+'.write';
       
-      logger.debug('REMOTE WRITE CALLING DRIVER to '+mirror_board + ' RPC called: '+ write_rpc_call);
+      logger.debug('[DRIVER] - REMOTE WRITE CALLING DRIVER to '+mirror_board + ' RPC called: '+ write_rpc_call);
       
       session_drivers.call(write_rpc_call, [driver_name, filename, filecontent]).then(
 				
 	  function(result){
      
-	      logger.info('Write REMOTE mirrored from '+mirror_board+': '+driver_name+'['+filename+'] -> '+ result);
+	      logger.info('[DRIVER] --> Write REMOTE mirrored from '+mirror_board+': '+driver_name+'['+filename+'] -> '+ result);
 	      d.resolve(result);
 
 	  },
 	  function (error) {
 	      // call failed
-	      logger.warn('Write REMOTE mirrored from '+mirror_board+' failed! - Error: '+ JSON.stringify(error));
+	      logger.warn('[DRIVER] --> Write REMOTE mirrored from '+mirror_board+' failed! - Error: '+ JSON.stringify(error));
 	      var error_log = "ERROR: " + error["error"]
 	      d.resolve( error_log );
 	  }
@@ -321,7 +321,7 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
       
 	var driverJSON = JSON.parse(fs.readFileSync(driver_conf, 'utf8'));
 	//logger.info(driverJSON);
-	logger.debug('--> JSON file '+ driver_name +'.json successfully parsed!');
+	logger.debug('[DRIVER] -->  JSON file '+ driver_name +'.json successfully parsed!');
 	
 	driver_name = driverJSON.name; 
 	//logger.debug("--> driver name: " + driver_name)
@@ -331,7 +331,7 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 	//var root_permissions = MaskConversion(driverJSON.root_permissions);
 	var children = driverJSON.children; //logger.info("Files in the folder:")
 	
-	logger.info("--> driver "+driver_name+" configuration loaded!");
+	logger.info("[DRIVER] --> driver "+driver_name+" configuration loaded!");
 
 	mp_list[driver_name]={}
 	driver_mp_node = mp_list[driver_name]
@@ -362,7 +362,7 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 		
 	children.forEach(function(file, idx, list) {
 			    
-	      logger.debug("--> analyzing file: "+file.name);
+	      logger.debug("[DRIVER] -->  analyzing file: "+file.name);
 	      
 	      file_list[driver_name].push(file.name);
 	      
@@ -420,13 +420,13 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 
 			      driver_mp_node['/'+file.name].reg_read_function = registration;
 
-			      logger.debug('[WAMP] - '+driver_name+' - ' + file.name + ' read function registered!');
+			      logger.debug('[WAMP] --> '+driver_name+' - ' + file.name + ' read function registered!');
 			      
 			      if (idx === list.length - 1){ 
 				
 				  mp_list[driver_name] = driver_mp_node;
 				  
-				  logger.info("--> driver "+driver_name+" RPC read functions successfully registered!");
+				  logger.info("[DRIVER] -->  driver "+driver_name+" RPC read functions successfully registered!");
 				  				  
 			      }
 			    
@@ -443,13 +443,13 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 
 			      driver_mp_node['/'+file.name].reg_read_function = registration;
 
-			      logger.debug('[WAMP] - '+driver_name+' - ' + file.name + ' read function registered!');
+			      logger.debug('[WAMP] --> '+driver_name+' - ' + file.name + ' read function registered!');
 			      
 			      if (idx === list.length - 1){ 
 				
 				  mp_list[driver_name] = driver_mp_node;
 				  
-				  logger.info("--> driver "+driver_name+" RPC read functions successfully registered!");
+				  logger.info("[DRIVER] -->  driver "+driver_name+" RPC read functions successfully registered!");
 				  				  
 			      }
 			    
@@ -466,13 +466,13 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 
 			      driver_mp_node['/'+file.name].reg_write_function = registration;
 
-			      logger.debug('[WAMP] - '+driver_name+' - ' + file.name + ' write function registered!');
+			      logger.debug('[WAMP] --> '+driver_name+' - ' + file.name + ' write function registered!');
 			      
 			      if (idx === list.length - 1){ 
 				
 				  mp_list[driver_name] = driver_mp_node;
 				  
-				  logger.info("--> driver "+driver_name+" RPC write functions successfully registered!");
+				  logger.info("[DRIVER] -->  driver "+driver_name+" RPC write functions successfully registered!");
 				  				  
 			      }
 			    
@@ -489,13 +489,13 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 
 			      driver_mp_node['/'+file.name].reg_write_function = registration;
 
-			      logger.debug('[WAMP] - '+driver_name+' - ' + file.name + ' write function registered!');
+			      logger.debug('[WAMP] --> '+driver_name+' - ' + file.name + ' write function registered!');
 			      
 			      if (idx === list.length - 1){ 
 				
 				  mp_list[driver_name] = driver_mp_node;
 				  
-				  logger.info("--> driver "+driver_name+" RPC write functions successfully registered!");
+				  logger.info("[DRIVER] -->  driver "+driver_name+" RPC write functions successfully registered!");
 				  				  
 			      }
 			    
@@ -507,7 +507,7 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 
 	      if (idx === list.length - 1){ 
 		
-		  logger.info("--> Available files for "+driver_name+" %s", JSON.stringify(file_list[driver_name]))
+		  logger.info("[DRIVER] -->  Available files for "+driver_name+" %s", JSON.stringify(file_list[driver_name]))
 						  
 	      }
 			      
@@ -521,7 +521,7 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 	
 	
 	var device = nconf.get('config:device');
-	logger.info('[SYSTEM] - GPIO device for '+device+': ' + device0_file);
+	logger.info('[DRIVER] --> GPIO device for '+device+': ' + device0_file);
 	
 	switch(device){
 	  
@@ -533,11 +533,11 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 		    
 		      if(err) {
 			
-			  logger.error('Error writing device0 file: ' + err);
+			  logger.error('[DRIVER] --> Error writing device0 file: ' + err);
 			  
 		      } else {
 			
-			  logger.debug("--> device0 successfully enabled!");
+			  logger.debug("[DRIVER] -->  device0 successfully enabled!");
 			  
 			  //logger.info("FULL FILE LIST %s", JSON.stringify(file_list))
 			  
@@ -564,7 +564,7 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 			      rest_response.message = "ERROR during "+driver_name+" (fuse) mounting: " +err;
 			      rest_response.result = "ERROR";
 				
-			      logger.error(rest_response.message);
+			      logger.error("[DRIVER] --> " + rest_response.message);
 			      
 			      callback(rest_response)
 			      
@@ -606,7 +606,7 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 		      rest_response.message = "ERROR during "+driver_name+" (fuse) mounting: " +err;
 		      rest_response.result = "ERROR";
 			
-		      logger.error(rest_response.message);
+		      logger.error("[DRIVER] --> " + rest_response.message);
 		      
 		      callback(rest_response)
 		      
@@ -616,8 +616,8 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 		
 	    default:
 		//DEBUG MESSAGE
-		logger.warn('[SYSTEM] - Device "' + device + '" not supported!');
-		logger.warn('[SYSTEM] - Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
+		logger.warn('[DRIVER] - Device "' + device + '" not supported!');
+		logger.warn('[DRIVER] - Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
 		break;
 		
 		
@@ -631,7 +631,7 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 
     }
     catch(err){
-	logger.error('Error during driver loading: '+err);
+	logger.error('[DRIVER] --> Error during driver loading: '+err);
     }  
   
 }
@@ -647,7 +647,7 @@ exports.mountDriver = function (args){
     var remote = String(args[2]);
     var mirror_board = String(args[3]);
 
-    logger.info("DRIVER "+driver_name+" MOUNTING...");
+    logger.info("[DRIVER] - Driver "+driver_name+" MOUNTING...");
     
     var rest_response = {};
 
@@ -657,7 +657,7 @@ exports.mountDriver = function (args){
     
     var d = Q.defer();
     
-    logger.debug("--> Driver folder ("+mountpoint+") checking...")
+    logger.debug("[DRIVER] --> Driver folder ("+mountpoint+") checking...")
     
     try{
       
@@ -666,11 +666,11 @@ exports.mountDriver = function (args){
 		//Create the directory, call the callback.
 		fs.mkdir(mountpoint, 0755, function() {
 
-		    logger.debug("----> folder "+mountpoint+" CREATED!");
+		    logger.debug("[DRIVER] ----> folder "+mountpoint+" CREATED!");
 		    LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, function(load_result){
 
 			d.resolve(load_result);
-			logger.info("--> "+ JSON.stringify(load_result));
+			logger.info("[DRIVER] --> "+ JSON.stringify(load_result));
 		      
 		    });
 		    
@@ -678,11 +678,11 @@ exports.mountDriver = function (args){
 		
 	  }else{
 	    
-		logger.debug("----> folder "+mountpoint+" EXISTS!");
+		logger.debug("[DRIVER] ----> folder "+mountpoint+" EXISTS!");
 		LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, function(load_result){
 		    
 		    d.resolve(load_result);
-		    logger.info("--> "+ load_result.message);
+		    logger.info("[DRIVER] --> "+ load_result.message);
 		  
 		});
 	  }
@@ -690,7 +690,7 @@ exports.mountDriver = function (args){
     } catch (err) {
 	rest_response.message = "Error during driver folder creation: " + err;
 	rest_response.result = "ERROR";
-	logger.error(JSON.stringify(rest_response));
+	logger.error("[DRIVER] --> "+JSON.stringify(rest_response));
 	d.resolve(rest_response);
     }
   
@@ -709,19 +709,19 @@ exports.unmountDriver = function (args){
     
     var mountpoint = '../drivers/'+driver_name;
     
-    logger.info("DRIVER '"+driver_name+"' UNMOUNTING...");
+    logger.info("[DRIVER] - Driver '"+driver_name+"' UNMOUNTING...");
     
     var d = Q.defer();
     
     try{
       
-	logger.debug("Driver "+driver_name+" configuration loading...");
+	logger.debug("[DRIVER] --> Driver "+driver_name+" configuration loading...");
 	var driver_path = "./drivers/"+driver_name;
 	var driver_conf = driver_path+"/"+driver_name+".json";
 	var driverJSON = JSON.parse(fs.readFileSync(driver_conf, 'utf8'));
 	var children = driverJSON.children;
 	
-	logger.debug('--> JSON file '+ driver_name +'.json successfully parsed!');
+	logger.debug('[DRIVER] --> JSON file '+ driver_name +'.json successfully parsed!');
 
 	fuse.unmount(mountpoint, function (err) {
 	  
@@ -743,12 +743,12 @@ exports.unmountDriver = function (args){
 				    
 				      function () {
 					  // successfully unregistered
-					  logger.debug("--> RPC read function of "+file.name +" unregistered!");
+					  logger.debug("[DRIVER] --> RPC read function of "+file.name +" unregistered!");
 					
 				      },
 				      function (error) {
 					  // unregister failed
-					  logger.error("--> Error unregistering RPC read function of "+file);
+					  logger.error("[DRIVER] --> Error unregistering RPC read function of "+file);
 				      }
 				    
 				  );
@@ -757,12 +757,12 @@ exports.unmountDriver = function (args){
 				    
 				      function () {
 					  // successfully unregistered
-					  logger.debug("--> RPC write function of "+file.name +" unregistered!");
+					  logger.debug("[DRIVER] --> RPC write function of "+file.name +" unregistered!");
 					
 				      },
 				      function (error) {
 					  // unregister failed
-					  logger.error("--> Error unregistering RPC write function of "+file);
+					  logger.error("[DRIVER] --> Error unregistering RPC write function of "+file);
 				      }
 				    
 				  );
@@ -779,24 +779,24 @@ exports.unmountDriver = function (args){
 				    //logger.debug("...all files analyzed...");
 				
 				    //DATA cleaning------------------------------------------------------------------
-				    logger.debug("Driver "+driver_name+" garbage cleaning...");
+				    logger.debug("[DRIVER] --> Driver "+driver_name+" garbage cleaning...");
 				    
 				    file_list[driver_name]=null;
 				    delete file_list[driver_name];
-				    logger.debug("--> Files removed from list!" )
+				    logger.debug("[DRIVER] --> Files removed from list!" )
 				    
 				    mp_list[driver_name]=null;
 				    delete mp_list[driver_name];	      
-				    logger.debug("--> Mountpoints of "+driver_name+" removed!")
+				    logger.debug("[DRIVER] --> Mountpoints of "+driver_name+" removed!")
 				    //-------------------------------------------------------------------------------
 	
 				    rest_response.message = "Driver '"+driver_name+"' successfully unmounted!";
 				    rest_response.result = "SUCCESS";
-				    logger.info("--> "+JSON.stringify(rest_response.message));
+				    logger.info("[DRIVER] --> "+JSON.stringify(rest_response.message));
 				    d.resolve(rest_response);
 			      }
 			      catch(err){
-				  logger.error('ERROR data cleaning "'+driver_name+'" during unmounting: '+err);
+				  logger.error('[DRIVER] --> ERROR data cleaning "'+driver_name+'" during unmounting: '+err);
 			      } 	      
 		    
 			    }
@@ -809,23 +809,23 @@ exports.unmountDriver = function (args){
 		    
 			try{
 			      //DATA cleaning------------------------------------------------------------------
-			      logger.debug("Driver "+driver_name+" garbage cleaning...");
+			      logger.debug("[DRIVER] --> Driver "+driver_name+" garbage cleaning...");
 			      file_list[driver_name]=null;
 			      delete file_list[driver_name];
-			      logger.debug("--> Files removed from list!" )
+			      logger.debug("[DRIVER] --> Files removed from list!" )
 			      
 			      mp_list[driver_name]=null;
 			      delete mp_list[driver_name];	      
-			      logger.debug("--> Mountpoints of "+driver_name+" removed!")
+			      logger.debug("[DRIVER] --> Mountpoints of "+driver_name+" removed!")
 			      //-------------------------------------------------------------------------------
 			}
 			catch(err){
-			    logger.error('ERROR data cleaning "'+driver_name+'" during unmounting: '+err);
+			    logger.error('[DRIVER] --> ERROR data cleaning "'+driver_name+'" during unmounting: '+err);
 			} 
 			
 			rest_response.message = "Driver '"+driver_name+"' successfully unmounted!";
 			rest_response.result = "SUCCESS";
-			logger.info("--> "+JSON.stringify(rest_response.message));
+			logger.info("[DRIVER] --> "+JSON.stringify(rest_response.message));
 			d.resolve(rest_response);
 					  
 		    
@@ -840,7 +840,7 @@ exports.unmountDriver = function (args){
 		
 		  rest_response.message = "ERROR during '"+driver_name+"' (fuse) unmounting: " +err;
 		  rest_response.result = "ERROR";
-		  logger.error("--> "+JSON.stringify(rest_response.message));
+		  logger.error("[DRIVER] --> "+JSON.stringify(rest_response.message));
 		  d.resolve(rest_response);
 
 	      }
@@ -875,12 +875,10 @@ exports.injectDriver = function (args){
     var driver_schema = String(args[2]);
     var autostart = String(args[3]);  // The autostart parameter is used to set the boot execution configuration of the driver.
     
-    //var fs = require("fs");
-    //var Q = require("q");
+
     var d = Q.defer();
     
     var rpc_result = "";
-    
     
     
     // Writing the driver's files (code and json schema)
@@ -891,7 +889,7 @@ exports.injectDriver = function (args){
     // Check driver folder
     if ( fs.existsSync(driver_folder) === false ){
       
-	logger.info("Called RPC injectDriver with driver_name = " + driver_name + ", autostart = " + autostart + ", driver_code = " + driver_code + ", driver_schema = " + driver_schema);
+	logger.info("[DRIVER] - Called RPC injectDriver with driver_name = " + driver_name + ", autostart = " + autostart + ", driver_code = " + driver_code + ", driver_schema = " + driver_schema);
       
 	// driver folder creation
 	fs.mkdir(driver_folder, function() {
@@ -902,7 +900,7 @@ exports.injectDriver = function (args){
 		if(err) {
 		  
 		    rpc_result = 'Error writing '+ driver_file_name +' file: ' + err;
-		    logger.error(rpc_result);
+		    logger.error("[DRIVER] --> " + rpc_result);
 		    
 		    d.resolve(rpc_result);
 		    
@@ -915,7 +913,7 @@ exports.injectDriver = function (args){
 		      if(err) {
 			
 			  rpc_result = 'Error writing '+ driver_schema +' file: ' + err;
-			  logger.error(rpc_result);
+			  logger.error("[DRIVER] --> " + rpc_result);
 			  
 			  d.resolve(rpc_result);
 			  //return rpc_result;
@@ -923,8 +921,8 @@ exports.injectDriver = function (args){
 		      } else {
 			
 			
-			  rpc_result = "Driver " + driver_name + " injected successfully!"
-			  logger.info(rpc_result);
+			  rpc_result = "Driver " + driver_name + " successfully injected!"
+			  logger.info("[DRIVER] --> " + rpc_result);
 			  
 			  d.resolve(rpc_result);
 			  
@@ -940,18 +938,76 @@ exports.injectDriver = function (args){
     
     } else{
       
-	rpc_result = "ERROR - "+driver_name+" driver's files already injected! - Remove the previous driver installation!";
-	logger.error(rpc_result);
+	rpc_result = "ERROR: "+driver_name+" driver's files already injected! - Remove the previous driver installation!";
+	logger.warn("[DRIVER] --> " + rpc_result);
 	
 	d.resolve(rpc_result);      
       
     }
 
     
-    return d.promise; //return "Plugin injected successfully!"; 
+    return d.promise;
     
    
 
+}
+
+
+
+function deleteFolderRecursive(path){
+  
+  if( fs.existsSync(path) ) {
+    fs.readdirSync(path).forEach(function(file,index){
+      var curPath = path + "/" + file;
+      if(fs.lstatSync(curPath).isDirectory()) { 
+	// recurse
+        deleteFolderRecursive(curPath);
+      } else { 
+	// delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
+  }
+  
+}
+
+
+
+
+exports.removeDriver = function(args){
+  
+    // Parsing the input arguments
+    driver_name = String(args[0]);
+
+    logger.info("[DRIVER] - Remove driver RPC called for " + driver_name +"...");
+    
+    var d = Q.defer();
+    var rpc_result = "";
+    var driver_folder = './drivers/'+driver_name;
+
+    // Check driver folder
+    if ( fs.existsSync(driver_folder) === true ){
+      
+	rpc_result = "Driver " + driver_name + " successfully removed!"
+	logger.info("[DRIVER] --> " + rpc_result);
+	
+	deleteFolderRecursive(driver_folder);
+	
+	d.resolve(rpc_result);
+	
+    
+    } else{
+      
+	rpc_result = "WARNING - Folder of "+driver_name+" driver not found or already deleted!";
+	logger.warn("[DRIVER] --> " + rpc_result);
+	
+	d.resolve(rpc_result);      
+      
+    }
+    
+    return d.promise;
+    
 }
 
 
@@ -971,6 +1027,7 @@ exports.exportDriverCommands = function (session){
     session.register('s4t.'+boardCode+'.driver.mountDriver', exports.mountDriver);
     session.register('s4t.'+boardCode+'.driver.unmountDriver', exports.unmountDriver); 
     session.register('s4t.'+boardCode+'.driver.injectDriver', exports.injectDriver);
+    session.register('s4t.'+boardCode+'.driver.removeDriver', exports.removeDriver);
     
     /*
     session.register(boardCode+'.command.rpc.mountAllEnabledDrivers', exports.mountAllEnabledDrivers);
