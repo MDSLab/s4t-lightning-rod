@@ -1,3 +1,6 @@
 .directory
 node_modules
 settings.json
+
+*.log
+coverage

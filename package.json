@@ -4,7 +4,9 @@
   "description": "node-lighthing-rod is the client to connect Arduino YUN/Linino One or Raspberry Pi to s4t-node-cloud",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --reporter spec --bail",
+    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot"
   },
   "dependencies": {
     "autobahn": ">=0.9.6",
@@ -31,5 +33,13 @@
   "bugs": {
     "url": "https://github.com/MDSLab/s4t-lighthing-rod/issues"
   },
-  "homepage": "https://github.com/MDSLab/s4t-lighthing-rod"
+  "homepage": "https://github.com/MDSLab/s4t-lighthing-rod",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.3",
+    "mocha": "^2.4.5",
+    "should": "^8.3.1"
+  }
 }
