@@ -16,8 +16,10 @@ log4js.loadAppender('file');
 
 
 logfile = nconf.get('config:log:logfile');
+loglevel = nconf.get('config:log:loglevel');
 log4js.addAppender(log4js.appenders.file(logfile));    
 var logger = log4js.getLogger('plugin-apis');
+logger.setLevel(loglevel);
 
 
 var requestify = require('requestify');

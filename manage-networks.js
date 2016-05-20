@@ -36,7 +36,7 @@ exports.exportNetworkCommands = function (session){
 
 exports.setSocatOnBoard = function (args, details){
   
-  logger.info("[NETWORK-MANAGER] - Network manager loaded!");
+  logger.info("[NETWORK] - Network manager loaded!");
   
   var d = Q.defer();
   
@@ -54,13 +54,13 @@ exports.setSocatOnBoard = function (args, details){
     var socatBoard_ip = args[2];
     var socatRes = boardCode + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip
     
-    logger.info("[NETWORK-MANAGER] - SOCAT PARAMETERS INJECTED: " + socatRes);
+    logger.info("[NETWORK] - SOCAT PARAMETERS INJECTED: " + socatRes);
     
 
     //NEW-net
     exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip);
     
-    //logger.debug("[NETWORK-MANAGER] - Network initialization called!");
+    //logger.debug("[NETWORK] - Network initialization called!");
   
     d.resolve(socatRes);
   
@@ -68,7 +68,7 @@ exports.setSocatOnBoard = function (args, details){
   }else{
     var socatRes = "Network of board " +boardCode + " already configured!"
     d.resolve(socatRes);
-    logger.warn("[NETWORK-MANAGER] - NETWORK RECOVERY --- NO NEED NETWORK INITIALIZATION!");
+    logger.warn("[NETWORK] - NETWORK RECOVERY --- NO NEED NETWORK INITIALIZATION!");
   }
 
 
@@ -82,7 +82,7 @@ exports.setSocatOnBoard = function (args, details){
 //NEW-net
 exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
   
-	logger.info("[NETWORK-MANAGER] - Network initialization...");
+	logger.info("[NETWORK] - Network initialization...");
 
 	var spawn = require('child_process').spawn;
 	
@@ -111,31 +111,31 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
 
   
 		  // START WSTT ------------------------------------------------------------------------------------------------
-		  logger.info("[NETWORK-MANAGER] - WSTT activating...");
+		  logger.info("[NETWORK] - WSTT activating...");
 
 		  var wstt_proc = spawn(rtpath, ['-r '+ socatServer_port +':localhost:'+basePort, reverseS_url])
-		  logger.debug("[NETWORK-MANAGER] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
+		  logger.debug("[NETWOR] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
 		  
 		  wstt_proc.stdout.on('data', function (data) {
-		      logger.debug('[NETWORK-MANAGER] - WSTT - stdout: ' + data);
+		      logger.debug('[NETWORK] - WSTT - stdout: ' + data);
 		  });
 		  wstt_proc.stderr.on('data', function (data) {
-		      logger.debug('[NETWORK-MANAGER] - WSTT - stderr: ' + data);
+		      logger.debug('[NETWORK] - WSTT - stderr: ' + data);
 		  });
 		  wstt_proc.on('close', function (code) {
-		      logger.warn('[NETWORK-MANAGER] - WSTT - process exited with code ' + code);
+		      logger.warn('[NETWORK] - WSTT - process exited with code ' + code);
 		  });  
 		  
 		  //------------------------------------------------------------------------------------------------------------
 		  
 	      } else if (msg.status === "complete"){
 		
-		logger.info('[NETWORK-MANAGER] - Sending notification to IOTRONIC: '+ msg.status+ ' - '+ msg.logmsg);
+		logger.info('[NETWORK] - Sending notification to IOTRONIC: '+ msg.status+ ' - '+ msg.logmsg);
 		
 		var boardCode = nconf.get('config:board:code');
 		session_wamp.call('iotronic.rpc.command.result_network_board', [msg.logmsg, boardCode] ).then( function(result){
-			  logger.info('[NETWORK-MANAGER] --> response from IOTRONIC: '+ result);
-			  logger.info('[NETWORK-MANAGER] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
+			  logger.info('[NETWORK] --> response from IOTRONIC: '+ result);
+			  logger.info('[NETWORK] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
 		});
 		
 	      }
@@ -168,49 +168,48 @@ exports.manageNetworks = function(args){
 		  var vlanMask = args[4];
 		  var vlanName = args[5];
 		  
-		  logger.info("ADDING BOARD TO VLAN "+vlanName+"...");
+		  logger.info("[NETWORK] - ADDING BOARD TO VLAN "+vlanName+"...");
 		  
 		  //ip link add link gre-lr0 name gre-lr0.<vlan> type vlan id <vlan> 
 		  var add_vlan_iface = spawn('ip',['link', 'add', 'link', 'gre-lr0', 'name', 'gre-lr0.'+vlanID, 'type', 'vlan' ,'id', vlanID]);         
-		  logger.debug('NETWORK COMMAND: ip link add link gre-lr0 name gre-lr0.'+vlanID + ' type vlan id '+ vlanID),
+		  logger.debug('[NETWORK] --> NETWORK COMMAND: ip link add link gre-lr0 name gre-lr0.'+vlanID + ' type vlan id '+ vlanID),
 		  
 		  add_vlan_iface.stdout.on('data', function (data) {
-		      logger.info('--> stdout - add_vlan_iface: ' + data);
+		      logger.debug('[NETWORK] ----> stdout - add_vlan_iface: ' + data);
 		  });
 		  add_vlan_iface.stderr.on('data', function (data) {
-		      logger.info('--> stderr - add_vlan_iface: ' + data);
+		      logger.debug('[NETWORK] ----> stderr - add_vlan_iface: ' + data);
 		  });
 		  
 		  add_vlan_iface.on('close', function (code) {
 
-		    
 			  //ip addr add <ip/mask> dev gre-lr0.<vlan> 
 			  var add_vlan_ip = spawn('ip',['addr', 'add', boardVlanIP+'/'+vlanMask ,'dev','gre-lr0.'+vlanID]);         
-			  logger.debug('NETWORK COMMAND: ip addr add '+boardVlanIP+'/'+vlanMask+' dev gre-lr0.'+vlanID);
+			  logger.debug('[NETWORK] --> NETWORK COMMAND: ip addr add '+boardVlanIP+'/'+vlanMask+' dev gre-lr0.'+vlanID);
 			  
 			  add_vlan_ip.stdout.on('data', function (data) {
-			      logger.info('--> stdout - add_vlan_ip: ' + data);
+			      logger.debug('[NETWORK] ----> stdout - add_vlan_ip: ' + data);
 			  });
 			  add_vlan_ip.stderr.on('data', function (data) {
-			      logger.info('--> stderr - add_vlan_ip: ' + data);
+			      logger.debug('[NETWORK] ----> stderr - add_vlan_ip: ' + data);
 			  });
 			  add_vlan_ip.on('close', function (code) {
 			    
 				//ip link set gre-lr0.<vlan> up
 				var greVlan_up = spawn('ip',['link','set','gre-lr0.'+vlanID,'up']); 
-				logger.debug('GRE IFACE UP: ip link set gre-lr0.'+ vlanID+ ' up');
+				logger.debug('[NETWORK] --> GRE IFACE UP: ip link set gre-lr0.'+ vlanID+ ' up');
 				
 				greVlan_up.stdout.on('data', function (data) {
-				    logger.info('--> stdout - greVlan_up: ' + data);
+				    logger.debug('[NETWORK] ----> stdout - greVlan_up: ' + data);
 				});
 				greVlan_up.stderr.on('data', function (data) {
-				    logger.info('--> stderr - greVlan_up: ' + data);
+				    logger.debug('[NETWORK] ----> stderr - greVlan_up: ' + data);
 				});
 				greVlan_up.on('close', function (code) {
 				  
-				    logger.info('--> VLAN IFACE gre-lr0.'+ vlanID+ ' is UP!');
+				    logger.debug('[NETWORK] --> VLAN IFACE gre-lr0.'+ vlanID+ ' is UP!');
 				    
-				    logger.info("BOARD SUCCESSFULLY ADDED TO VLAN "+vlanName+" with IP "+boardVlanIP);
+				    logger.info("[NETWORK] --> BOARD SUCCESSFULLY ADDED TO VLAN "+vlanName+" with IP "+boardVlanIP);
 				    
 				    
 				});
@@ -235,24 +234,24 @@ exports.manageNetworks = function(args){
 	    var vlanID = args[2];
 	    var vlanName = args[3];
 	    
-	    logger.info("REMOVING BOARD FROM VLAN "+vlanName+"...");
+	    logger.info("[NETWORK] - REMOVING BOARD FROM VLAN "+vlanName+"...");
 	    
 	    //NEW-net
 	    //ip link del gre-lr0.<vlan>
 	    var del_greVlan = spawn('ip',['link','del','gre-lr0.'+vlanID]); 
-	    logger.debug('DEL GRE IFACE: ip link del gre-lr0.'+ vlanID);
+	    logger.debug('[NETWORK] --> DEL GRE IFACE: ip link del gre-lr0.'+ vlanID);
 	    
 	    del_greVlan.stdout.on('data', function (data) {
-		logger.info('--> stdout - del_greVlan: ' + data);
+		logger.info('[NETWORK] ----> stdout - del_greVlan: ' + data);
 	    });
 	    del_greVlan.stderr.on('data', function (data) {
-		logger.info('--> stderr - del_greVlan: ' + data);
+		logger.info('[NETWORK] ----> stderr - del_greVlan: ' + data);
 	    });
 	    del_greVlan.on('close', function (code) {
 	      
-		logger.info("--> VLAN IFACE gre-lr0."+ vlanID +" DELETED!");
+		logger.info("[NETWORK] --> VLAN IFACE gre-lr0."+ vlanID +" DELETED!");
 		
-		logger.info("BOARD SUCCESSFULLY REMOVED FROM VLAN "+vlanName);
+		logger.info("[NETWORK] --> BOARD SUCCESSFULLY REMOVED FROM VLAN "+vlanName);
 		
 	    });
 	    

@@ -7,6 +7,10 @@
 * 
 */
 
+//service logging configuration: "manageCommands"   
+var logger = log4js.getLogger('manageServices');
+logger.setLevel(loglevel);
+
 exports.exportService = function(args){
     
     //Parsing arguments
@@ -18,7 +22,9 @@ exports.exportService = function(args){
     localPort = nconf.get('config:board:services:'+serviceName+':port');
     reverseTunnellingServer = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
     
-    console.log('Activating operation ' + operation + ' to service ' + serviceName + ' with remote port ' + remotePort + ' on local port ' + localPort + ' contacting remote server ' + reverseTunnellingServer);
+    //logger.info('[SERVICE] - Activating operation ' + operation + ' to service ' + serviceName + ' with remote port ' + remotePort + ' on local port ' + localPort + ' contacting remote server ' + reverseTunnellingServer);
+    
+    logger.info('[SERVICE] - '+ operation + ' service ' + serviceName + ' on local port ' + localPort +  ' with remote port ' + remotePort + ' contacting remote server ' + reverseTunnellingServer);
 
     //Getting the path of the wstt.js module from the configuration file
     var reverseTunnellingClient = nconf.get('config:reverse:lib:bin');
@@ -28,7 +34,7 @@ exports.exportService = function(args){
       //I spawn a process executing the reverse tunnel client with appropriate parameters
       var spawn = require('child_process').spawn;
       
-      console.log('Executing command: ' + reverseTunnellingClient + '-r '+remotePort+':'+'127.0.0.1'+':'+localPort + ' ' + reverseTunnellingServer);
+      logger.debug('[SERVICE] - Executing command: ' + reverseTunnellingClient + '-r '+remotePort+':'+'127.0.0.1'+':'+localPort + ' ' + reverseTunnellingServer);
       
       //I insert the new service in the array so that I can find it later when I have to stop the service
       var newService = {
@@ -39,13 +45,13 @@ exports.exportService = function(args){
 
       
       newService.process.stdout.on('data', function(data){
-         console.log('stdout of process ' + newService.process.pid + ': '+data);
+         logger.debug('[SERVICE] - '+newService.key+' stdout of process ' + newService.process.pid + ': '+data);
       });
       newService.process.stderr.on('data', function(data){
-         console.log('stderr of process ' + newService.process.pid + ': '+ data);
+         logger.debug('[SERVICE] - '+newService.key+' stderr of process ' + newService.process.pid + ': '+ data);
       });
       newService.process.on('close', function(code){
-         console.log('child process ' + newService.process.pid + ' exited with code '+ code);
+         logger.debug('[SERVICE] - '+newService.key+' child process ' + newService.process.pid + ' exited with code '+ code);
       });
 
    }
@@ -53,7 +59,7 @@ exports.exportService = function(args){
       //Looking for the process in the array
       var i = findValue(servicesProcess, serviceName, 'key');
       //Killing the process
-      console.log('Killing process: ' + servicesProcess[i].process.pid);
+      logger.info('[SERVICE] - Killing '+serviceName+' process: ' + servicesProcess[i].process.pid);
       servicesProcess[i].process.kill('SIGINT');
       servicesProcess.splice(i,1);
    }

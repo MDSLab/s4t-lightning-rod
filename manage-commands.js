@@ -23,7 +23,7 @@ exports.onCommand = function (args){
     //If the message is for this board
     if(args[0] == boardCode){
         
-        logger.debug('L-R COMMAND - It is a message for me with args: ' + args[1] +' '+ args[2] +' '+ args[3]);
+        //logger.debug('L-R COMMAND - It is a message for me with args: ' + args[1] +' '+ args[2] +' '+ args[3]);
         
         //Check the type of message
         switch(args[1]){
@@ -33,12 +33,14 @@ exports.onCommand = function (args){
             case 'ssh':
             case 'ideino':
             case 'osjs':
+		logger.info('[SERVICE] - L-R command received: ' + args[1] +' '+ args[2] +' '+ args[3]);
                 var manageServices = require('./manage-services');
                 manageServices.exportService(args);
                 break;
             case 'add-to-network':
             case 'remove-from-network':
             case 'update-board':
+		logger.debug('[NETWORK] - L-R command received: ' + args[1] +' '+ args[2] +' '+ args[3]);
                 var manageNetworks = require('./manage-networks');
                 manageNetworks.manageNetworks(args);
                 break;

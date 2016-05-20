@@ -20,12 +20,12 @@ try{
   
     nconf.file ({file: 'settings.json'});
     logfile = nconf.get('config:log:logfile');
+    loglevel = nconf.get('config:log:loglevel');
     log4js.addAppender(log4js.appenders.file(logfile));               
 
     //service logging configuration: "main"                                                  
-    var logger = log4js.getLogger('main');  
-    
-    
+    var logger = log4js.getLogger('main');
+    logger.setLevel(loglevel);
     
 }
 catch(err){
@@ -93,10 +93,10 @@ manageBoard.checkSettings(function(check){
 	      
 	    }
 	  
-	    logger.info('[WAMP-STATUS] - Connection to WAMP server '+ wampUrl + ' created successfully:');
-	    logger.info('--> Realm: '+ wampRealm);
-	    logger.info('--> Session ID: '+ session._id);
-	    logger.debug('--> Connection details:\n'+ JSON.stringify(details));
+	    logger.info('[WAMP] - Connection to WAMP server '+ wampUrl + ' created successfully:');
+	    logger.info('[WAMP] |--> Realm: '+ wampRealm);
+	    logger.info('[WAMP] |--> Session ID: '+ session._id);
+	    logger.debug('[WAMP] |--> Connection details:\n'+ JSON.stringify(details));
 	    
 	    
 	    // RPC registration of Board Management Commands
@@ -431,7 +431,13 @@ manageBoard.checkSettings(function(check){
 	    
 	}
 	
-	
+	function Main_Raspberry_Pi(){
+	  
+	    //Opening the connection to the WAMP server
+	    logger.info('[WAMP-STATUS] - Opening connection to WAMP server ('+ wampIP +')...');  
+	    wampConnection.open();
+	    
+	}	
 		
 	switch(device){
 	  
@@ -444,7 +450,8 @@ manageBoard.checkSettings(function(check){
 		Main_Laptop();
 		break                         
 	    case 'raspberry_pi':
-		logger.warn("[SYSTEM] - L-R Raspberry Pi not supported yet!");
+		logger.info("[SYSTEM] - L-R Raspberry Pi starting...");
+		Main_Raspberry_Pi();
 		break   	    
 	    default:
 		//DEBUG MESSAGE

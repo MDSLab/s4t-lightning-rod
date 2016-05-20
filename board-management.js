@@ -182,7 +182,7 @@ exports.exportManagementCommands = function (session){
 //This function contains the logic that has to be performed if I'm connected to the WAMP server
 exports.manage_WAMP_connection = function  (session, details){
                 
-      logger.info("S4T configuration starting...");
+      logger.info("[SYSTEM] - S4T configuration starting...");
 
       var boardCode = nconf.get('config:board:code');
 
@@ -235,7 +235,7 @@ exports.setBoardPosition = function (args){
   var board_position = args[0];
 
   
-  logger.info("setBoardPosition: " + JSON.stringify(board_position));
+  logger.info("[SYSTEM] - Set board position: " + JSON.stringify(board_position));
   
   var configFileName = './settings.json';
   var configFile = JSON.parse(fs.readFileSync(configFileName, 'utf8'));
@@ -243,20 +243,20 @@ exports.setBoardPosition = function (args){
   var board_status = board_config["status"];
   
   var board_config = configFile.config["board"];
-  logger.info("\nBOARD CONFIGURATION " + JSON.stringify(board_config));
+  logger.info("[SYSTEM] --> BOARD CONFIGURATION " + JSON.stringify(board_config));
   
 
   board_config["position"] = board_position;
-  logger.info("\nBOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]));
+  logger.info("[SYSTEM] --> BOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]));
   
   //Updates the settings.json file
   fs.writeFile(configFileName, JSON.stringify(configFile, null, 4), function(err) {
       if(err) {
-	  logger.error('Error writing settings.json file: ' + err);
+	  logger.error('[SYSTEM] --> Error writing settings.json file: ' + err);
 	  
       } else {
 	
-	  logger.info("settings.json configuration file saved to " + configFileName);
+	  logger.debug("[SYSTEM] --> settings.json configuration file saved to " + configFileName);
 
       }
   });
