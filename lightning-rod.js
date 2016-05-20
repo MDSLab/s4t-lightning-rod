@@ -7,7 +7,6 @@
 * 
 */
 
-
 var fs = require("fs");
 
 //main logging configuration                                                                
@@ -21,12 +20,12 @@ try{
   
     nconf.file ({file: 'settings.json'});
     logfile = nconf.get('config:log:logfile');
+    loglevel = nconf.get('config:log:loglevel');
     log4js.addAppender(log4js.appenders.file(logfile));               
 
     //service logging configuration: "main"                                                  
-    var logger = log4js.getLogger('main');  
-    
-    
+    var logger = log4js.getLogger('main');
+    logger.setLevel(loglevel);
     
 }
 catch(err){
@@ -58,15 +57,16 @@ logger.info('##############################');
 
 var manageBoard = require('./board-management');
 
+
 manageBoard.checkSettings(function(check){
   
     if(check === true){
 
 	logger.info('[SYSTEM] - DEVICE: ' + device);
-
+    
 
 	//WAMP --------------------------------------------------------------------------------------------------------------------------------------------
-
+    
 	var autobahn = require('autobahn');
 	
 	var wampUrl = nconf.get('config:wamp:url_wamp')+":"+nconf.get('config:wamp:port_wamp')+"/ws";
@@ -93,16 +93,17 @@ manageBoard.checkSettings(function(check){
 	      
 	    }
 	  
-	    logger.info('[WAMP-STATUS] - Connection to WAMP server '+ wampUrl + ' created successfully:');
-	    logger.info('--> Realm: '+ wampRealm);
-	    logger.info('--> Session ID: '+ session._id);
-	    logger.debug('--> Connection details:\n'+ JSON.stringify(details));
+	    logger.info('[WAMP] - Connection to WAMP server '+ wampUrl + ' created successfully:');
+	    logger.info('[WAMP] |--> Realm: '+ wampRealm);
+	    logger.info('[WAMP] |--> Session ID: '+ session._id);
+	    logger.debug('[WAMP] |--> Connection details:\n'+ JSON.stringify(details));
 	    
 	    
 	    // RPC registration of Board Management Commands
+	    var manageBoard = require('./board-management');
 	    manageBoard.exportManagementCommands(session);
 		    
-
+    
 	    var configFileName = './settings.json';
 	    var configFile = JSON.parse(fs.readFileSync(configFileName, 'utf8'));
 	    var board_config = configFile.config["board"];
@@ -135,10 +136,13 @@ manageBoard.checkSettings(function(check){
 				    logger.error('Error writing settings.json file: ' + err);
 				    
 				} else {
+				  
 				    
 				    logger.info("settings.json configuration file saved to " + configFileName);
 				    
 				    manageBoard.manage_WAMP_connection(session, details);
+				    
+
 		    
 				}
 			    });
@@ -160,7 +164,7 @@ manageBoard.checkSettings(function(check){
 	      
 	      
 	    }
-
+  
 
 	    
 	    //----------------------------------------------------------------------------------------------------
@@ -329,16 +333,15 @@ manageBoard.checkSettings(function(check){
 		    }
 		    
 		});
-
 		
 
 	    }, 10 * 1000);
 	    
-	    logger.info('[WAMP] - TIMER to keep alive WAMP connection setup!');
+	    logger.info('[WAMP] - TIMER to keep alive WAMP connection set up!');
 	    
 	    //----------------------------------------------------------------------------------------------------
-	    
-	    
+	      
+		
 	};
 	
 	//This function is called if there are problems with the WAMP connection
@@ -372,9 +375,9 @@ manageBoard.checkSettings(function(check){
 
 	    
 	};
-
-	//-------------------------------------------------------------------------------------------------------------------------------------------------
     
+	//-------------------------------------------------------------------------------------------------------------------------------------------------
+	
 	function Main_Arduino_Yun(){
 	    /*        
 	    //Writing to the watchdog file to signal I am alive
@@ -397,13 +400,20 @@ manageBoard.checkSettings(function(check){
 		logger.info('[WAMP-STATUS] - Opening connection to WAMP server ('+ wampIP +')...');  
 		wampConnection.open();
 		//-----------------------------------------------------------------------------------------------------
+
 		
-		// PLUGINS RESTART ALL -------------------------------------------------------------------------------
+		// PLUGINS RESTART ALL --------------------------------------------------------------------------------
 		//This procedure restarts all plugins in "ON" status
 		var managePlugins = require('./manage-plugins');
 		//managePlugins.restartAllActivePlugins();  //DEPRECATED
 		managePlugins.pluginsLoader();
-		//----------------------------------------------------------------------------------------------------
+		//-----------------------------------------------------------------------------------------------------
+
+
+		// DRIVERS RESTART ALL --------------------------------------------------------------------------------
+		var driversManager = require("./manage-drivers");
+		//driversManager.mountAllEnabledDrivers();
+		//-----------------------------------------------------------------------------------------------------	
 
 		
 	    });
@@ -420,9 +430,15 @@ manageBoard.checkSettings(function(check){
 	    wampConnection.open();
 	    
 	}
-    
-    
+	
+	function Main_Raspberry_Pi(){
+	  
+	    //Opening the connection to the WAMP server
+	    logger.info('[WAMP-STATUS] - Opening connection to WAMP server ('+ wampIP +')...');  
+	    wampConnection.open();
 	    
+	}	
+		
 	switch(device){
 	  
 	    case 'arduino_yun':
@@ -434,7 +450,8 @@ manageBoard.checkSettings(function(check){
 		Main_Laptop();
 		break                         
 	    case 'raspberry_pi':
-		logger.info("[SYSTEM] - L-R Raspberry Pi not supported yet!");
+		logger.info("[SYSTEM] - L-R Raspberry Pi starting...");
+		Main_Raspberry_Pi();
 		break   	    
 	    default:
 		//DEBUG MESSAGE
@@ -442,8 +459,11 @@ manageBoard.checkSettings(function(check){
 		logger.warn('[SYSTEM] - Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
 		process.exit();
 		break;
-
+		
+		
 	}
+    
+    
     
     
   }

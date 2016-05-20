@@ -9,6 +9,7 @@
 
 //service logging configuration: "managePins"
 var logger = log4js.getLogger('managePins');
+logger.setLevel(loglevel);
 
 //Function to read data from a digital pin
 function readDigital(args){
@@ -24,7 +25,7 @@ function readDigital(args){
 function writeDigital(args){
     try{
         board.digitalWrite(args[2],parseInt(args[3]));
-	logger.info("Set PIN "+args[2]+" to "+parseInt(args[3]))
+	logger.info("[GPIO] - Set PIN "+args[2]+" to "+parseInt(args[3]))
         return 0;
     }catch(ex){
         return ex.message;
