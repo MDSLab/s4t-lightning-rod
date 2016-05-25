@@ -519,96 +519,112 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 	});
 
 	
-	
+	/*
 	var device = nconf.get('config:device');
-	logger.info('[DRIVER] --> GPIO device for '+device+': ' + device0_file);
+	
 	
 	switch(device){
 	  
 	    case 'arduino_yun':
-
-
-		  // ENABLING YUN DEVICE "device_0"
-		  fs.writeFile(device0_file, '1', function(err) {
-		    
-		      if(err) {
+	*/
+		try{				
+	  
+			drivers[driver_name] = driver;
 			
-			  logger.error('[DRIVER] --> Error writing device0 file: ' + err);
-			  
-		      } else {
+			var driverlib = drivers[driver_name];
 			
-			  logger.debug("[DRIVER] -->  device0 successfully enabled!");
+			driverlib['init']( function(init_response){
 			  
-			  //logger.info("FULL FILE LIST %s", JSON.stringify(file_list))
-			  
-			  try{				
-		  
-				drivers[driver_name] = driver;
-				
-				var driverlib = drivers[driver_name];
-				
-				driverlib['init']( function(init_result){
-				  
-				    logger.info("[DRIVER] --> " + init_result);
-				     
-				    fuse.mount(mountpoint, {
-				      readdir: readdirFunction(driver_name),
-				      getattr: getattrFunction(driver_name),
-				      open: openFunction(),
-				      read: readFunction(driver_name, filename, mirror_board),
-				      write: writeFunction(driver, driver_name) 
-				    });
-				     
-				    rest_response.message = 'driver '+driver_name+' successfully mounted!';
-				    rest_response.result = "SUCCESS";
-				    
-				    callback(rest_response);
-				     
-				});  
-	      
-				
-				
-			  }
-			  catch(err){
+			    if(init_response.result == "SUCCESS"){
 			      
-			      rest_response.message = "ERROR during "+driver_name+" (fuse) mounting: " +err;
-			      rest_response.result = "ERROR";
+				logger.info("[DRIVER] --> " + init_response.message);
 				
-			      logger.error("[DRIVER] --> " + rest_response.message);
+				fuse.mount(mountpoint, {
+				  readdir: readdirFunction(driver_name),
+				  getattr: getattrFunction(driver_name),
+				  open: openFunction(),
+				  read: readFunction(driver_name, filename, mirror_board),
+				  write: writeFunction(driver, driver_name) 
+				});
+				
+				rest_response.message = 'driver '+driver_name+' successfully mounted!';
+				rest_response.result = "SUCCESS";
+				
+				callback(rest_response);
+				
+			    }
+			    else{
 			      
-			      callback(rest_response)
-			      
-			  }
-			  
-			  
-			  
-		      }
+				logger.error("[DRIVER] --> " + init_response.message);
+				
+				rest_response.message = "ERROR during "+driver_name+" initialization -> " +init_response.message;
+				rest_response.result = "ERROR";
+				
+				callback(rest_response)
 		      
-		  }); 
+			    }
+			      
+			});  
+      
+			
+			
+		}
+		catch(err){
+		    
+		    rest_response.message = "ERROR during "+driver_name+" (fuse) mounting: " +err;
+		    rest_response.result = "ERROR";
+		      
+		    logger.error("[DRIVER] --> " + rest_response.message);
+		    
+		    callback(rest_response)
+		    
+		}
 
-
-	      
+	   /*   
 		break
 		
 	    case 'laptop':                      
 	    case 'raspberry_pi':
 		  
 		  try{
-			
-			fuse.mount(mountpoint, {
-			  readdir: readdirFunction(driver_name),
-			  getattr: getattrFunction(driver_name),
-			  open: openFunction(),
-			  read: readFunction(driver_name, filename, mirror_board),
-			  write: writeFunction(driver, driver_name) 
-			})
-	  
+		    
 			drivers[driver_name] = driver;
 			
-			rest_response.message = 'driver '+driver_name+' successfully mounted!';
-			rest_response.result = "SUCCESS";
+			var driverlib = drivers[driver_name];
 			
-			callback(rest_response)
+			driverlib['init']( function(init_response){
+			  
+			    if(init_response.result == "SUCCESS"){
+			      
+				logger.info("[DRIVER] --> " + init_response.message);
+				
+				fuse.mount(mountpoint, {
+				  readdir: readdirFunction(driver_name),
+				  getattr: getattrFunction(driver_name),
+				  open: openFunction(),
+				  read: readFunction(driver_name, filename, mirror_board),
+				  write: writeFunction(driver, driver_name) 
+				})
+		
+				
+				rest_response.message = 'driver '+driver_name+' successfully mounted!';
+				rest_response.result = "SUCCESS";
+				
+				callback(rest_response)
+			    }
+			    else{
+			      
+				logger.error("[DRIVER] --> " + init_response.message);
+				
+				rest_response.message = "ERROR during "+driver_name+" initialization -> " +init_response.message;
+				rest_response.result = "ERROR";
+				
+				callback(rest_response)
+		      
+		      
+			    }
+			      
+			});  
 			
 		  }
 		  catch(err){
@@ -629,6 +645,8 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 		logger.warn('[DRIVER] - Device "' + device + '" not supported!');
 		logger.warn('[DRIVER] - Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
 		break;
+		
+	  */
 		
 		
 	}
