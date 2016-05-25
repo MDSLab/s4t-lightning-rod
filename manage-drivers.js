@@ -541,22 +541,32 @@ function LoadDriver(driver_name, mountpoint, filename, remote, mirror_board, cal
 			  
 			  //logger.info("FULL FILE LIST %s", JSON.stringify(file_list))
 			  
-			  try{
-				
-				fuse.mount(mountpoint, {
-				  readdir: readdirFunction(driver_name),
-				  getattr: getattrFunction(driver_name),
-				  open: openFunction(),
-				  read: readFunction(driver_name, filename, mirror_board),
-				  write: writeFunction(driver, driver_name) 
-				})
+			  try{				
 		  
 				drivers[driver_name] = driver;
 				
-				rest_response.message = 'driver '+driver_name+' successfully mounted!';
-				rest_response.result = "SUCCESS";
+				var driverlib = drivers[driver_name];
 				
-				callback(rest_response)
+				driverlib['init']( function(init_result){
+				  
+				    logger.info("[DRIVER] --> " + init_result);
+				     
+				    fuse.mount(mountpoint, {
+				      readdir: readdirFunction(driver_name),
+				      getattr: getattrFunction(driver_name),
+				      open: openFunction(),
+				      read: readFunction(driver_name, filename, mirror_board),
+				      write: writeFunction(driver, driver_name) 
+				    });
+				     
+				    rest_response.message = 'driver '+driver_name+' successfully mounted!';
+				    rest_response.result = "SUCCESS";
+				    
+				    callback(rest_response);
+				     
+				});  
+	      
+				
 				
 			  }
 			  catch(err){
@@ -711,150 +721,159 @@ exports.unmountDriver = function (args){
     
     logger.info("[DRIVER] - Driver '"+driver_name+"' UNMOUNTING...");
     
-    var d = Q.defer();
-    
-    try{
-      
-	logger.debug("[DRIVER] --> Driver "+driver_name+" configuration loading...");
-	var driver_path = "./drivers/"+driver_name;
-	var driver_conf = driver_path+"/"+driver_name+".json";
-	var driverJSON = JSON.parse(fs.readFileSync(driver_conf, 'utf8'));
-	var children = driverJSON.children;
-	
-	logger.debug('[DRIVER] --> JSON file '+ driver_name +'.json successfully parsed!');
-
-	fuse.unmount(mountpoint, function (err) {
-	  
-	      if(err === undefined){
-		  
-		  var driver_mp_node = mp_list[driver_name]; 
-
-		  if (driver_mp_node != null){
-			
-			
-			// Unregistering RPCs for each file
-			children.forEach(function(file, idx, list) {
-			  
-			    //logger.debug("Unregistering ("+file.name+") read_function: " + JSON.stringify(driver_mp_node['/'+file.name].read_function));
-			  
-			    if ( driver_mp_node['/'+file.name] != undefined) {
-			      
-				  session_drivers.unregister(driver_mp_node['/'+file.name].reg_read_function).then(
-				    
-				      function () {
-					  // successfully unregistered
-					  logger.debug("[DRIVER] --> RPC read function of "+file.name +" unregistered!");
-					
-				      },
-				      function (error) {
-					  // unregister failed
-					  logger.error("[DRIVER] --> Error unregistering RPC read function of "+file);
-				      }
-				    
-				  );
-
-				  session_drivers.unregister(driver_mp_node['/'+file.name].reg_write_function).then(
-				    
-				      function () {
-					  // successfully unregistered
-					  logger.debug("[DRIVER] --> RPC write function of "+file.name +" unregistered!");
-					
-				      },
-				      function (error) {
-					  // unregister failed
-					  logger.error("[DRIVER] --> Error unregistering RPC write function of "+file);
-				      }
-				    
-				  );
-				 
-			    }
-			    else{
-			      logger.debug("I have not unregistered RPC file ("+file.name+") functions!");
-			    }
-			   
-			    
-			    if (idx === list.length - 1){ 
-			      
-			      try{
-				    //logger.debug("...all files analyzed...");
+    var driver_path = "./drivers/"+driver_name;
+    var driver_conf = driver_path+"/"+driver_name+".json";
+    var driver_module = driver_path+"/"+driver_name+".js";
+    var driverlib = require(driver_module);		
 				
-				    //DATA cleaning------------------------------------------------------------------
-				    logger.debug("[DRIVER] --> Driver "+driver_name+" garbage cleaning...");
-				    
-				    file_list[driver_name]=null;
-				    delete file_list[driver_name];
-				    logger.debug("[DRIVER] --> Files removed from list!" )
-				    
-				    mp_list[driver_name]=null;
-				    delete mp_list[driver_name];	      
-				    logger.debug("[DRIVER] --> Mountpoints of "+driver_name+" removed!")
-				    //-------------------------------------------------------------------------------
-	
-				    rest_response.message = "Driver '"+driver_name+"' successfully unmounted!";
-				    rest_response.result = "SUCCESS";
-				    logger.info("[DRIVER] --> "+JSON.stringify(rest_response.message));
-				    d.resolve(rest_response);
-			      }
-			      catch(err){
-				  logger.error('[DRIVER] --> ERROR data cleaning "'+driver_name+'" during unmounting: '+err);
-			      } 	      
-		    
-			    }
-
-			    
-			});
-			
-		  }
-		  else{
-		    
-			try{
-			      //DATA cleaning------------------------------------------------------------------
-			      logger.debug("[DRIVER] --> Driver "+driver_name+" garbage cleaning...");
-			      file_list[driver_name]=null;
-			      delete file_list[driver_name];
-			      logger.debug("[DRIVER] --> Files removed from list!" )
-			      
-			      mp_list[driver_name]=null;
-			      delete mp_list[driver_name];	      
-			      logger.debug("[DRIVER] --> Mountpoints of "+driver_name+" removed!")
-			      //-------------------------------------------------------------------------------
-			}
-			catch(err){
-			    logger.error('[DRIVER] --> ERROR data cleaning "'+driver_name+'" during unmounting: '+err);
-			} 
-			
-			rest_response.message = "Driver '"+driver_name+"' successfully unmounted!";
-			rest_response.result = "SUCCESS";
-			logger.info("[DRIVER] --> "+JSON.stringify(rest_response.message));
-			d.resolve(rest_response);
-					  
-		    
-		  }
-
-		  
-		  
-
-	      
-	
-	      }else{
-		
-		  rest_response.message = "ERROR during '"+driver_name+"' (fuse) unmounting: " +err;
-		  rest_response.result = "ERROR";
-		  logger.error("[DRIVER] --> "+JSON.stringify(rest_response.message));
-		  d.resolve(rest_response);
-
-	      }
-	  
-	});	
-	
-	
+    var d = Q.defer();
+				
+    driverlib['finalize']( function(end_result){
       
-    }
-    catch(err){
-	logger.error('Error during driver configuration loading: '+err);
-    }  
-    
-    
+	logger.info("[DRIVER] --> " + end_result);
+	  
+	try{
+	      
+	    logger.debug("[DRIVER] --> Driver "+driver_name+" configuration loading...");
+
+	    var driverJSON = JSON.parse(fs.readFileSync(driver_conf, 'utf8'));
+	    var children = driverJSON.children;
+	    
+	    logger.debug('[DRIVER] --> JSON file '+ driver_name +'.json successfully parsed!');
+
+	    fuse.unmount(mountpoint, function (err) {
+	      
+		  if(err === undefined){
+		      
+		      var driver_mp_node = mp_list[driver_name]; 
+
+		      if (driver_mp_node != null){
+			    
+			    
+			    // Unregistering RPCs for each file
+			    children.forEach(function(file, idx, list) {
+			      
+				//logger.debug("Unregistering ("+file.name+") read_function: " + JSON.stringify(driver_mp_node['/'+file.name].read_function));
+			      
+				if ( driver_mp_node['/'+file.name] != undefined) {
+				  
+				      session_drivers.unregister(driver_mp_node['/'+file.name].reg_read_function).then(
+					
+					  function () {
+					      // successfully unregistered
+					      logger.debug("[DRIVER] --> RPC read function of "+file.name +" unregistered!");
+					    
+					  },
+					  function (error) {
+					      // unregister failed
+					      logger.error("[DRIVER] --> Error unregistering RPC read function of "+file);
+					  }
+					
+				      );
+
+				      session_drivers.unregister(driver_mp_node['/'+file.name].reg_write_function).then(
+					
+					  function () {
+					      // successfully unregistered
+					      logger.debug("[DRIVER] --> RPC write function of "+file.name +" unregistered!");
+					    
+					  },
+					  function (error) {
+					      // unregister failed
+					      logger.error("[DRIVER] --> Error unregistering RPC write function of "+file);
+					  }
+					
+				      );
+				    
+				}
+				else{
+				  logger.debug("I have not unregistered RPC file ("+file.name+") functions!");
+				}
+			      
+				
+				if (idx === list.length - 1){ 
+				  
+				  try{
+					//logger.debug("...all files analyzed...");
+				    
+					//DATA cleaning------------------------------------------------------------------
+					logger.debug("[DRIVER] --> Driver "+driver_name+" garbage cleaning...");
+					
+					file_list[driver_name]=null;
+					delete file_list[driver_name];
+					logger.debug("[DRIVER] --> Files removed from list!" )
+					
+					mp_list[driver_name]=null;
+					delete mp_list[driver_name];	      
+					logger.debug("[DRIVER] --> Mountpoints of "+driver_name+" removed!")
+					//-------------------------------------------------------------------------------
+	    
+					rest_response.message = "Driver '"+driver_name+"' successfully unmounted!";
+					rest_response.result = "SUCCESS";
+					logger.info("[DRIVER] --> "+JSON.stringify(rest_response.message));
+					d.resolve(rest_response);
+				  }
+				  catch(err){
+				      logger.error('[DRIVER] --> ERROR data cleaning "'+driver_name+'" during unmounting: '+err);
+				  } 	      
+			
+				}
+
+				
+			    });
+			    
+		      }
+		      else{
+			
+			    try{
+				  //DATA cleaning------------------------------------------------------------------
+				  logger.debug("[DRIVER] --> Driver "+driver_name+" garbage cleaning...");
+				  file_list[driver_name]=null;
+				  delete file_list[driver_name];
+				  logger.debug("[DRIVER] --> Files removed from list!" )
+				  
+				  mp_list[driver_name]=null;
+				  delete mp_list[driver_name];	      
+				  logger.debug("[DRIVER] --> Mountpoints of "+driver_name+" removed!")
+				  //-------------------------------------------------------------------------------
+			    }
+			    catch(err){
+				logger.error('[DRIVER] --> ERROR data cleaning "'+driver_name+'" during unmounting: '+err);
+			    } 
+			    
+			    rest_response.message = "Driver '"+driver_name+"' successfully unmounted!";
+			    rest_response.result = "SUCCESS";
+			    logger.info("[DRIVER] --> "+JSON.stringify(rest_response.message));
+			    d.resolve(rest_response);
+					      
+			
+		      }
+
+		      
+		      
+
+		  
+	    
+		  }else{
+		    
+		      rest_response.message = "ERROR during '"+driver_name+"' (fuse) unmounting: " +err;
+		      rest_response.result = "ERROR";
+		      logger.error("[DRIVER] --> "+JSON.stringify(rest_response.message));
+		      d.resolve(rest_response);
+
+		  }
+	      
+	    });	
+	    
+	    
+	  
+	}
+	catch(err){
+	    logger.error('Error during driver configuration loading: '+err);
+	}  	
+	  
+    });  
+
 
     
     return d.promise;
