@@ -40,6 +40,7 @@
   "devDependencies": {
     "istanbul": "^0.4.3",
     "mocha": "^2.4.5",
+    "ps-node": "^0.1.1",
     "should": "^8.3.1",
     "sinon": "^1.17.4",
     "temp": "^0.8.3"
