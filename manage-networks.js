@@ -10,6 +10,7 @@
 
 //service logging configuration: "manageNetworks"   
 var logger = log4js.getLogger('manageNetworks');
+logger.setLevel(loglevel);
 
 var Q = require("q");
 
@@ -35,7 +36,7 @@ exports.exportNetworkCommands = function (session){
 
 exports.setSocatOnBoard = function (args, details){
   
-  logger.info("[NETWORK-MANAGER] - Network manager loaded!");
+  logger.info("[NETWORK] - Network manager loaded!");
   
   var d = Q.defer();
   
@@ -53,13 +54,13 @@ exports.setSocatOnBoard = function (args, details){
     var socatBoard_ip = args[2];
     var socatRes = boardCode + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip
     
-    logger.info("[NETWORK-MANAGER] - SOCAT PARAMETERS INJECTED: " + socatRes);
+    logger.info("[NETWORK] - SOCAT PARAMETERS INJECTED: " + socatRes);
     
 
     //NEW-net
     exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip);
     
-    //logger.debug("[NETWORK-MANAGER] - Network initialization called!");
+    //logger.debug("[NETWORK] - Network initialization called!");
   
     d.resolve(socatRes);
   
@@ -67,7 +68,7 @@ exports.setSocatOnBoard = function (args, details){
   }else{
     var socatRes = "Network of board " +boardCode + " already configured!"
     d.resolve(socatRes);
-    logger.warn("[NETWORK-MANAGER] - NETWORK RECOVERY --- NO NEED NETWORK INITIALIZATION!");
+    logger.warn("[NETWORK] - NETWORK RECOVERY --- NO NEED NETWORK INITIALIZATION!");
   }
 
 
@@ -81,7 +82,7 @@ exports.setSocatOnBoard = function (args, details){
 //NEW-net
 exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
   
-	logger.info("[NETWORK-MANAGER] - Network initialization...");
+	logger.info("[NETWORK] - Network initialization...");
 
 	var spawn = require('child_process').spawn;
 	
@@ -110,31 +111,31 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
 
   
 		  // START WSTT ------------------------------------------------------------------------------------------------
-		  logger.info("[NETWORK-MANAGER] - WSTT activating...");
+		  logger.info("[NETWORK] - WSTT activating...");
 
 		  var wstt_proc = spawn(rtpath, ['-r '+ socatServer_port +':localhost:'+basePort, reverseS_url])
-		  logger.info("[NETWORK-MANAGER] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
+		  logger.debug("[NETWOR] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
 		  
 		  wstt_proc.stdout.on('data', function (data) {
-		      logger.info('[NETWORK-MANAGER] - WSTT - stdout: ' + data);
+		      logger.debug('[NETWORK] - WSTT - stdout: ' + data);
 		  });
 		  wstt_proc.stderr.on('data', function (data) {
-		      logger.info('[NETWORK-MANAGER] - WSTT - stderr: ' + data);
+		      logger.debug('[NETWORK] - WSTT - stderr: ' + data);
 		  });
 		  wstt_proc.on('close', function (code) {
-		      logger.warn('[NETWORK-MANAGER] - WSTT - process exited with code ' + code);
+		      logger.warn('[NETWORK] - WSTT - process exited with code ' + code);
 		  });  
 		  
 		  //------------------------------------------------------------------------------------------------------------
 		  
 	      } else if (msg.status === "complete"){
 		
-		logger.info('[NETWORK-MANAGER] - Sending notification to IOTRONIC: '+ msg.status+ ' - '+ msg.logmsg);
+		logger.info('[NETWORK] - Sending notification to IOTRONIC: '+ msg.status+ ' - '+ msg.logmsg);
 		
 		var boardCode = nconf.get('config:board:code');
 		session_wamp.call('iotronic.rpc.command.result_network_board', [msg.logmsg, boardCode] ).then( function(result){
-			  logger.info('[NETWORK-MANAGER] --> response from IOTRONIC: '+ result);
-			  logger.info('[NETWORK-MANAGER] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
+			  logger.info('[NETWORK] --> response from IOTRONIC: '+ result);
+			  logger.info('[NETWORK] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
 		});
 		
 	      }

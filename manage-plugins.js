@@ -7,9 +7,9 @@
 * 
 */
 
-
 //service logging configuration: "managePlugins"   
 var logger = log4js.getLogger('managePlugins');
+logger.setLevel(loglevel);
 
 var fs = require("fs");
 var Q = require("q");
@@ -35,7 +35,7 @@ exports.call = function (args, details){
     // The autostart parameter at RUN stage is OPTIONAL. It is used at this stage if the user needs to change the boot execution configuration of the plugin after the INJECTION stage.
     var plugin_autostart = "";
     
-    logger.info('Running request for plugin \"'+ plugin_name +'\" with parameter json: '+plugin_json);
+    logger.info('[PLUGIN] - Execution request for \"'+ plugin_name +'\" plugin with parameter json: '+plugin_json);
     
     try{
         //Reading the plugin configuration file
@@ -43,21 +43,20 @@ exports.call = function (args, details){
 
     }
     catch(err){
-        logger.error('Error parsing JSON file ./plugins.json');
-        //return 'Error parsing JSON file ./plugins.json'';
+        logger.error('[PLUGIN] --> Error parsing JSON file ./plugins.json');
     }
     
     //If the plugin exists
     if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
       
-	logger.info("Plugin successfully loaded!");
+	logger.info("[PLUGIN] --> Plugin successfully loaded!");
         
         //Check the status to be decided
 	var status = pluginsConf.plugins[plugin_name].status;
 	
         if (status == "off" || status == "injected"){
             
-            logger.info("Plugin " + plugin_name + " being started");
+            logger.info("[PLUGIN] --> Plugin " + plugin_name + " being started");
             
             //Create a new process that has plugin-wrapper as code
             var child = cp.fork('./call-wrapper');
@@ -82,11 +81,11 @@ exports.call = function (args, details){
 		      fs.writeFile(schema_outputFilename, plugin_json, function(err) {
 			
 			  if(err) {
-			      logger.error('Error parsing '+plugin_name+'.json file: ' + err);
+			      logger.error('[PLUGIN] --> Error parsing '+plugin_name+'.json file: ' + err);
 			      
 			  } else {
 			    
-			      logger.info('Plugin JSON schema saved to ' + schema_outputFilename);
+			      logger.info('[PLUGIN] --> Plugin JSON schema saved to ' + schema_outputFilename);
 			      
 			      // - change the plugin status from "off" to "on" and update the PID value
 			      pluginsConf.plugins[plugin_name].status = "on";
@@ -95,9 +94,9 @@ exports.call = function (args, details){
 			      fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
 				
 				  if(err) {
-				      logger.error('Error writing ./plugins.json file: ' + err);
+				      logger.error('[PLUGIN] --> Error writing ./plugins.json file: ' + err);
 				  } else {
-				      logger.info("JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+				      logger.info("[PLUGIN] --> JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
 				  }
 				  
 			      });
@@ -110,35 +109,35 @@ exports.call = function (args, details){
 		  
 		} else if(msg.status === "finish") {
 		  
-		  logger.info("RESULT: ", msg.logmsg);
+		  logger.info("[PLUGIN] --> RESULT: ", msg.logmsg);
 		  
 		  d.resolve(msg.logmsg);
 		  
 		} else if(msg.status === "fault") {
 		  
-		  logger.info("RESULT: ", msg.logmsg);
+		  logger.info("[PLUGIN] --> RESULT: ", msg.logmsg);
 		  
 		  d.resolve(msg.logmsg);
 		  
 		} else if(msg.level === "error") {
 		  
-		  logger.error(msg.name + ": " + msg.logmsg);
+		  logger.error("[PLUGIN] --> "+ msg.name + ": " + msg.logmsg);
 		  
 		} else if(msg.level === "warn") {
 		  
-		  logger.warn(msg.name + ": " + msg.logmsg);
+		  logger.warn("[PLUGIN] --> "+ msg.name + ": " + msg.logmsg);
 		  
 		}  
 		else{
 		  //level info
-		  logger.info(msg.name + ": " + msg.logmsg);
+		  logger.info("[PLUGIN] --> "+ msg.name + ": " + msg.logmsg);
 
 		}
 		
 	      }
 	      else{
 		//serve per gestire il primo messaggio alla creazione del child
-		logger.info(msg);
+		logger.info("[PLUGIN] --> " + msg);
 	      }
 	      
 
@@ -155,14 +154,14 @@ exports.call = function (args, details){
 
         }
         else{
-            logger.warn("Call already started!");
+            logger.warn("[PLUGIN] --> Call already started!");
             return 'Call already started on this board!';
         }
         
     }
     else{
       // Here the plugin does not exist
-      logger.warn("Call \"" + plugin_name + "\" does not exist on this board!");
+      logger.warn("[PLUGIN] --> Call \"" + plugin_name + "\" does not exist on this board!");
       return 'Call does not exist on this board!';
     }
 }
@@ -229,20 +228,20 @@ function pluginStarter(plugin_name, timer, pluginsConf, plugin_json_name, skip) 
 				
 		if( plugins[plugin_name].alive === true ){
 		    // the plugin is normally running
-		    logger.info( 'PluginChecker - '+ plugin_name + ' with PID: ' + plugins[plugin_name].pid + ' alive: '+ plugins[plugin_name].alive );
+		    logger.info('[PLUGIN] - PluginChecker - '+ plugin_name + ' with PID: ' + plugins[plugin_name].pid + ' alive: '+ plugins[plugin_name].alive );
 		    
 		}
 		else if( skip === "true") {
 		  
 		    // the plugin is in injected state and it doesn't need to be restarted
-		    logger.info( plugin_name + ' is a new plugin! status: injected - It is needed to start it the first time!' );
+		    logger.info("[PLUGIN] - " + plugin_name + ' is a new plugin! status: injected - It is needed to start it the first time!' );
 		    clearPluginTimer(plugin_name);
 		    
 		}
 		else if( plugins[plugin_name].alive === false || skip === "false") {
 		  
 		    // the plugin is not alive: we are after a reboot of the board/LR or after a crash of the plugin process
-		    logger.warn( 'PluginChecker - '+ plugin_name + ' - No such process found with PID '+plugins[plugin_name].pid+'!'+ ' - alive: '+ plugins[plugin_name].alive +' - Restarting...');
+		    logger.warn( '[PLUGIN] - PluginChecker - '+ plugin_name + ' - No such process found with PID '+plugins[plugin_name].pid+'!'+ ' - alive: '+ plugins[plugin_name].alive +' - Restarting...');
 		    
 		    // If the schema json file exists the board will create a child_process to restart the plugin and update the status and the PID value	
 		    if (fs.existsSync(plugin_json_name) === true){
@@ -258,12 +257,12 @@ function pluginStarter(plugin_name, timer, pluginsConf, plugin_json_name, skip) 
 				"plugin_json": plugin_json_schema
 			    }
 
-			    logger.info("|----> "+ plugin_name + " - Input parameters: "+ fs.readFileSync(plugin_json_name));
+			    logger.info("[PLUGIN] ----> "+ plugin_name + " - Input parameters: "+ fs.readFileSync(plugin_json_name));
 			    plugins[plugin_name].child.send(input_message);
 
 			}
 			catch(err){
-			    logger.error('|----> Error starting '+plugin_name+' plugin: ' + err);
+			    logger.error('[PLUGIN] ----> Error starting '+plugin_name+' plugin: ' + err);
 			}	
 			
 			
@@ -275,15 +274,15 @@ function pluginStarter(plugin_name, timer, pluginsConf, plugin_json_name, skip) 
 
 			      fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
 				  if(err) {
-				      logger.error('|----> '+ plugin_name + ' - Error writing JSON file ' + outputFilename + ': ' + err);
+				      logger.error('[PLUGIN] ----> '+ plugin_name + ' - Error writing JSON file ' + outputFilename + ': ' + err);
 				  } else {
-				      logger.info("|----> "+ plugin_name + " - JSON file " + outputFilename + " updated!");
+				      logger.debug("[PLUGIN] ----> "+ plugin_name + " - JSON file " + outputFilename + " updated!");
 				  }
 			      });
 			  
 			}
 			catch(err){
-			      logger.error('|----> '+ plugin_name + ' - Error updating JSON file ' + outputFilename + ': ' + err);
+			      logger.error('[PLUGIN] ----> '+ plugin_name + ' - Error updating JSON file ' + outputFilename + ': ' + err);
 			} 
 			
 			
@@ -295,23 +294,23 @@ function pluginStarter(plugin_name, timer, pluginsConf, plugin_json_name, skip) 
 		      //updates the plugins.json JSON file
 		      try{
 			
-			    logger.warn('|----> '+ plugin_name + ' - I can not restart plugin!!! JSON file '+ plugin_json_name +' does not exist!');
+			    logger.warn('[PLUGIN] ----> '+ plugin_name + ' - I can not restart plugin!!! JSON file '+ plugin_json_name +' does not exist!');
 			    
 			    pluginsConf.plugins[plugin_name].pid = "";
 
 			    fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
 				if(err) {
-				    logger.error('|----> '+ plugin_name + ' - Error writing JSON file ' + outputFilename + ': ' + err);
+				    logger.error('[PLUGIN] ----> '+ plugin_name + ' - Error writing JSON file ' + outputFilename + ': ' + err);
 				} else {
-				    logger.info('|----> '+ plugin_name + ' - JSON file ' + outputFilename + ' updated: PID value cleaned!');
+				    logger.info('[PLUGIN] ----> '+ plugin_name + ' - JSON file ' + outputFilename + ' updated: PID value cleaned!');
 				}
 			    });
 			    
-			    logger.warn('|----> '+ plugin_name + ' - Please call the RUN command again for this plugin!');
+			    logger.warn('[PLUGIN] ----> '+ plugin_name + ' - Please call the RUN command again for this plugin!');
 			
 		      }
 		      catch(err){
-			    logger.error('|----> '+ plugin_name + ' - Error updating JSON file ' + outputFilename + ': ' + err);
+			    logger.error('[PLUGIN] ----> '+ plugin_name + ' - Error updating JSON file ' + outputFilename + ': ' + err);
 		      } 
 		      
 		      
@@ -328,7 +327,7 @@ function pluginStarter(plugin_name, timer, pluginsConf, plugin_json_name, skip) 
 	  
       }
       catch(err){
-	  logger.error('|--> '+ plugin_name + ' - Error loading plugin: ' + err);
+	  logger.error('[PLUGIN] --> '+ plugin_name + ' - Error loading plugin: ' + err);
       }
       
 		
@@ -343,17 +342,17 @@ function clearPluginTimer(plugin_name) {
       
 	  if( plugins[plugin_name].timer == null){
 	    
-	      logger.info("|--> " +plugin_name+ ": no timer to clear!");
+	      logger.info("[PLUGIN] --> " +plugin_name+ ": no timer to clear!");
 	      
 	  }else{
 	      clearInterval( plugins[plugin_name].timer );
 
-	      logger.info("|--> " + plugin_name +" - "+ JSON.stringify(plugins[plugin_name]) + " timer cleared!");
+	      logger.debug("[PLUGIN] --> " + plugin_name +" - "+ JSON.stringify(plugins[plugin_name]) + " timer cleared!");
 	  }
 	  
     }  
     catch(err){
-	logger.error('Error in clearing timer for plugin '+plugin_name+': '+ err);
+	logger.error('[PLUGIN] --> Error in clearing timer for plugin '+plugin_name+': '+ err);
     }
     
 }
@@ -411,7 +410,7 @@ exports.pluginKeepAlive = function (plugin_name){
 
 exports.pluginsLoader = function (){
   
-    logger.info('Plugins loader is running!');
+    logger.info('[PLUGIN] - Plugins loader is running!');
 
     try{
       
@@ -425,7 +424,7 @@ exports.pluginsLoader = function (){
 	  var plugin_num = plugins_keys.length; 
 	  //logger.info('Number of plugins: '+ plugin_num);
 	  
-	  logger.info('Restarting enabled plugins on board: ');
+	  logger.info('[PLUGIN] |- Restarting enabled plugins on board: ');
 
 	  for(var i = 0; i < plugin_num; i++) {
 	    
@@ -436,7 +435,7 @@ exports.pluginsLoader = function (){
 	      var status = pluginsConf.plugins[plugin_name].status;
 	      var autostart = pluginsConf.plugins[plugin_name].autostart;
 	      
-	      logger.info( '|--> '+ plugin_name + ' - status: '+ status +' - autostart: '+autostart);
+	      logger.info( '[PLUGIN] |--> '+ plugin_name + ' - status: '+ status +' - autostart: '+autostart);
 
 	      setTimeout( function() {
 	      
@@ -450,7 +449,7 @@ exports.pluginsLoader = function (){
 	  } 
     }
     catch(err){
-	logger.warn('Error parsing ./plugins.json: '+ err);
+	logger.warn('[PLUGIN] - Error parsing ./plugins.json: '+ err);
     }
 
 }
@@ -580,7 +579,7 @@ exports.restartAllActivePlugins = function (){
 			  if(err) {
 			      logger.error(err);
 			  } else {
-			      logger.info("|----> JSON file " + outputFilename + " updated!");
+			      logger.debug("|----> JSON file " + outputFilename + " updated!");
 			  }
 		      });
 		      
@@ -650,8 +649,8 @@ exports.run = function (args){
     var plugin_autostart = "";
 
     
-    logger.info('Run plugin RPC called for plugin '+ plugin_name +'...');
-    logger.info("|--> Input parameters: "+plugin_json);
+    logger.info('[PLUGIN] - Run plugin RPC called for plugin '+ plugin_name +' plugin...');
+    logger.info("[PLUGIN] --> Input parameters: "+ plugin_json);
     
     
     try{
@@ -660,21 +659,21 @@ exports.run = function (args){
 
     }
     catch(err){
-        logger.error('|--> '+ plugin_name + ' - Error parsing plugins.json!');
+        logger.error('[PLUGIN] - '+ plugin_name + ' - Error parsing plugins.json!');
         return 'Error parsing plugins.json!';
     }
     
     //If the plugin exists
     if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
       
-	logger.info('|--> '+ plugin_name + ' - Plugin configuration successfully loaded!');
+	logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin configuration successfully loaded!');
         
         //Check the status
         var status = pluginsConf.plugins[plugin_name].status;
         
         if (status == "off" || status == "injected"){
             
-            logger.info('|--> '+ plugin_name + ' - Plugin starting...');
+            logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin starting...');
             
             //Create a new process that has plugin-wrapper as code
             var child = cp.fork('./plugin-wrapper');
@@ -699,12 +698,12 @@ exports.run = function (args){
 		      fs.writeFile(schema_outputFilename, plugin_json, function(err) {
 			
 			  if(err) {
-			      logger.error('|--> '+ plugin_name + ' - Error opening '+plugin_name+'.json file: ' + err);
+			      logger.error('[PLUGIN] - '+ plugin_name + ' - Error opening '+plugin_name+'.json file: ' + err);
 			      return 'Error opening '+plugin_name+'.json file: ' + err;
 			      
 			  } else {
 			    
-			      logger.info('|--> '+ plugin_name + ' - Plugin JSON schema saved to ' + schema_outputFilename);
+			      logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin JSON schema saved to ' + schema_outputFilename);
 	      
 			      // Reading the plugins.json configuration file
 			      try{
@@ -719,7 +718,7 @@ exports.run = function (args){
 
 			      }
 			      catch(err){
-				  logger.error('|--> '+ plugin_name + ' - Error parsing plugins.json configuration file: ' + err);
+				  logger.error('[PLUGIN] - '+ plugin_name + ' - Error parsing plugins.json configuration file: ' + err);
 				  return 'Error parsing plugins.json configuration file: ' + err;
 			      }
 			      
@@ -730,11 +729,11 @@ exports.run = function (args){
 			      if(plugin_autostart != undefined){
 				
 				  pluginsConf.plugins[plugin_name].autostart = plugin_autostart;
-				  logger.info('|--> '+ plugin_name + ' - Autostart parameter set by user to ' + plugin_autostart);
+				  logger.info('[PLUGIN] - '+ plugin_name + ' - Autostart parameter set by user to ' + plugin_autostart);
 
 			      } else {
 				
-				  logger.info('|--> '+ plugin_name + ' - Autostart parameter not changed!');
+				  logger.info('[PLUGIN] - '+ plugin_name + ' - Autostart parameter not changed!');
 				
 			      }
 			      
@@ -745,9 +744,9 @@ exports.run = function (args){
 			      fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
 				
 				  if(err) {
-				      logger.error('|--> '+ plugin_name + ' - Error opening '+plugin_name+'.json file: ' + err);
+				      logger.error('[PLUGIN] - '+ plugin_name + ' - Error opening '+plugin_name+'.json file: ' + err);
 				  } else {
-				      logger.info('|--> '+ plugin_name + ' - plugins.json updated -> autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+				      logger.info('[PLUGIN] - '+ plugin_name + ' - plugins.json updated -> autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
 				      
 				      
 				      // Start a timer to check every X minutes if the plugin is still alive!
@@ -766,22 +765,22 @@ exports.run = function (args){
 		      
 		} else if(msg.level === "error") {
 		  
-		  logger.error("|--> "+ msg.name + " - " + msg.logmsg);
+		  logger.error("[PLUGIN] - "+ msg.name + " - " + msg.logmsg);
 		  
 		} else if(msg.level === "warn") {
 		  
-		  logger.warn("|--> "+ msg.name + " - " + msg.logmsg);
+		  logger.warn("[PLUGIN] - "+ msg.name + " - " + msg.logmsg);
 		  
 		} else{
 
-		  logger.info("|--> "+ msg.name + " - " + msg.logmsg);
+		  logger.info("[PLUGIN] - "+ msg.name + " - " + msg.logmsg);
 
 		}
 		
 	      }
 	      else{
 		//serve per gestire il primo messaggio alla creazione del child
-		logger.info("|--> "+ msg);
+		logger.info("[PLUGIN] --> "+ msg);
 	      }
 
 	      
@@ -797,14 +796,14 @@ exports.run = function (args){
 
         }
         else{
-            logger.warn("Plugin already started!");
+            logger.warn("[PLUGIN] --> Plugin already started!");
             return 'Plugin already started on this board!';
         }
         
     }
     else{
       // Here the plugin does not exist
-      logger.warn("Plugin \"" + plugin_name + "\" does not exist on this board!");
+      logger.warn("[PLUGIN] --> Plugin \"" + plugin_name + "\" does not exist on this board!");
       return "Plugin \"" + plugin_name + "\" does not exist on this board!";
     }
 }
@@ -813,7 +812,7 @@ exports.kill = function (args){
     
     var plugin_name = String(args[0]);
     
-    logger.info('Stop plugin RPC called for plugin '+ plugin_name +'...');
+    logger.info('[PLUGIN] - Stop plugin RPC called for plugin '+ plugin_name +' plugin...');
     
     // Get the plugin's configuration.
     try{
@@ -827,7 +826,7 @@ exports.kill = function (args){
 	      
 	      if (status == "on"){
 				
-		  logger.info('|--> '+ plugin_name + ' - Plugin being stopped!');
+		  logger.info('[PLUGIN] --> '+ plugin_name + ' - Plugin being stopped!');
 		  
 		  var pid = pluginsConf.plugins[plugin_name].pid;
 		  
@@ -843,12 +842,12 @@ exports.kill = function (args){
 		    
 		      if(err) {
 			
-			  logger.error('|--> Error writing plugins.json: '+ err);
+			  logger.error('[PLUGIN] --> Error writing plugins.json: '+ err);
 			  return 'Error writing plugins.json: '+ err;
 			  
 		      } else {
 			
-			  logger.info("|--> " + outputFilename + " updated!");
+			  logger.debug("[PLUGIN] --> " + outputFilename + " updated!");
 			  
 			  clearPluginTimer(plugin_name);
 			  
@@ -870,7 +869,7 @@ exports.kill = function (args){
 		  
 	      }
 	      else{
-		      logger.warn('|--> '+ plugin_name + ' - Plugin is not running on this board!');
+		      logger.warn('[PLUGIN] --> '+ plugin_name + ' - Plugin is not running on this board!');
 		      return 'Plugin is not running on this board!';
 
 	      }
@@ -881,7 +880,7 @@ exports.kill = function (args){
     
     }
     catch(err){
-	logger.info('Error parsing JSON file ./plugins.json: '+ err);
+	logger.warn('[PLUGIN] --> Error parsing JSON file ./plugins.json: '+ err);
 	return 'Error parsing JSON file ./plugins.json: '+ err;
     }
     
@@ -898,21 +897,21 @@ exports.injectPlugin = function(args){
     // The autostart parameter is used to set the boot execution configuration of the plugin.
     autostart = String(args[2]);
     
-    logger.info("Inject plugin RPC called for "+plugin_name+" plugin...");
-    logger.info("|--> Parameters injected: { plugin_name : " + plugin_name + ", autostart : " + autostart + " }");
-    logger.info("|--> plugin code:\n\n" + JSON.stringify(plugin_code) + "\n\n");
+    logger.info("[PLUGIN] - Injecting plugin RPC called for "+plugin_name+" plugin...");
+    logger.info("[PLUGIN] --> Parameters injected: { plugin_name : " + plugin_name + ", autostart : " + autostart + " }");
+    logger.debug("[PLUGIN] --> plugin code:\n\n" + JSON.stringify(plugin_code) + "\n\n");
     
     // Writing the file
     var fileName = './plugins/' + plugin_name + '.js';
     fs.writeFile(fileName, plugin_code, function(err) {
       
         if(err) {
-	    logger.error('|--> Error writing '+ fileName +' file: ' + err);
+	    logger.error('[PLUGIN] --> Error writing '+ fileName +' file: ' + err);
 	    return 'Error writing '+ fileName +' file: ' + err;
 	    
         } else {
 	  
-	    logger.info("|--> Plugin " + plugin_name + ".js injected successfully!");
+	    logger.info("[PLUGIN] --> Plugin " + plugin_name + " injected successfully!");
             
             //Reading the measure configuration file
             var pluginsConf = JSON.parse(fs.readFileSync('./plugins.json', 'utf8'));
@@ -934,11 +933,11 @@ exports.injectPlugin = function(args){
             var outputFilename = './plugins.json';
             fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
                 if(err) {
-		    logger.error('|--> Error writing ./plugins.json file: ' + err);
+		    logger.error('[PLUGIN] --> Error writing ./plugins.json file: ' + err);
 		    return 'Error writing ./plugins.json file: ' + err;
 		    
                 } else {
-		    logger.info("|--> Plugins configuration file saved to " + outputFilename);
+		    logger.debug("[PLUGIN] --> Plugins configuration file saved to " + outputFilename);
 
                 }
             });
@@ -955,7 +954,7 @@ exports.removePlugin = function(args){
     // Parsing the input arguments
     plugin_name = String(args[0]);
     
-    logger.info("Remove plugin RPC called for " + plugin_name +"...");
+    logger.info("[PLUGIN] - Removing plugin RPC called for " + plugin_name +" plugin...");
     
     var pluginFileName = './plugins/' + plugin_name + '.js';
     var pluginConfFileName = './plugin_conf/'+plugin_name+'.json';
@@ -967,12 +966,13 @@ exports.removePlugin = function(args){
       
       if(exists) {
 	
-	  logger.info('|--> File '+pluginFileName+' exists. Deleting now ...');
+	  logger.debug('[PLUGIN] --> File '+pluginFileName+' exists. Deleting now ...');
 	  
 	  fs.unlink(pluginFileName, function(err) {
 	    
 		if(err) {
-		      response = "|--> Plugin file removing FAILED: "+err;
+		  
+		      response = "[PLUGIN] --> Plugin file removing FAILED: "+err;
 		      logger.error(response);
 		      d.resolve(response);
 		      
@@ -982,11 +982,11 @@ exports.removePlugin = function(args){
 	
       } else {
 	  response = "Plugin "+pluginFileName+" not found!"
-	  logger.warn("|--> Plugin "+pluginFileName+" not found!");
+	  logger.warn("[PLUGIN] --> Plugin "+pluginFileName+" not found!");
       }
       
       
-      logger.info('|--> Plugin data cleaning...');
+      logger.debug('[PLUGIN] --> Plugin data cleaning...');
 		    
       var pluginsConf = JSON.parse(fs.readFileSync(jsonPluginsFileName, 'utf8'));
 
@@ -994,16 +994,16 @@ exports.removePlugin = function(args){
 	
 	  pluginsConf.plugins[plugin_name]=null;
 	  delete pluginsConf.plugins[plugin_name];
-	  logger.info("|--> Plugin node successfully removed from plugins.json!" );
+	  logger.debug("[PLUGIN] --> Plugin node successfully removed from plugins.json!" );
 	  
 	  fs.writeFile(jsonPluginsFileName, JSON.stringify(pluginsConf, null, 4), function(err) {
 	      if(err) {
 		  response = "plugin.json file updating FAILED: "+err;
-		  logger.error("|--> plugin.json updating FAILED: "+err);
+		  logger.error("[PLUGIN] --> plugin.json updating FAILED: "+err);
 		  d.resolve(response);
 		  
 	      } else {
-		  logger.info("|--> plugins.json file updated!");
+		  logger.debug("[PLUGIN] --> plugins.json file updated!");
 		  
 		  fs.exists(pluginConfFileName, function(exists) {
 
@@ -1011,21 +1011,21 @@ exports.removePlugin = function(args){
 			    
 			    fs.unlink(pluginConfFileName, function (err) {
 			      if (err){
-				  response = "|--> "+pluginConfFileName+" file deleting FAILED: "+err;
-				  logger.warn("|--> "+pluginConfFileName+" file deleting FAILED: "+err);
+				  response = pluginConfFileName+" file deleting FAILED: "+err;
+				  logger.warn("[PLUGIN] --> "+pluginConfFileName+" file deleting FAILED: "+err);
 				  d.resolve(response);				    
 			      }else{
-				  logger.info("|--> "+pluginConfFileName+" file successfully deleted!");
+				  logger.debug("[PLUGIN] --> "+pluginConfFileName+" file successfully deleted!");
 				  response = plugin_name+" completely removed from board!";
-				  logger.info("|--> " + plugin_name + " - plugin completely removed from board!");
+				  logger.info("[PLUGIN] --> " + plugin_name + " - plugin completely removed from board!");
 				  d.resolve(response);	
 			      }
 			    });
 			    
 			}else{
-			    logger.warn("|--> "+pluginConfFileName+" file does not exist!");
+			    logger.warn("[PLUGIN] --> "+pluginConfFileName+" file does not exist!");
 			    response = plugin_name+" completely removed from board!";
-			    logger.info("|--> " + plugin_name + " - plugin completely removed from board!");
+			    logger.info("[PLUGIN] --> " + plugin_name + " - plugin completely removed from board!");
 			    d.resolve(response);						
 			}
 			
@@ -1035,9 +1035,9 @@ exports.removePlugin = function(args){
 	  });	
 
       }else{
-	  logger.warn("|--> plugins.json already clean!");
+	  logger.warn("[PLUGIN] --> plugins.json already clean!");
 	  response = plugin_name+" completely removed from board!";
-	  logger.info("|--> " + plugin_name + " - plugin completely removed from board!");
+	  logger.info("[PLUGIN] --> " + plugin_name + " - plugin completely removed from board!");
 	  d.resolve(response);		      
       }
 		

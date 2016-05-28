@@ -47,6 +47,10 @@ try {
             //var managePlugins = require('./manage-plugins');
             ////managePlugins.restartAllActivePlugins();  //DEPRECATED
             //managePlugins.pluginsLoader();
+
+            //var driversManager = require("./manage-drivers");
+            ////driversManager.mountAllEnabledDrivers();
+
         })
         .catch(function(error) {
             // todo logging message
