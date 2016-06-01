@@ -3,7 +3,7 @@
 *                           Version 2.0, January 2004
 *                        http://www.apache.org/licenses/
 *
-*      Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Andrea Rocco Lotronto,, Nicola Peditto
+*      Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Andrea Rocco Lotronto, Nicola Peditto
 * 
 */
 
@@ -1070,7 +1070,7 @@ exports.exportPluginCommands = function (session){
     session.register(boardCode+'.command.rpc.plugin.run', exports.run);
     session.register(boardCode+'.command.rpc.plugin.kill', exports.kill);    
     session.register(boardCode+'.command.rpc.injectplugin', exports.injectPlugin);
-    session.register(boardCode+'.command.rpc.restartAllActivePlugins', exports.restartAllActivePlugins);
+    //session.register(boardCode+'.command.rpc.restartAllActivePlugins', exports.restartAllActivePlugins);
     session.register(boardCode+'.command.rpc.plugin.call', exports.call);
     session.register(boardCode+'.command.rpc.removeplugin', exports.removePlugin);
     
