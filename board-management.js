@@ -218,9 +218,12 @@ exports.manage_WAMP_connection = function  (session, details){
       managePlugins.exportPluginCommands(session);
 
 
+      
       //If I'm connected to the WAMP server I can receive RPC command requests to manage drivers
       var driversManager = require("./manage-drivers");
       driversManager.exportDriverCommands(session);
+      driversManager.restartDrivers();
+      
 
 }
             
