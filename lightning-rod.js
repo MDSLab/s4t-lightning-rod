@@ -52,7 +52,8 @@ try {
         .catch(function(error) {
             // todo logging message
             throw error;
-        });
+        })
+        .done();
 }
 catch(e) {
     if (e instanceof ConfigError) {
