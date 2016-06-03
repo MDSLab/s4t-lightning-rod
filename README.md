@@ -99,6 +99,7 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 ```
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
 # cp /opt/stack4things/lightning-rod/plugins.example.json /opt/stack4things/lightning-rod/plugins.json
+# cp /opt/stack4things/lightning-rod/drivers.example.json /opt/stack4things/lightning-rod/drivers.json
 # sed -i "s/\"device\":\"\"/\"device\":\"arduino_yun\"/g" /opt/stack4things/lightning-rod/settings.json
 # sed -i "s/\"code\":\"\"/\"code\":\"<NODE_ID>\"/g" /opt/stack4things/lightning-rod/settings.json
 # sed "s/\"bin\":\"\"/\"bin\":\"\/opt\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /opt/stack4things/lightning-rod/settings.json
