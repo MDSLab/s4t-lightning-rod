@@ -20,6 +20,7 @@ var Board = require('./lib/core/board');
 var Reverse = require('./lib/core/reverse');
 var Socat = require('./lib/core/socat');
 var WAMP = require('./lib/core/wamp');
+var Plugins = require('./lib/core/plugins');
 
 var logger = log4jsWrapper.getLogger("main");
 var nconf = nconfWrapper.nconf;
@@ -34,6 +35,9 @@ try {
 
     Board.getState().reload();
     WAMP.getState().reload();
+
+    Plugins.getState().reload();
+
 
     logger.info('##############################');
     logger.info('  Stack4Things Lightning-rod');
