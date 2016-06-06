@@ -47,11 +47,7 @@ try {
         .then(function() {
             WAMP.getState().connect();
 
-            // todo
-            //var managePlugins = require('./manage-plugins');
-            ////managePlugins.restartAllActivePlugins();  //DEPRECATED
-            //managePlugins.pluginsLoader();
-
+            Plugins.autostartPlugins();
         })
         .catch(function(error) {
             // todo logging message
