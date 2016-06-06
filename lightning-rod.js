@@ -49,10 +49,6 @@ try {
 
             Plugins.autostartPlugins();
         })
-        .catch(function(error) {
-            // todo logging message
-            throw error;
-        })
         .done();
 }
 catch(e) {
