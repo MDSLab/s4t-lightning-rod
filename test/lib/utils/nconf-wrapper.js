@@ -181,3 +181,63 @@ describe('nconf reload', function () {
 
     });
 });
+
+
+describe('nconf save', function () {
+
+    var nconf = nconfWrapper.nconf;
+
+    var originalEnv;
+    var originalCwd;
+    beforeEach(function () {
+        originalEnv = helpers.clone(process.env);
+        originalCwd = process.cwd();
+    });
+
+    afterEach(function () {
+        process.env = originalEnv;
+        process.chdir(originalCwd);
+    });
+
+
+    it('loads nconf settings from the env and saves it back', function (done) {
+
+        temp.mkdir("test", function (err, dirPath) {
+            if (err) throw err;
+            process.chdir(dirPath);
+            nconfWrapper.reload();  // reset settings stored from other tests
+
+            var filename = "./blahblah.conf";
+
+            process.env.S4T_LR_SETTINGS_FILE = filename;
+            fs.writeFile(filename, JSON.stringify({
+                'foo': {
+                    'bar': 345
+                }
+            }), function (err) {
+                if (err) throw err;
+
+                assert.equal(nconf.get('foo:bar'), undefined);
+                nconfWrapper.reload();
+                assert.equal(nconf.get('foo:bar'), 345);
+
+                nconf.set('foo:bar', 1323);
+
+                nconfWrapper.save()
+                    .then(function() {
+
+                        assert.equal(nconf.get('foo:bar'), 1323);
+                        nconf.set('foo:bar', 4738384);
+                        assert.equal(nconf.get('foo:bar'), 4738384);
+                        nconfWrapper.reload();
+                        assert.equal(nconf.get('foo:bar'), 1323);
+
+                        done();
+                    })
+                    .done();
+            })
+        });
+
+    });
+
+});
