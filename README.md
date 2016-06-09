@@ -60,8 +60,8 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 # sed -i "s/\"device\":.*\"\"/\"device\": \"raspberry_pi\"/g" /opt/stack4things/lightning-rod/settings.json
 # sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /opt/stack4things/lightning-rod/settings.json
 # sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws://<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws://<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
 # systemctl start s4t-lightning-rod
 ```
 
@@ -105,8 +105,8 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 # sed -i "s/\"device\":.*\"\"/\"device\": \"arduino_yun\"/g" /opt/stack4things/lightning-rod/settings.json
 # sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /opt/stack4things/lightning-rod/settings.json
 # sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/opt\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws://<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
+# sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws://<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
 ```
 
 ####Start the Lightning-rod and configure it to start at boot:
