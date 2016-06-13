@@ -183,6 +183,8 @@ exports.exportManagementCommands = function (session){
 exports.manage_WAMP_connection = function  (session, details){
                 
       logger.info("[SYSTEM] - S4T configuration starting...");
+      
+
 
       var boardCode = nconf.get('config:board:code');
 
@@ -221,8 +223,11 @@ exports.manage_WAMP_connection = function  (session, details){
       
       //If I'm connected to the WAMP server I can receive RPC command requests to manage drivers
       var driversManager = require("./manage-drivers");
-      driversManager.exportDriverCommands(session);
+      
+      driversManager.exportDriverCommands(session);      
       driversManager.restartDrivers();
+	
+
       
 
 }
