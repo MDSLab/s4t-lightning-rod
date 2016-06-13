@@ -44,7 +44,8 @@ servicesProcess = [];
 // To test the connection status
 var running = require('is-running');
 var online = true;
-active = true;
+active = false;
+reconnected = false;
 var keepWampAlive = null;
 var tcpkill_pid = null;
 var wamp_check = null;		// "false" = we need to restore the WAMP connection (with tcpkill). 
@@ -90,6 +91,7 @@ manageBoard.checkSettings(function(check){
 	      clearInterval( keepWampAlive );
 	      logger.info('[WAMP-RECOVERY] - WAMP CONNECTION RECOVERED!');
 	      logger.debug('[WAMP-RECOVERY] - Old timer to keep alive WAMP connection cleared!');
+	      reconnected = true;
 	      
 	    }
 	  
@@ -408,8 +410,6 @@ manageBoard.checkSettings(function(check){
 		//managePlugins.restartAllActivePlugins();  //DEPRECATED
 		managePlugins.pluginsLoader();
 		//-----------------------------------------------------------------------------------------------------
-
-
 		
 	    });
 	    
@@ -424,6 +424,13 @@ manageBoard.checkSettings(function(check){
 	    logger.info('[WAMP-STATUS] - Opening connection to WAMP server ('+ wampIP +')...');  
 	    wampConnection.open();
 	    
+	    // PLUGINS RESTART ALL --------------------------------------------------------------------------------
+	    //This procedure restarts all plugins in "ON" status
+	    var managePlugins = require('./manage-plugins');
+	    //managePlugins.restartAllActivePlugins();  //DEPRECATED
+	    managePlugins.pluginsLoader();
+	    //-----------------------------------------------------------------------------------------------------
+	    
 	}
 	
 	function Main_Raspberry_Pi(){
@@ -431,6 +438,13 @@ manageBoard.checkSettings(function(check){
 	    //Opening the connection to the WAMP server
 	    logger.info('[WAMP-STATUS] - Opening connection to WAMP server ('+ wampIP +')...');  
 	    wampConnection.open();
+	    
+	    // PLUGINS RESTART ALL --------------------------------------------------------------------------------
+	    //This procedure restarts all plugins in "ON" status
+	    var managePlugins = require('./manage-plugins');
+	    //managePlugins.restartAllActivePlugins();  //DEPRECATED
+	    managePlugins.pluginsLoader();
+	    //-----------------------------------------------------------------------------------------------------	
 	    
 	}	
 		
