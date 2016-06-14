@@ -1,11 +1,12 @@
 /*
-*				 Apache License
-*                           Version 2.0, January 2004
-*                        http://www.apache.org/licenses/
-*
-*      Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
-* 
-*/
+ * 				  Apache License
+ *                           Version 2.0, January 2004
+ *                        http://www.apache.org/licenses/
+ * 
+ * Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
+ * 
+ * 
+ */
 
 //Loading configuration file
 nconf = require('nconf');
@@ -306,7 +307,7 @@ if (typeof device !== 'undefined'){
 								    //double check: It will test after a while if the tcpkill process has been killed
 								    setTimeout(function(){  
 								      
-									if (running(tcpkill_pid || tcpkill_pid == null)){
+									if ( running(tcpkill_pid) || tcpkill_pid == null ){
 
 										tcpkill_kill_count = tcpkill_kill_count + 1;
 										
@@ -454,15 +455,13 @@ if (typeof device !== 'undefined'){
             wampConnection.open();
 	    //-----------------------------------------------------------------------------------------------------
 
-	    /*
-	    // MEASURES management not supported yet
+	    
             //MEASURES --------------------------------------------------------------------------------------------
             //Even if I cannot connect to the WAMP server I can try to dispatch the alredy scheduled measures
             var manageMeasure = require('./manage-measures');
             manageMeasure.restartAllActiveMeasures();
             //-----------------------------------------------------------------------------------------------------
-	    */
-	    
+
 	    // PLUGINS RESTART ALL -------------------------------------------------------------------------------
 	    //This procedure restarts all plugins in "ON" status
 	    var managePlugins = require('./manage-plugins');
