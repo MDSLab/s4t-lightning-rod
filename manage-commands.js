@@ -1,5 +1,5 @@
 /*
-*				 Apache License
+*				                  Apache License
 *                           Version 2.0, January 2004
 *                        http://www.apache.org/licenses/
 *
@@ -13,17 +13,9 @@ logger.setLevel(loglevel);
 
 //This function is called when a message is received on the command topic 
 exports.onCommand = function (args){
-    
-    //logger.info('L-R COMMAND - Received message on command topic');
-    
-    //Read the board code in the configuration file
-    var boardCode = nconf.get('config:board:code');
 
-    //The first argument of each message is the board code
-    //If the message is for this board
+    //The first argument of each message is the board code... if the message is for this board...
     if(args[0] == boardCode){
-        
-        //logger.debug('L-R COMMAND - It is a message for me with args: ' + args[1] +' '+ args[2] +' '+ args[3]);
         
         //Check the type of message
         switch(args[1]){
@@ -33,17 +25,18 @@ exports.onCommand = function (args){
             case 'ssh':
             case 'ideino':
             case 'osjs':
-		logger.info('[SERVICE] - L-R command received: ' + args[1] +' '+ args[2] +' '+ args[3]);
+		        logger.info('[SERVICE] - L-R command received: ' + args[1] +' '+ args[2] +' '+ args[3]);
                 var manageServices = require('./manage-services');
                 manageServices.exportService(args);
                 break;
             case 'add-to-network':
             case 'remove-from-network':
             case 'update-board':
-		logger.debug('[NETWORK] - L-R command received: ' + args[1] +' '+ args[2] +' '+ args[3]);
+		        logger.debug('[NETWORK] - L-R command received: ' + args[1] +' '+ args[2] +' '+ args[3]);
                 var manageNetworks = require('./manage-networks');
                 manageNetworks.manageNetworks(args);
                 break;
         }
-    }              
-}
+    } 
+    
+};

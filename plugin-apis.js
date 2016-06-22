@@ -26,33 +26,33 @@ var requestify = require('requestify');
 var Q = require("q");
 
 
-var ckan_addr = 'smartme-data.unime.it';
+var ckan_addr = '';
 var ckan_host = 'http://'+ckan_addr;
 
 
 exports.getLogger = function (){
-    
     return logger;
-    
-}
-
+};
 
     
 exports.getPosition = function (){
+	
     var altitude = nconf.get('config:board:position:altitude');
     var longitude = nconf.get('config:board:position:longitude');
     var latitude = nconf.get('config:board:position:latitude'); 
     
-    var position = {altitude: altitude, longitude: longitude, latitude: latitude}
+    var position = {altitude: altitude, longitude: longitude, latitude: latitude};
     
     return position;
-}
+	
+};
 
 exports.getBoardId = function (){
     var boardID = nconf.get('config:board:code');
     
     return boardID;
-}
+	
+};
 
 
 exports.getLocalTime = function (){
@@ -62,23 +62,23 @@ exports.getLocalTime = function (){
 	
 	return localISOTime
 
-}
+};
 
 exports.getUtcTime = function (){
 
 	return new Date().toISOString()
 
-}
+};
 
 exports.sendToCKAN = function (m_authid, m_resourceid, record, callback){
   
 	var http = require('http');
 	
-        var payload = {                
-              resource_id : m_resourceid,
-              method: 'insert',
-              records : record
-        };
+	var payload = {                
+		  resource_id : m_resourceid,
+		  method: 'insert',
+		  records : record
+	};
         
 	var payloadJSON = JSON.stringify(payload);                                                    	
 	
@@ -104,13 +104,10 @@ exports.sendToCKAN = function (m_authid, m_resourceid, record, callback){
 	    var responseString = '';
 
 	    res.on('data', function(data) {
-
-		console.log('On data:' + data);
+			console.log('On data:' + data);
 	    });
 
-	    res.on('end', function() {
-
-	    });
+	    res.on('end', function() {});
 	    
 	});	
 	
@@ -124,17 +121,17 @@ exports.sendToCKAN = function (m_authid, m_resourceid, record, callback){
 
 	callback(payloadJSON);
 	
-}
+};
 
 
 exports.getCKANdataset = function(id, callback){  
 
 	requestify.get(ckan_host + '/api/rest/dataset/'+id).then( function(response) {
 
-	  var dataCKAN = response.getBody();
-
-	  callback(dataCKAN);
+		var dataCKAN = response.getBody();
+		
+		callback(dataCKAN);
 	  
 	});
  
-} 
+};

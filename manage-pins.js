@@ -1,5 +1,5 @@
 /*
-*				 Apache License
+*				                  Apache License
 *                           Version 2.0, January 2004
 *                        http://www.apache.org/licenses/
 *
@@ -21,6 +21,7 @@ function readDigital(args){
         return ex.message;
     }
 }
+
 //Function to write data to a digital pin
 function writeDigital(args){
     try{
@@ -31,6 +32,7 @@ function writeDigital(args){
         return ex.message;
     }
 }
+
 //Function to read data from an analog pin
 function readAnalog(args){
     try{
@@ -40,6 +42,7 @@ function readAnalog(args){
         return ex.message;
     }
 }
+
 //Function to write data to an analog pin
 function writeAnalog(args){
     try{
@@ -49,6 +52,7 @@ function writeAnalog(args){
         return ex.message;
     }     
 }
+
 //Function to set the mode of a pin
 function setMode(args){
     try{
@@ -62,11 +66,6 @@ function setMode(args){
 //This function exports all the functions in the module as WAMP remote procedure calls
 exports.exportPins = function (session){
     
-    //Read the board code in the configuration file
-    var boardCode = nconf.get('config:board:code');
-    
-    //logger.info('Exporting pins to the Cloud')
-    
     //Register all the module functions as WAMP RPCs
     session.register(boardCode+'.command.rpc.setmode', setMode);
     session.register(boardCode+'.command.rpc.read.digital', readDigital);
@@ -74,6 +73,6 @@ exports.exportPins = function (session){
     session.register(boardCode+'.command.rpc.read.analog', readAnalog);
     session.register(boardCode+'.command.rpc.write.analog', writeAnalog);
     
-    logger.info('[WAMP-EXPORTS] Pins exported to the cloud!')
+    logger.info('[WAMP-EXPORTS] Pins exported to the cloud!');
     
-}
+};
