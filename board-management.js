@@ -13,6 +13,31 @@ var logger = log4js.getLogger('board-management');
 
 var fs = require("fs");
 
+
+var spawn = require('child_process').spawn;
+
+exports.execute = function(command,label) {
+    cmd=command.split(' ')    
+    logger.debug(label +' COMMAND: '+ command);
+    var result = spawn(cmd[0],cmd.slice(1));
+    
+    result.stdout.on('data', function (data) {
+        logger.debug(label + ' stdout: ' + data);
+    });
+    
+    result.stderr.on('data', function (data) {
+        if(command.indexOf('socat') > -1)
+            logger.info(label + ' stderr: ' + data);
+        else
+            logger.error(label + ' stderr: ' + data);
+    });   
+    
+    return result;
+    
+}
+
+
+
 // Init() LR function in order to control the correct LR configuration:
 // - logging setup
 // - settings control

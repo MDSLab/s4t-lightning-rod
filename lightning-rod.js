@@ -43,6 +43,8 @@ wamp_check = null;			// "false" = we need to restore the WAMP connection (with t
 // LR s4t libraries
 var manageBoard = require('./board-management');
 
+net_backend=''
+
 //Init_Ligthning_Rod(function (check) {
 manageBoard.Init_Ligthning_Rod(function (check) {
 

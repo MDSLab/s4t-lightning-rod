@@ -16,6 +16,8 @@ var Q = require("q");
 
 var session_wamp;
 
+var utility = require('./board-management');
+
 // This function exports all the functions in the module as WAMP remote procedure calls
 exports.exportNetworkCommands = function (session){
   
@@ -45,11 +47,14 @@ exports.setSocatOnBoard = function (args, details){
     var socatServer_ip = args[0];
     var socatServer_port = args[1];
     var socatBoard_ip = args[2];
+    //var net_backend = args[3];
+    net_backend=args[3];
     var socatRes = boardCode + " - Server:" + socatServer_ip +":"+ socatServer_port + " - Board: " + socatBoard_ip;
     
     logger.info("[NETWORK] - SOCAT PARAMETERS INJECTED: " + socatRes);
+    logger.info("[NETWORK-MANAGER] - NETWORK BACKEND: " + net_backend);
 
-    exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip);
+    exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip,net_backend);
   
     d.resolve(socatRes);
 
@@ -68,7 +73,7 @@ exports.setSocatOnBoard = function (args, details){
 // 1. creates the SOCAT tunnel using the parameter received from Iotronic.
 // 2. On SOCAT tunnel completion it will create the WSTT tunnel.
 // 3. On tunnels completion it will advise Iotronic; later Iotronic will add this device to its VLANs.
-exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
+exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip,net_backend){
   
 	logger.info("[NETWORK] - Network initialization...");
 
@@ -80,11 +85,13 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip){
 	
 	var cp = require('child_process');
 	var socat = cp.fork('./network-wrapper');
+        
 
 	var input_message = {
 	    "socatBoard_ip": socatBoard_ip,
 	    "basePort": basePort,
-	    "socatServer_ip": socatServer_ip
+	    "socatServer_ip": socatServer_ip,
+	    "net_backend":net_backend
 	};
 
 	socat.send(input_message); 
@@ -146,7 +153,7 @@ exports.manageNetworks = function(args){
     switch(args[1]){
 
         case 'add-to-network':
-		    
+		    if (net_backend=='iotronic'){
 			//INPUT PARAMETERS: args[0]: boardID args[1]:'add-to-network' args[2]:vlanID - args[3]:boardVlanIP - args[4]:vlanMask - args[5]:vlanName
 			var vlanID = args[2];
 			var boardVlanIP = args[3];
@@ -199,12 +206,48 @@ exports.manageNetworks = function(args){
 			  	});
 		    
 		  	});
+                } else {
+                      
+                    //NEW-net
+                    //INPUT PARAMETERS: args[0]: boardID args[1]:'add-to-network' args[2]:vlanID - args[3]:port
+                    var vlanID = args[2];
+                    var port = args[3]
+                    var cidr = args[4]
+
+                    logger.info("ADDING BOARD TO VLAN "+port.networkId+"...");
+                    
+                    iface='socat0.'+ vlanID;
+                    
+                    mac=port.macAddress
+                    var add_vlan_iface = utility.execute('ip link add link socat0 address '+mac+' name '+iface+' type vlan id '+vlanID,' --> NETWORK');
+
+                    add_vlan_iface.on('close', function (code) {
+                        logger.info('--> CREATED '+iface);
+                    
+                        var ip=port.fixedIps[0].ip_address
+                        var add_vlan_ip = utility.execute('ip addr add '+ip+'/'+cidr+' dev '+iface,' --> NETWORK');
+                        
+                        add_vlan_ip.on('close', function (code) {
+                            
+                            logger.info("--> VLAN IFACE configured with ip "+ip+"/"+cidr);
+                            var iface_up = utility.execute('ip link set '+iface+' up',' --> NETWORK');
+                            iface_up.on('close', function (code) {
+                                logger.info("--> VLAN IFACE UP!");
+                                logger.info("BOARD SUCCESSFULLY ADDED TO VLAN: "+port.networkId);
+                                
+                            }); 
+                            
+                        });  
+                        
+                    });  
+                }
 
             break;
 	    
 
 	    
 		case 'remove-from-network':
+                                if (net_backend=='iotronic'){
 	  
 			//INPUT PARAMETERS: args[0]: boardID args[1]:'remove-from-network' args[2]:vlanID - args[3]:vlanName
 			var vlanID = args[2];
@@ -226,6 +269,29 @@ exports.manageNetworks = function(args){
 				logger.info("[NETWORK] --> VLAN IFACE gre-lr0."+ vlanID +" DELETED!");
 				logger.info("[NETWORK] --> BOARD SUCCESSFULLY REMOVED FROM VLAN "+vlanName);
 			});
+                        
+                        } else {
+                            
+                //NEW-net
+                //INPUT PARAMETERS: args[0]: boardID args[1]:'remove-from-network' args[2]:vlanID - args[3]:net_uuid
+                var vlanID = args[2];
+                var net_uuid = args[3];
+
+                logger.info("REMOVING BOARD FROM LAN "+net_uuid+"...");
+                
+                iface='socat0.'+ vlanID;
+
+                var add_vlan_iface = utility.execute('ip link del '+iface,' --> NETWORK');
+
+                add_vlan_iface.on('close', function (code) {
+                    logger.info('--> DELETED '+iface);
+                
+                });  
+                
+            }
+	    
+	    
+	    break;
 	    
 	    	break;
 	    
