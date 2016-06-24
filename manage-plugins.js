@@ -238,33 +238,74 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip) {
 							"plugin_json": plugin_json_schema
 						};
 
-						logger.info("[PLUGIN] ----> "+ plugin_name + " - Input parameters: "+ fs.readFileSync(plugin_json_name));
-						plugins[plugin_name].child.send(input_message);
-
-					}
-					catch(err){
-						logger.error('[PLUGIN] ----> Error starting '+plugin_name+' plugin: ' + err);
-					}
-
-
-					//updates the JSON file plugins.json
-					try{
+						logger.info("[PLUGIN] --> "+ plugin_name + " - Input parameters: "+ fs.readFileSync(plugin_json_name));
 
 						pluginsConf.plugins[plugin_name].pid = plugins[plugin_name].child.pid;
 						pluginsConf.plugins[plugin_name].status = "on";
 
-						fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
-							if(err) {
-								logger.error('[PLUGIN] ----> '+ plugin_name + ' - Error writing JSON file ' + outputFilename + ': ' + err);
-							} else {
-								logger.debug("[PLUGIN] ----> "+ plugin_name + " - JSON file " + outputFilename + " updated!");
+
+						plugins[plugin_name].child.send(input_message);
+
+
+						plugins[plugin_name].child.on('message', function(msg) {
+
+							if(msg.name != undefined){
+
+								if (msg.status === "alive"){
+
+									//updates the JSON file plugins.json
+									try{
+
+										fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
+											if(err) {
+												logger.error('[PLUGIN] --> '+ plugin_name + ' - Error writing JSON file ' + outputFilename + ': ' + err);
+											} else {
+												logger.debug("[PLUGIN] --> "+ plugin_name + " - JSON file " + outputFilename + " updated!");
+											}
+										});
+
+									}
+									catch(err){
+										logger.error('[PLUGIN] --> '+ plugin_name + ' - Error updating JSON file ' + outputFilename + ': ' + err);
+									}
+
+									logger.info("[PLUGIN] --> "+ msg.name + " - " + msg.status + " - Plugin initialization completed: PID = " + pluginsConf.plugins[plugin_name].pid +" - Status = " + pluginsConf.plugins[plugin_name].status);
+
+
+								} else if(msg.level === "error") {
+
+									logger.error("[PLUGIN] - "+ msg.name + " - " + msg.logmsg);
+
+								} else if(msg.level === "warn") {
+
+									logger.warn("[PLUGIN] --> "+ msg.name + " - " + msg.logmsg);
+
+								} else{
+
+									logger.info("[PLUGIN] --> "+ msg.name + " - " + msg.logmsg);
+
+								}
+
+
+							} else{
+								//used to manage the first message coming from the child process
+								logger.info("[PLUGIN] --> "+ msg);
 							}
+
 						});
 
 					}
 					catch(err){
-						logger.error('[PLUGIN] ----> '+ plugin_name + ' - Error updating JSON file ' + outputFilename + ': ' + err);
+						logger.error('[PLUGIN] --> Error starting '+plugin_name+' plugin: ' + err);
 					}
+
+
+
+
+
+
+
+
 
 
 				}else{
@@ -273,23 +314,23 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip) {
 					//updates the plugins.json JSON file
 					try{
 
-						logger.warn('[PLUGIN] ----> '+ plugin_name + ' - I can not restart plugin!!! JSON file '+ plugin_json_name +' does not exist!');
+						logger.warn('[PLUGIN] --> '+ plugin_name + ' - I can not restart plugin!!! JSON file '+ plugin_json_name +' does not exist!');
 
 						pluginsConf.plugins[plugin_name].pid = "";
 
 						fs.writeFile(outputFilename, JSON.stringify(pluginsConf, null, 4), function(err) {
 							if(err) {
-								logger.error('[PLUGIN] ----> '+ plugin_name + ' - Error writing JSON file ' + outputFilename + ': ' + err);
+								logger.error('[PLUGIN] --> '+ plugin_name + ' - Error writing JSON file ' + outputFilename + ': ' + err);
 							} else {
-								logger.info('[PLUGIN] ----> '+ plugin_name + ' - JSON file ' + outputFilename + ' updated: PID value cleaned!');
+								logger.info('[PLUGIN] --> '+ plugin_name + ' - JSON file ' + outputFilename + ' updated: PID value cleaned!');
 							}
 						});
 
-						logger.warn('[PLUGIN] ----> '+ plugin_name + ' - Please call the RUN command again for this plugin!');
+						logger.warn('[PLUGIN] --> '+ plugin_name + ' - Please call the RUN command again for this plugin!');
 
 					}
 					catch(err){
-						logger.error('[PLUGIN] ----> '+ plugin_name + ' - Error updating JSON file ' + outputFilename + ': ' + err);
+						logger.error('[PLUGIN] --> '+ plugin_name + ' - Error updating JSON file ' + outputFilename + ': ' + err);
 					}
 
 				}
@@ -619,10 +660,10 @@ exports.kill = function (args){
 	      	var autostart = pluginsConf.plugins[plugin_name].autostart;
 	      
 	      	if (status == "on"){
-				
-		  		logger.info('[PLUGIN] --> '+ plugin_name + ' - Plugin being stopped!');
 		  
 		  		var pid = pluginsConf.plugins[plugin_name].pid;
+
+				logger.info('[PLUGIN] --> '+ plugin_name + ' - Plugin (with PID='+pid+') being stopped!');
 		  
 		  		//PLUGIN KILLING
 		  		process.kill(pid);
