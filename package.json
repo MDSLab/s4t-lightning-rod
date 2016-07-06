@@ -1,35 +1,61 @@
 {
-  "name": "s4t-lighthing-rod",
-  "version": "0.0.1",
-  "description": "node-lighthing-rod is the client to connect Arduino YUN/Linino One or Raspberry Pi to s4t-node-cloud",
-  "main": "index.js",
+  "name": "s4t-lightning-rod",
+  "version": "0.1.0",
+  "description": "Implementation of the Lightning-rod, the Stack4Things node-side probe (this version works with the standalone version of IoTronic) http://stack4things.unime.it/",
+  "main": "lightning-rod.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node lightning-rod.js"
   },
   "dependencies":{
     "node-reverse-wstunnel": ">=0.1.2",
     "autobahn": ">=0.9.6",
-    "nconf":">=0.7.1"
+    "nconf":">=0.7.1",
+    "requestify":">=0.1.17",
+    "is-running":">=2.0.0",
+    "connection-tester":">=0.1.0",
+    "log4js":">=0.6.33",
+    "q":">=0.9.7"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MDSLab/s4t-lighthing-rod.git"
+    "url": "https://github.com/MDSLab/s4t-lightning-rod.git"
   },
   "keywords": [
-    "WAMP",
     "IoT",
-    "WebSocket",
-    "Cloud"
+    "WAMP",
+    "Cloud",
+    "WebSocket"
   ],
-  "author": "Andrea Rocco Lotronto <andrealotronto@gmail.com>",
-  "license": [
+  "author": "Nicola Peditto <npeditto@unime.it>",
+  "contributors": [
     {
-      "type": "Apache-2.0",
-      "url": "https://github.com/MDSLab/s4t-lighthing-rod/LICENSE"
+      "name": "Dario Bruneo",
+      "email": "dbruneo@unime.it"
+    },
+    {
+      "name": "Francesco Longo",
+      "email": "flongo@unime.it"
+    },
+    {
+      "name": "Giovanni Merlino",
+      "email": "gmerlino@unime.it"
+    },
+    {
+      "name": "Andrea Rocco Lotronto",
+      "email": "andrealotronto@gmail.com"
+    },
+    {
+      "name": "Fabio Verboso",
+      "email": "fverboso@unime.it"
+    },
+    {
+      "name": "Carmelo Romeo",
+      "email": "caromeo@unime.it"
     }
   ],
+  "license": "Apache License v2.0",
   "bugs": {
-    "url": "https://github.com/MDSLab/s4t-lighthing-rod/issues"
+    "url": "https://github.com/MDSLab/s4t-lightning-rod/issues"
   },
   "homepage": "https://github.com/MDSLab/s4t-lighthing-rod"
 }
