@@ -1,6 +1,6 @@
 exports.main = function (arguments, callback){
     
-    /* {"m_authid" : "22c5cfa7-9dea-4dd9-9f9d-eedf296852ae", "m_resourceid" : "70acace7-92c8-4956-b83e-5e76952cc682", "pin" : "A3", "autostart":"false"} */
+    /* {"m_authid" : "", "m_resourceid" : "", "pin" : "A3", "autostart":"false"} */
     
     var pin = arguments.pin;
     var m_authid = arguments.m_authid;

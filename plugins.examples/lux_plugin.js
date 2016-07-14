@@ -1,6 +1,6 @@
 exports.main = function (arguments){
   
-    /* {"m_authid" : "22c5cfa7-9dea-4dd9-9f9d-eedf296852ae", "m_resourceid" : "edfa2d34-bbfd-4556-bbd8-e2a027bf1c01", "pin" : "A1", "timer" : "5000", "autostart":"false"} */
+    /* {"m_authid" : "", "m_resourceid" : "", "pin" : "A1", "timer" : "5000", "autostart":"false"} */
     
     var pin = arguments.pin;
     var timer = arguments.timer;
