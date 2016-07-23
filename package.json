@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha --reporter spec --bail",
     "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot"
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot",
+    "lint": "eslint \"lib/**/*.js\" lightning-rod.js \"test/**/*.js\""
   },
   "dependencies": {
     "autobahn": ">=0.9.6",
@@ -38,6 +39,7 @@
     "node": ">= 0.10.0"
   },
   "devDependencies": {
+    "eslint": "^3.1.1",
     "istanbul": "^0.4.3",
     "mocha": "^2.4.5",
     "ps-node": "^0.1.1",
