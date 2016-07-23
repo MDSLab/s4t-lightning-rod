@@ -9,9 +9,6 @@
  */
 "use strict";
 
-var fs = require("fs");
-var log4js = require('log4js');
-
 var log4jsWrapper = require('./lib/utils/log4js-wrapper');
 var nconfWrapper = require('./lib/utils/nconf-wrapper');
 var ConfigError = require('./lib/utils/config-error');

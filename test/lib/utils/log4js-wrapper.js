@@ -97,7 +97,7 @@ describe("log4js reload", function () {
                 assert.ok(log4jsWrapper.log4js.appenders.logLevelFilter);
 
                 done();
-            })
+            });
         });
 
     });
@@ -130,7 +130,7 @@ describe("log4js reload", function () {
                 assert.ok(log4jsWrapper.log4js.appenders.logLevelFilter);
 
                 done();
-            })
+            });
         });
 
     });
@@ -178,7 +178,7 @@ describe("log4js reload", function () {
 
                     done();
                 });
-            })
+            });
         });
 
     });

@@ -73,7 +73,7 @@ describe('nconf reload', function () {
                 assert.equal(nconf.get('foo:bar'), 345);
 
                 done();
-            })
+            });
         });
 
     });
@@ -100,7 +100,7 @@ describe('nconf reload', function () {
                 assert.equal(nconf.get('foo:bar'), 3450);
 
                 done();
-            })
+            });
         });
 
     });
@@ -140,7 +140,7 @@ describe('nconf reload', function () {
                     done();
                 });
 
-            })
+            });
         });
 
     });
@@ -176,7 +176,7 @@ describe('nconf reload', function () {
                     done();
                 });
 
-            })
+            });
         });
 
     });
@@ -235,7 +235,7 @@ describe('nconf save', function () {
                         done();
                     })
                     .done();
-            })
+            });
         });
 
     });

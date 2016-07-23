@@ -28,7 +28,7 @@ describe('helpers isArray', function () {
 
         assert.ok(!helpers.isArray(l));
         assert.ok(!helpers.fallbackIsArray(l));
-    })
+    });
 });
 
 
