@@ -21,6 +21,81 @@
         "semi": [
             "error",
             "always"
+        ],
+        "max-lines": [
+            "error",
+            {"max": 300}
+        ],
+        "max-len": [
+            "error",
+            100
+        ],
+        "no-console": [
+            "error"
+        ],
+        "no-extra-parens": [
+            "error"
+        ],
+        "no-prototype-builtins": [
+            "error"
+        ],
+        "no-inner-declarations": [
+            "error",
+            "functions"
+        ],
+        "eqeqeq": [
+            "error"
+        ],
+        "dot-notation": [
+            "error"
+        ],
+        "curly": [
+            "error",
+            "all"
+        ],
+        "radix": [
+            "error"
+        ],
+        "strict": [
+            "error",
+            "global"
+        ],
+        "global-require": [
+            "error"
+        ],
+        "no-process-exit": [
+            "error"
+        ],
+        "new-parens": [
+            "error"
+        ],
+        "camelcase": [
+            "error"
+        ],
+        "max-params": [
+            "warn",
+            3
+        ],
+        "max-nested-callbacks": [
+            "warn",
+            4
+        ],
+        "max-statements": [
+            "warn",
+            20
+        ],
+        "require-jsdoc": [
+            "warn",
+            {
+                "require": {
+                    "FunctionDeclaration": false,
+                    "MethodDefinition": true,
+                    "ClassDeclaration": true
+                }
+            }
+        ],
+        "valid-jsdoc": [
+            "off"
         ]
     }
 }
