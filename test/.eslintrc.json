@@ -8,6 +8,9 @@
         ],
         "curly": [
             "off"
+        ],
+        "max-nested-callbacks": [
+            "off"
         ]
     }
 }
