@@ -29,9 +29,9 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 
 
 ###Laptop clients
-* [Ubuntu 16.04](docs/ubuntu1604.md)
+* [Install on Ubuntu 16.04](docs/ubuntu1604.md)
 
-* [Ubuntu 14.04](docs/ubuntu1404.md)
+* [Install on Ubuntu 14.04](docs/ubuntu1404.md)
 
 
 
