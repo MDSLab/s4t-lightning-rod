@@ -1,6 +1,6 @@
-#Ubuntu 14.04 client installation
+#Ubuntu 16.04 client installation
 
-We tested this procedure on a Ubuntu 14.04. Everything needs to be run as root.
+We tested this procedure on a Ubuntu 16.04. Everything needs to be run as root.
 
 ####Install dependencies via apt-get:
 

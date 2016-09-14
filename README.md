@@ -28,6 +28,13 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 [Installation guide](docs/arduinoyun.md)
 
 
+###Laptop clients
+* [Ubuntu 16.04](docs/ubuntu1604.md)
+
+* [Ubuntu 14.04](docs/ubuntu1404.md)
+
+
+
 
 ##Scientific References
 Scientific papers describing the work on Stack4Things by the University of Messina can be found [**here**](http://mdslab.unime.it/biblio).
