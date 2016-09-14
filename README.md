@@ -9,6 +9,7 @@ Lightning-rod has been tested to work on:
 * Raspberry Pi 2
 * Arduino YUN
 * Linino ONE
+* Ubuntu 14.04 [install](docs/ubuntu1404.md)
 
 ##Installation instructions
 
