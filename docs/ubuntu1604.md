@@ -5,7 +5,7 @@ We tested this procedure on a Ubuntu 16.04. Everything needs to be run as root.
 ####Install dependencies via apt-get:
 
 ```
-# apt-get install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev pkg-config
+# apt-get install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev pkg-config libfuse-dev
 ```
 
 ####Install necessary node.js modules via npm:
