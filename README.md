@@ -15,19 +15,19 @@ Lightning-rod has been tested to work on:
 
 ##Installation instructions
 
-###Raspberry Pi 2
-
-We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed. Everything needs to be run as root.
-
-[Installation guide](docs/raspberrypi2.md)
-
-
 
 ###Arduino YUN/Linino ONE
 
 We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed. Everything needs to be run as root. For the installation to be completed successfully, you need a working Node.js environment and a working kernel with gre, tun, ipv6, tunnel4, tunnel6, and ip6_tunnel module packages (kmod-*) installed.
 
-[Installation guide](docs/arduinoyun.md)
+* [Installation guide](docs/arduinoyun.md)
+
+
+###Raspberry Pi 2
+
+We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed. Everything needs to be run as root.
+
+* [Installation guide](docs/raspberrypi2.md)
 
 
 ###Laptop clients
