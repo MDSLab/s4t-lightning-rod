@@ -5,7 +5,7 @@ We tested this procedure on a Ubuntu 16.04. Everything needs to be run as root.
 ####Install dependencies via apt-get:
 
 ```
-# apt-get install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev
+# apt-get install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev pkg-config
 ```
 
 ####Install necessary node.js modules via npm:
@@ -18,7 +18,7 @@ We tested this procedure on a Ubuntu 16.04. Everything needs to be run as root.
 ####Configure npm NODE_PATH variable
 
 ```
-# echo "export NODE_PATH=/usr/lib/node_modules" | sudo tee -a /etc/profile
+# echo "export NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/profile
 # source /etc/profile > /dev/null
 # echo $NODE_PATH
 ```
