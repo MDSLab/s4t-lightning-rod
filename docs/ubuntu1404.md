@@ -40,6 +40,7 @@ We tested this procedure on a Ubuntu 14.04. Everything needs to be run as root.
 (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
+# mkdir /opt/stack4things/lightning-rod/drivers/
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
 # cp /opt/stack4things/lightning-rod/plugins.example.json /opt/stack4things/lightning-rod/plugins.json
 # cp /opt/stack4things/lightning-rod/drivers.example.json /opt/stack4things/lightning-rod/drivers.json
