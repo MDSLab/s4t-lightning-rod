@@ -34,16 +34,3 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 * [Install on Ubuntu 16.04](docs/ubuntu1604.md)
 
 * [Install on Ubuntu 14.04](docs/ubuntu1404.md)
-
-
-
-
-##Scientific References
-Scientific papers describing the work on Stack4Things by the University of Messina can be found [**here**](http://mdslab.unime.it/biblio).
-
-In particular, you can find details about Stack4Things in the following papers:
-
-G. Merlino, D. Bruneo, S. Distefano, F. Longo, A. Puliafito - Stack4Things: integrating IoT with OpenStack in a Smart City context. Published on Sensors and Smart Cities, Smart Computing Workshops (SMARTCOMP Workshops), 2014 International Conference on, pp. 21,28, 5-5 Nov. 2014.
-
-G. Merlino,  D. Bruneo,  S. Distefano,  F. Longo,  A. Puliafito, and A. Al-Anbuky - A Smart City Lighting Case Study on an OpenStack-Powered Infrastructure, Published on Sensors 2015, 15(7), pp. 16314-16335.
-
