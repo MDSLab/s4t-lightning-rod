@@ -30,8 +30,8 @@ We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed
 
 ###Standard PC 
 
-* [Installation guide on Ubuntu 16.04](docs/ubuntu1604.md)
+* [Installation guide for Ubuntu 16.04](docs/ubuntu1604.md)
 
-* [Installation guide on Ubuntu 14.04](docs/ubuntu1404.md)
+* [Installation guide for Ubuntu 14.04](docs/ubuntu1404.md)
 
 If you want to install Lightning-rod within an LXD container, you can mutuate from the IoTronic installation guide you can find [here](https://github.com/MDSLab/s4t-iotronic-standalone/blob/master/doc/lxd.md).
