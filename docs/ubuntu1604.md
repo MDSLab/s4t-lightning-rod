@@ -31,6 +31,7 @@ We tested this procedure on a Ubuntu 16.04. Everything needs to be run as root.
 # cp /opt/stack4things/lightning-rod/drivers.example.json /opt/stack4things/lightning-rod/drivers.json
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
 # cp /opt/stack4things/lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/s4t-lightning-rod.service
+# sed -i "s/Environment=\"NODE_PATH=\/usr\/lib\/node_modules\"/Environment=\"NODE_PATH=\/usr\/local\/lib\/node_modules\"/g" /etc/systemd/system/s4t-lightning-rod.service
 # chmod +x /etc/systemd/system/s4t-lightning-rod.service
 # systemctl daemon-reload
 # systemctl enable s4t-lightning-rod.service
