@@ -15,8 +15,8 @@ We tested this procedure on a Ubuntu 16.04. Everything needs to be run as root.
 
 ####Configure npm NODE_PATH variable
 ```
-# echo "export NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/profile
-# source /etc/profile > /dev/null
+# echo "NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/environment
+# source /etc/environment > /dev/null
 # echo $NODE_PATH
 ```
 
