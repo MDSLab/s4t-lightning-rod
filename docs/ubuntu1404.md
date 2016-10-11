@@ -31,6 +31,8 @@ We tested this procedure on a Ubuntu 14.04 within a LXD container on top of a Ku
 # cp /opt/stack4things/lightning-rod/drivers.example.json /opt/stack4things/lightning-rod/drivers.json
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
 # cp etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/s4t-lightning-rod
+# chmod +x /etc/init.d/s4t-lightning-rod
+# chmod +x /opt/stack4things/lightning-rod/lr-laptop.js
 # touch /var/log/s4t-lightning-rod.log
 ```
 
