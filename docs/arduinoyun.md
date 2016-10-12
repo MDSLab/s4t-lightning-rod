@@ -20,7 +20,7 @@
 # wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
 # unzip master.zip && rm -f master.zip
 # mv s4t-lightning-rod-master lightning-rod
-# cd lightning-rod && mkdir plugins && mkdir plugin_conf
+# cd lightning-rod && mkdir plugins && mkdir plugin_conf && mkdir drivers
 # cp /opt/stack4things/lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/s4t-lightning-rod
 # chmod +x /etc/init.d/s4t-lightning-rod
 # touch /var/log/s4t-lightning-rod.log
@@ -30,7 +30,6 @@
 (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
-# mkdir /opt/stack4things/lightning-rod/drivers/
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
 # cp /opt/stack4things/lightning-rod/plugins.example.json /opt/stack4things/lightning-rod/plugins.json
 # cp /opt/stack4things/lightning-rod/drivers.example.json /opt/stack4things/lightning-rod/drivers.json
