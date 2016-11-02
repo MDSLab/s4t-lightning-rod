@@ -15,7 +15,7 @@ We tested this procedure on a Ubuntu 14.04 within a LXD container on top of a Ku
 
 ####Configure npm NODE_PATH variable
 ```
-# echo "NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/environment
+# echo "NODE_PATH=/usr/lib/node_modules" | sudo tee -a /etc/environment
 # source /etc/environment > /dev/null
 # echo $NODE_PATH
 ```
