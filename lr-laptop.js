@@ -17,4 +17,4 @@
 //# limitations under the License.
 //##
 //###############################################################################
-require("./lightning-rod.js")
+require("./lightning-rod.js");
