@@ -47,4 +47,7 @@ sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/local\/lib\/node_modules\/node-revers
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<WAMP_IP>\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<WS_IP>\"/g" /opt/stack4things/lightning-rod/settings.json
 systemctl start s4t-lightning-rod
+
+Check log file:
+tail -f /var/log/s4t-lightning-rod.log 
 ```
