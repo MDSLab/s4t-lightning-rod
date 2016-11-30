@@ -439,7 +439,7 @@ exports.readlink_function = function(args){
 	
 	logger.debug('[FS] - readlink(%s)', path);
 
-	fs.readlink(path_translate(path_o, path), options,
+	fs.readlink(path_translate(path_o, path), //options,
 		function(err, linkString){
 			if(err){
 				logger.error('[FS] --> readlink error: ', err);
