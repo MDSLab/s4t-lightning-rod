@@ -10,7 +10,7 @@ We tested this procedure on a Ubuntu 16.04 within a LXD container on top of a Ku
 ####Install dependencies using npm:
 ```
 # npm install -g npm
-# npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys
+# npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod statvfs
 ```
 
 ####Configure npm NODE_PATH variable
