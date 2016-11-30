@@ -451,7 +451,7 @@ function wrap_readlink_function(mirrored_board, path_org, fs_function){
 			function (result) {
 
 				//logger.warn("[FS] - Response "+fs_function+": "+JSON.stringify(result));
-				cb(result); // result == linkString
+				cb(null,result); // result == linkString
 
 			},
 			function(error){
