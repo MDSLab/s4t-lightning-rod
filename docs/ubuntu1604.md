@@ -8,7 +8,7 @@ We tested this procedure on a Ubuntu 16.04 within a LXD container on top of a Ku
 
 Install latest nodejs distribution:
 # curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
-# apt-get install -y nodejs npm
+# apt-get install -y nodejs
 # node -v
 ```
 
