@@ -4,18 +4,27 @@ We tested this procedure on a Ubuntu 16.04 within a LXD container on top of a Ku
 
 ####Install dependencies via apt-get:
 ```
-# apt -y install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev pkg-config
+# apt -y install unzip socat dsniff fuse libfuse-dev pkg-config
+
+Install latest nodejs distribution:
+# curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
+# apt-get install -y nodejs npm
+# node -v
 ```
 
 ####Install dependencies using npm:
 ```
 # npm install -g npm
-# npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod statvfs
+# npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod
+
+Install statvfs compliant with nodejs 7.X:
+# npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+
 ```
 
 ####Configure npm NODE_PATH variable
 ```
-# echo "NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/environment
+# echo "NODE_PATH=/usr/lib/node_modules" | sudo tee -a /etc/environment
 # source /etc/environment > /dev/null
 # echo $NODE_PATH
 ```
@@ -31,7 +40,6 @@ We tested this procedure on a Ubuntu 16.04 within a LXD container on top of a Ku
 # cp /opt/stack4things/lightning-rod/drivers.example.json /opt/stack4things/lightning-rod/drivers.json
 # cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
 # cp /opt/stack4things/lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/s4t-lightning-rod.service
-# sed -i "s/Environment=\"NODE_PATH=\/usr\/lib\/node_modules\"/Environment=\"NODE_PATH=\/usr\/local\/lib\/node_modules\"/g" /etc/systemd/system/s4t-lightning-rod.service
 # chmod +x /etc/systemd/system/s4t-lightning-rod.service
 # systemctl daemon-reload
 # systemctl enable s4t-lightning-rod.service
