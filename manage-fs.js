@@ -731,32 +731,42 @@ function wrap_readdir_function(mirrored_board, path_org, fs_function){
 
 function wrap_open_function(mirrored_board, path_org, fs_function){
 
-	return function (path, flags, cb) {
+        return function (path, flags, cb) {
 
-		//logger.debug('[FS] - CALLED RPC: '+'s4t.'+mirrored_board+'.fs.'+fs_function  +" call file --> " + path + " in "+path_org);
+                //logger.debug('[FS] - CALLED RPC: '+'s4t.'+mirrored_board+'.fs.'+fs_function  +" call file --> " + path + " in "+path_org);
 
-		session_fs.call('s4t.'+mirrored_board+'.fs.'+fs_function, [path_org, path, flags] ).then(
+                session_fs.call('s4t.'+mirrored_board+'.fs.'+fs_function, [path_org, path, flags] ).then(
 
-			function (result) {
+                        function (result) {
 
-				//logger.debug("[FS] - Response "+fs_function+": "+JSON.stringify(result));
-				cb(null, result);
+                                //logger.debug("[FS] - Response "+fs_function+": "+JSON.stringify(result));
 
-			},
-			function(error){
+                                cb(null, result);
 
-				logger.error("[FS] - Response "+fs_function+" error: "+ JSON.stringify(error));
-				cb(fuse[error.code]);
+                        },
+                        function(error){
 
-			}
+                                  if ( error.args[0].code ==="EINVAL"){
+                                    logger.warn("[FS] - Response "+fs_function+" warning: "+ JSON.stringify(error));
+                                    cb(fuse[error.code]);
+                                  }else{
+                                    logger.error("[FS] - Response "+fs_function+" error: "+ JSON.stringify(error));
+                                    cb(fuse[error.code]);
+                                  }
 
 
-		);
 
-	};
+
+                        }
+
+
+                );
+
+        };
 
 
 }
+
 
 
 function wrap_read_function(mirrored_board, path_org, fs_function){

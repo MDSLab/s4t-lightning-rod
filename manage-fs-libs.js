@@ -263,7 +263,7 @@ exports.open_function = function(args){
 	fs.open(path_translate(path_o, path), flags, function (err, fd) {
 		if(err){
 			logger.error('[FS] --> error: ', err);
-			d.reject(err);
+			d.resolve(err);
 		}
 		else{
 			d.resolve(fd);
