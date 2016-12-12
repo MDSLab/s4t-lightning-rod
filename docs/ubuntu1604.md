@@ -4,7 +4,7 @@ We tested this procedure on a Ubuntu 16.04 within a LXD container on top of a Ku
 
 ####Install dependencies via apt-get:
 ```
-apt -y install unzip socat dsniff fuse libfuse-dev pkg-config
+apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python
 ```
 ####Install latest nodejs distribution:
 ```
@@ -16,6 +16,7 @@ node -v
 ####Install dependencies using npm:
 ```
 npm install -g npm
+npm config set python `which python2.7`
 npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod
 
 # Install statvfs compliant with nodejs 7.X:
