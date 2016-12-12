@@ -8,7 +8,7 @@ Lighthing-rod is the node-side component in the Stack4Things architecture. In th
 
 Lightning-rod (in its standalone version) has been tested to work on:
 
-* Raspberry Pi 2
+* Raspberry Pi 2 and 3
 * Arduino YUN
 * Linino ONE
 * Ubuntu 16.04 
@@ -22,11 +22,14 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 
 * [Installation guide for Arduino YUN/Linino ONE](docs/arduinoyun.md)
 
-###Raspberry Pi 2
+###Raspberry Pi
 
 We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed. Everything needs to be run as root.
 
-* [Installation guide for Raspberry Pi](docs/raspberrypi2.md)
+* [Installation guide for Raspberry Pi 2](docs/raspberrypi2.md)
+
+and on Raspberry Pi 3 with ubuntu-16.04-preinstalled-server OS:
+* [Installation guide for Raspberry Pi 3](docs/raspberrypi3.md)
 
 ###Standard PC 
 
