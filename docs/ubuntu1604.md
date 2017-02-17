@@ -4,12 +4,22 @@ We tested this procedure on a Ubuntu 16.04 within a LXD container on top of a Ku
 
 ####Install dependencies via apt-get:
 ```
-apt -y install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev pkg-config
+apt -y install unzip socat dsniff fuse libfuse-dev pkg-config
+```
+
+####Install latest nodejs (and npm) distribution:
+```
+curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
+apt-get install -y nodejs
+node -v
+
+npm install -g npm
+npm config set python `which python2.7`
+npm -v
 ```
 
 ####Install dependencies using npm:
 ```
-npm install -g npm
 npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys
 ```
 
