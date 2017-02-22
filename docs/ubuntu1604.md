@@ -41,7 +41,6 @@ cp /opt/stack4things/lightning-rod/plugins.example.json /opt/stack4things/lightn
 cp /opt/stack4things/lightning-rod/drivers.example.json /opt/stack4things/lightning-rod/drivers.json
 cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
 cp /opt/stack4things/lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/s4t-lightning-rod.service
-sed -i "s/Environment=\"NODE_PATH=\/usr\/lib\/node_modules\"/Environment=\"NODE_PATH=\/usr\/local\/lib\/node_modules\"/g" /etc/systemd/system/s4t-lightning-rod.service
 chmod +x /etc/systemd/system/s4t-lightning-rod.service
 systemctl daemon-reload
 systemctl enable s4t-lightning-rod.service
@@ -53,7 +52,7 @@ Note that you will need the IP address of a working instance of a WAMP router (<
 ```
 sed -i "s/\"device\":.*\"\"/\"device\": \"laptop\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_UUID>\"/g" /opt/stack4things/lightning-rod/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/local\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /opt/stack4things/lightning-rod/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<WAMP_IP>\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<WS_IP>\"/g" /opt/stack4things/lightning-rod/settings.json
 systemctl start s4t-lightning-rod
