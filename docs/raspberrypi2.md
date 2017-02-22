@@ -4,7 +4,7 @@
 ####Install dependencies via apt-get:
 
 ```
-# apt-get install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev
+# apt-get install -y nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev
 ```
 
 ####Install necessary node.js modules via npm:
