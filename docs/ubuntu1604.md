@@ -55,7 +55,7 @@ Note that you will need the IP address of a working instance of a WAMP router (<
 ```
 sed -i "s/\"device\":.*\"\"/\"device\": \"laptop\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_UUID>\"/g" /opt/stack4things/lightning-rod/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/local\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /opt/stack4things/lightning-rod/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<WAMP_IP>\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<WS_IP>\"/g" /opt/stack4things/lightning-rod/settings.json
 systemctl start s4t-lightning-rod
