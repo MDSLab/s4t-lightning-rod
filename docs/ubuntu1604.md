@@ -21,7 +21,6 @@ npm -v
 ```
 npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod
 npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
-
 ```
 
 ####Configure npm NODE_PATH variable
