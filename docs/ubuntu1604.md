@@ -4,7 +4,7 @@ We tested this procedure on a Ubuntu 16.04 within a LXD container on top of a Ku
 
 ####Install dependencies via apt-get:
 ```
-apt -y install unzip socat dsniff fuse libfuse-dev pkg-config
+apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python
 ```
 
 ####Install latest nodejs (and npm) distribution:
