@@ -112,7 +112,7 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip,n
 					logger.debug('[NETWORK] - WSTT - stdout: ' + data);
 				});
 				wstt_proc.stderr.on('data', function (data) {
-					logger.debug('[NETWORK] - WSTT - stderr: ' + data);
+					logger.error('[NETWORK] - WSTT - stderr: ' + data);
 				});
 				wstt_proc.on('close', function (code) {
 					logger.warn('[NETWORK] - WSTT - process exited with code ' + code);
