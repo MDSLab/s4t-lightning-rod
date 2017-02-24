@@ -1,6 +1,6 @@
 #Stack4Things Lightning-rod (standalone version) installation guide for Ubuntu 14.04
 
-We tested this procedure on a Ubuntu 14.04 within a LXD container on top of a Kubuntu 16.04 on 11th October 2016. Everything needs to be run as root.
+We tested this procedure on a Ubuntu 14.04 within a LXD container on top of a Kubuntu 16.04. Everything needs to be run as root.
 
 ####Install dependencies via apt-get:
 ```
