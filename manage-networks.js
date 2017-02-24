@@ -13,10 +13,29 @@ var logger = log4js.getLogger('manageNetworks');
 logger.setLevel(loglevel);
 
 var Q = require("q");
+var running = require('is-running');
+var fs = require("fs");
 
 var session_wamp;
 
 var utility = require('./board-management');
+
+var socat_pid = null
+var wstt_pid = null
+
+
+
+function update_net_conf(configFile, section){
+      //Updates the settings.json file
+      fs.writeFile(configFileName, JSON.stringify(configFile, null, 4), function(err) {
+	      if(err) {
+		      logger.error('[NETWORK] --> Error writing settings.json file in '+ section +' : ' + err);
+	      } else {
+		      logger.debug("[NETWORK] --> Section "+section+" in settings.json file updated.");
+	      }
+      });
+}
+
 
 // This function exports all the functions in the module as WAMP remote procedure calls
 exports.exportNetworkCommands = function (session){
@@ -80,12 +99,58 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip,n
 	var spawn = require('child_process').spawn;
 
 	var basePort = nconf.get('config:socat:client:port');
-	var rtpath = nconf.get('config:reverse:lib:bin');			//DEBUG - rtpath = "/opt/demo/node-lighthing-rod-develop/node_modules/node-reverse-wstunnel/bin/wstt.js";
+	var rtpath = nconf.get('config:reverse:lib:bin');
 	var reverseS_url = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
+	
+	var configFile = JSON.parse(fs.readFileSync(configFileName, 'utf8'));
+	var socat_config = configFile.config["socat"];
+	var wstt_config = configFile.config["reverse"];
+	
+
+	logger.info("[NETWORK] - Boot status:");
+	
+        // Kill Socat and WSTT processes to clean network status after a network failure
+	logger.info("[NETWORK] --> Socat PID: "+ socat_pid)
+	if (socat_pid != null){
+
+	  logger.warn("[NETWORK] ... Socat cleaning PID ["+socat_pid+"]");
+	  process.kill(socat_pid)
+
+	}else{
+	  var socat_pid_conf = nconf.get('config:socat:pid');
+	  if(socat_pid_conf != ""){
+	    
+	    if(running(socat_pid_conf)){
+	      logger.warn("[NETWORK] ... Socat first cleaning PID ["+socat_pid_conf+"]");
+	      process.kill(socat_pid_conf) 
+	    }
+	    
+	  }
+	}
+	
+	
+	logger.info("[NETWORK] --> WSTT PID: "+ wstt_pid)
+	if (wstt_pid != null){
+
+	  logger.warn("[NETWORK] ... WSTT cleaning PID ["+wstt_pid+"]");
+	  process.kill(wstt_pid)  
+
+	}else{
+	  var wstt_pid_conf = nconf.get('config:reverse:pid');
+
+	  if(wstt_pid_conf != ""){
+	    
+	    if(running(wstt_pid_conf)){
+	      logger.warn("[NETWORK] ... Socat first cleaning PID ["+wstt_pid_conf+"]");
+	      process.kill(wstt_pid_conf) 
+	    }
+	    
+	  }
+	    
+	}
 	
 	var cp = require('child_process');
 	var socat = cp.fork('./network-wrapper');
-        
 
 	var input_message = {
 	    "socatBoard_ip": socatBoard_ip,
@@ -94,6 +159,8 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip,n
 	    "net_backend":net_backend
 	};
 
+	
+	
 	socat.send(input_message); 
 	
 	socat.on('message', function(msg) {
@@ -105,14 +172,20 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip,n
 				// START WSTT ------------------------------------------------------------------------------------------------
 				logger.info("[NETWORK] - WSTT activating...");
 
-				var wstt_proc = spawn(rtpath, ['-r '+ socatServer_port +':localhost:'+basePort, reverseS_url]);
 				logger.debug("[NETWOR] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
+				var wstt_proc = spawn(rtpath, ['-r '+ socatServer_port +':localhost:'+basePort, reverseS_url]);
+				//logger.debug("[NETWOR] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
 
+				// Save WSTT PID to clean network status after a network failure
+				wstt_pid = wstt_proc.pid
+				wstt_config["pid"] = wstt_pid;
+				update_net_conf(configFile, "WSTT");
+				
 				wstt_proc.stdout.on('data', function (data) {
 					logger.debug('[NETWORK] - WSTT - stdout: ' + data);
 				});
 				wstt_proc.stderr.on('data', function (data) {
-					logger.error('[NETWORK] - WSTT - stderr: ' + data);
+					logger.debug('[NETWORK] - WSTT - stderr: ' + data);
 				});
 				wstt_proc.on('close', function (code) {
 					logger.warn('[NETWORK] - WSTT - process exited with code ' + code);
@@ -121,7 +194,14 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip,n
 
 			} else if (msg.status === "complete"){
 
-				logger.info('[NETWORK] - Sending notification to IOTRONIC: '+ msg.status+ ' - '+ msg.logmsg);
+				logger.info('[NETWORK] - Sending notification to IOTRONIC: '+ msg.status+ ' - '+ msg.logmsg + ' - PID: '+msg.pid + ' - wstt pid: ' +wstt_pid);
+				
+				// Save Socat PID to clean network status after a network failure
+				socat_pid = msg.pid;
+				socat_config["pid"] = socat_pid;
+				update_net_conf(configFile, "Socat");
+
+	
 
 				session_wamp.call('iotronic.rpc.command.result_network_board', [msg.logmsg, boardCode] ).then(
 					function(result){
