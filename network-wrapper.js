@@ -17,6 +17,7 @@ loglevel = nconf.get('config:log:loglevel');
 log4js.addAppender(log4js.appenders.file(logfile));    
 
 
+var socat_pid = null
 
 //service logging configuration: "network-wrapper"
 var logger = log4js.getLogger('network-wrapper');
@@ -60,13 +61,17 @@ process.once('message', function(message) {
 	logger.info("[NETWORK] - NetWRAPPER loaded!");
 	logger.info("[NETWORK] - SOCAT starting...");
       
-        var socatProcess = spawn('socat', ['-d','-d','TCP-L:'+ basePort +',bind=localhost,reuseaddr,forever,interval=10','TUN:'+socatBoard_ip+'/31,tun-name=socat0,tun-type=tap,up'])
-        logger.info('SOCAT COMMAND: socat -d -d TCP-L:'+ basePort +',bind=localhost,reuseaddr,forever,interval=10 TUN:'+socatBoard_ip+'/31,tun-name=socat0,tun-type=tap,up' );
-	    	    
+        //var socatProcess = spawn('socat', ['-d','-d','TCP-L:'+ basePort +',bind=localhost,reuseaddr,forever,interval=10','TUN:'+socatBoard_ip+'/31,tun-name=socat0,tun-type=tap,up'])
+        //logger.info('SOCAT COMMAND: socat -d -d TCP-L:'+ basePort +',bind=localhost,reuseaddr,forever,interval=10 TUN:'+socatBoard_ip+'/31,tun-name=socat0,tun-type=tap,up' );
+	var socatProcess = spawn('socat', ['-d','-d','TCP-L:'+ basePort +',bind=localhost,nodelay,reuseaddr,forever,interval=10','TUN:'+socatBoard_ip+'/31,tun-name=socat0,tun-type=tap,up'])
+        //socat -d -d TCP-L:20000,bind=localhost,nodelay,reuseaddr,forever,interval=10 TUN:10.0.0.5/30,tun-name=socat0,tun-type=tap,iff-up &	  
+  	    
 	logger.debug("[NETWORK] --> SOCAT PID: "+socatProcess.pid);
 	    
 	if (socatProcess.pid != undefined)
 		logger.debug("[NETWORK] --> SOCAT daemon succefully started!");
+		socat_pid = socatProcess.pid	
+	
 	    
 	socatProcess.stdout.on('data', function (data) {
 		logger.debug('[NETWORK] --> SOCAT - stdout: ' + data);
@@ -120,14 +125,15 @@ process.once('message', function(message) {
                                             logger.info('[NETWORK] --> GRE tunnel info: server ip = '+ socatServer_ip+' - local ip = '+socatBoard_ip);
                                             
                                             //SEND MESSAGE TO IOTRONIC
-                                            process.send({ name: "socat", status: "complete" , logmsg: "tunnels configured"});
+                                            process.send({ name: "socat", status: "complete" , logmsg: "tunnels configured", pid: socat_pid});
                                     
                                     });
                             
                             });
                         } else{
-                        //SEND MESSAGE TO IOTRONIC
-                        process.send({ name: "socat", status: "complete" , logmsg: "tunnels configured"});   
+			  //SEND MESSAGE TO IOTRONIC
+			  logger.info("\n\n\n PIIIIIIIIIIIIIIIIIIIIIIIID: "+socat_pid)
+			  process.send({ name: "socat", status: "complete" , logmsg: "tunnels configured", pid: socat_pid});   
                         }
 		}
 		
