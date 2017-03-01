@@ -23,9 +23,9 @@ echo $NODE_PATH
 ####Install the Lightning-rod
 ```
 mkdir /opt/stack4things/ && cd /opt/stack4things/
-wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
-unzip master.zip && rm -f master.zip
-mv s4t-lightning-rod-master lightning-rod
+wget https://github.com/MDSLab/s4t-lightning-rod/archive/vfs.zip --no-check-certificate
+unzip vfs.zip && rm -f vfs.zip
+mv s4t-lightning-rod-vfs lightning-rod
 cd lightning-rod && mkdir plugins && mkdir plugin_conf && mkdir drivers
 cp /opt/stack4things/lightning-rod/plugins.example.json /opt/stack4things/lightning-rod/plugins.json
 cp /opt/stack4things/lightning-rod/drivers.example.json /opt/stack4things/lightning-rod/drivers.json
