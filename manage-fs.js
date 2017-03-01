@@ -106,8 +106,6 @@ exports.mountFS = function (args){
 
 
 //UMOUNT
-
-//This function unmounts a driver
 exports.unmountFS = function (args){
 
 	//Parsing the input arguments
@@ -115,7 +113,7 @@ exports.unmountFS = function (args){
 
 	var d = Q.defer();
 
-	logger.info("[DRIVER] - UNMOUNTING FS '"+path_dest+"'...");
+	logger.info("[VFS] - UNMOUNTING FS '"+path_dest+"'...");
 
 	var rest_response = {};
 
@@ -125,17 +123,17 @@ exports.unmountFS = function (args){
 
 			if(err === undefined){
 
-				rest_response.message = "FS '"+path_dest+"' successfully unmounted!";
+				rest_response.message = path_dest+"' successfully unmounted!";
 				rest_response.result = "SUCCESS";
-				logger.info("[FS] - "+path_dest+" --> "+rest_response.message);
+				logger.info("[VFS] --> "+rest_response.message);
 				d.resolve(rest_response);
 
 			}else{
 
-				rest_response.message = "ERROR during path '"+path_dest+"' (fuse) unmounting: " +err;
+				rest_response.message = "FUSE ERROR during unmounting '"+path_dest+"': " + err;
 				rest_response.result = "ERROR";
-				logger.error("[FS] - "+path_dest+" --> "+JSON.stringify(rest_response.message));
-				d.reject(err);
+				logger.error("[VFS] --> "+rest_response.message);
+				d.resolve(rest_response);
 
 			}
 
@@ -144,10 +142,10 @@ exports.unmountFS = function (args){
 
 	}
 	catch(err){
-		rest_response.message = "ERROR during path '"+path_dest+"' (fuse) unmounting: " +err;
+		rest_response.message = "ERROR during unmounting '"+path_dest+"': " +err;
 		rest_response.result = "ERROR";
-		logger.error("[FS] - "+path_dest+" --> "+ rest_response.message);
-		d.reject(err);
+		logger.error("[VFS] - "+path_dest+" --> "+ rest_response.message);
+		d.resolve(rest_response);
 	}
 
 	return d.promise;
