@@ -34,6 +34,8 @@ echo $NODE_PATH
 ```
 echo gre >> /etc/modules
 echo ip_gre >> /etc/modules
+modprobe gre
+modprobe ip_gre
 ```
 
 ####Install the Lightning-rod
