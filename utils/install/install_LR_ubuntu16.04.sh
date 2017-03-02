@@ -30,6 +30,11 @@ echo "NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/environment
 source /etc/environment > /dev/null
 echo $NODE_PATH
 
+echo gre >> /etc/modules
+echo ip_gre >> /etc/modules
+modprobe gre
+modprobe ip_gre
+
 mkdir /opt/stack4things/ && cd /opt/stack4things/
 wget https://github.com/MDSLab/s4t-lightning-rod/archive/$1.zip --no-check-certificate
 unzip $1.zip && rm -f $1.zip
