@@ -70,7 +70,7 @@ process.once('message', function(message) {
 	    
 	if (socatProcess.pid != undefined)
 		logger.debug("[NETWORK] --> SOCAT daemon succefully started!");
-		socat_pid = socatProcess.pid	
+		socat_pid = socatProcess.pid;
 	
 	    
 	socatProcess.stdout.on('data', function (data) {
@@ -132,7 +132,6 @@ process.once('message', function(message) {
                             });
                         } else{
 			  //SEND MESSAGE TO IOTRONIC
-			  logger.info("\n\n\n PIIIIIIIIIIIIIIIIIIIIIIIID: "+socat_pid)
 			  process.send({ name: "socat", status: "complete" , logmsg: "tunnels configured", pid: socat_pid});   
                         }
 		}

@@ -201,11 +201,9 @@ exports.initNetwork = function(socatServer_ip, socatServer_port, socatBoard_ip,n
 				socat_config["pid"] = socat_pid;
 				update_net_conf(configFile, "Socat");
 
-	
-
 				session_wamp.call('iotronic.rpc.command.result_network_board', [msg.logmsg, boardCode] ).then(
-					function(result){
-						logger.info('[NETWORK] --> response from IOTRONIC: '+ result);
+					function(response){
+						logger.info('[NETWORK] --> response from IOTRONIC: \n'+ response.message);
 						logger.info('[NETWORK] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
 					}
 				);
