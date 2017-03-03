@@ -34,7 +34,7 @@ exports.execute = function (command, label) {
 
     return result;
 
-}
+};
 
 
 // Init() LR function in order to control the correct LR configuration:
@@ -124,7 +124,6 @@ exports.Init_Ligthning_Rod = function (callback) {
     }
 
 };
-
 
 // This function checks the settings correctness
 exports.checkSettings = function (callback) {
@@ -237,12 +236,11 @@ exports.checkSettings = function (callback) {
 
 };
 
-
 //This function contains the logic that has to be performed if I'm connected to the WAMP server
 exports.manage_WAMP_connection = function (session, details) {
 
-    logger.info("[SYSTEM] - S4T configuration starting...");
-
+    logger.info('[CONFIGURATION] - Registered node configuration starting...');
+    
     //EXPORTING NETWORK COMMANDS 
     var manageNetworks = require('./manage-networks');
     manageNetworks.exportNetworkCommands(session);
@@ -285,7 +283,6 @@ exports.manage_WAMP_connection = function (session, details) {
 
 };
 
-
 // This function sets the coordinates of the device: called by Iotronic via RPC
 exports.setBoardPosition = function (args) {
 
@@ -313,11 +310,25 @@ exports.setBoardPosition = function (args) {
 
 };
 
+// This function manages the wrong/unregistered status of the node
+exports.checkRegistrationStatus = function(args){
+
+    var response = args[0];
+    
+    logger.error("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
+    logger.info("[SYSTEM] - Bye");
+
+    process.exit();
+    
+
+};
+
 
 exports.exportManagementCommands = function (session) {
 
     //Register all the module functions as WAMP RPCs
     logger.info('[WAMP-EXPORTS] Management commands exported to the cloud!');
     session.register(boardCode + '.command.setBoardPosition', exports.setBoardPosition);
-
+    session.register(boardCode + '.command.checkRegistrationStatus', exports.checkRegistrationStatus);
+    
 };

@@ -33,7 +33,6 @@ device = null;			//valued in checkSettings
 
 // To test the connection status
 online = true;				// We use this flag during the process of connection recovery
-//active = false;			// FUTURE WORK: It should be used for VLAN management after a connection fault (in manage-networks.js)
 reconnected = false;		// We use this flag to identify the connection status of reconnected after a connection fault
 keepWampAlive = null;		// It is a timer related to the function that every "X" seconds/minutes checks the connection status
 var tcpkill_pid = null;		// PID of tcpkill process spawned to manage the connection recovery process
@@ -145,14 +144,13 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 			} else if(reg_status === "registered"){
 
-				logger.info('[CONFIGURATION] - REGISTERED BOARD CONFIGURATION STARTING...');
-
 				//Calling the manage_WAMP_connection function that contains the logic that has to be performed if the device is connected to the WAMP server
 				manageBoard.manage_WAMP_connection(session, details);
 
 			} else{
 
 				logger.error('[CONFIGURATION] - WRONG BOARD STATUS: status allowed "new" or "registerd"!');
+				process.exit();
 
 			}
 
