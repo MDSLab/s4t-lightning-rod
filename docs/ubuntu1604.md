@@ -30,14 +30,6 @@ source /etc/environment > /dev/null
 echo $NODE_PATH
 ```
 
-####Force gre and ip_gre kernel modules to be loaded at boot
-```
-echo gre >> /etc/modules
-echo ip_gre >> /etc/modules
-modprobe gre
-modprobe ip_gre
-```
-
 ####Install the Lightning-rod
 ```
 mkdir /opt/stack4things/ && cd /opt/stack4things/
