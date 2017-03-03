@@ -25,7 +25,7 @@ npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bin
 
 ####Configure npm NODE_PATH variable
 ```
-echo "NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/environment
+echo "NODE_PATH=/usr/lib/node_modules" | sudo tee -a /etc/environment
 source /etc/environment > /dev/null
 echo $NODE_PATH
 ```
