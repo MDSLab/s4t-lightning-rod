@@ -54,36 +54,28 @@ exports.setSocatOnBoard = function (args, details) {
 
     var d = Q.defer();
 
-    //logger.info("Active flag status: " + active);
+    var response = {
+        message: '',
+        result: ''
+    };
 
-    //if(active){
-    //if (true) {
+    var socatServer_ip = args[0];
+    var socatServer_port = args[1];
+    var socatBoard_ip = args[2];
+    //var net_backend = args[3];
+    net_backend = args[3];
+    var socatRes = "Server:" + socatServer_ip + ":" + socatServer_port + " - Node: " + socatBoard_ip;
 
-        //logger.warn("FIRST NETWORK INITIALIZATION:");
-        //active = false;
+    response.result = "SUCCESS";
+    response.message = boardCode + " ("+socatRes+")";
 
-        var socatServer_ip = args[0];
-        var socatServer_port = args[1];
-        var socatBoard_ip = args[2];
-        //var net_backend = args[3];
-        net_backend = args[3];
-        var socatRes = boardCode + " - Server:" + socatServer_ip + ":" + socatServer_port + " - Board: " + socatBoard_ip;
+    logger.info("[NETWORK] - Socat parameters received: " + socatRes);
+    logger.info("[NETWORK] - Network backend used: " + net_backend);
 
-        logger.info("[NETWORK] - SOCAT PARAMETERS INJECTED: " + socatRes);
-        logger.info("[NETWORK-MANAGER] - NETWORK BACKEND: " + net_backend);
+    exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip, net_backend);
 
-        exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip, net_backend);
+    d.resolve(response);
 
-        d.resolve(socatRes);
-
-    /*
-    } else {
-        var socatRes = "Network of board " + boardCode + " already configured!";
-        d.resolve(socatRes);
-        logger.warn("[NETWORK] - NETWORK RECOVERY --- NO NEED NETWORK INITIALIZATION!");
-    }
-    */
-    
     return d.promise;
 
 };
@@ -111,25 +103,29 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
     logger.info("[NETWORK] - Boot status:");
 
     // Kill Socat and WSTT processes to clean network status after a network failure
-    logger.info("[NETWORK] --> Socat PID: " + socat_pid)
+    logger.info("[NETWORK] --> Socat PID: " + socat_pid);
+
     if (socat_pid != null) {
 
         logger.warn("[NETWORK] ... Socat cleaning PID [" + socat_pid + "]");
-        process.kill(socat_pid)
+        process.kill(socat_pid);
 
     } else {
+
         var socat_pid_conf = nconf.get('config:socat:pid');
+
         if (socat_pid_conf != "") {
 
             if (running(socat_pid_conf)) {
                 logger.warn("[NETWORK] ... Socat first cleaning PID [" + socat_pid_conf + "]");
-                process.kill(socat_pid_conf)
+                process.kill(socat_pid_conf);
             }
 
         }
     }
 
-    logger.info("[NETWORK] --> WSTT PID: " + wstt_pid)
+    logger.info("[NETWORK] --> WSTT PID: " + wstt_pid);
+
     if (wstt_pid != null) {
 
         logger.warn("[NETWORK] ... WSTT cleaning PID [" + wstt_pid + "]");
@@ -159,7 +155,6 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
         "net_backend": net_backend
     };
 
-
     socat.send(input_message);
 
     socat.on('message', function (msg) {
@@ -176,7 +171,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
                 //logger.debug("[NETWOR] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
 
                 // Save WSTT PID to clean network status after a network failure
-                wstt_pid = wstt_proc.pid
+                wstt_pid = wstt_proc.pid;
                 wstt_config["pid"] = wstt_pid;
                 update_net_conf(configFile, "WSTT");
 
