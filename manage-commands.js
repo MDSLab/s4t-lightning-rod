@@ -31,7 +31,6 @@ exports.onCommand = function (args){
                 break;
             case 'add-to-network':
             case 'remove-from-network':
-            case 'update-board':
 		        logger.debug('[NETWORK] - L-R command received: ' + args[1] +' '+ args[2] +' '+ args[3]);
                 var manageNetworks = require('./manage-networks');
                 manageNetworks.manageNetworks(args);

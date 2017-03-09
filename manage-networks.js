@@ -363,23 +363,6 @@ exports.manageNetworks = function (args) {
 
             break;
 
-            break;
-
-        /*
-         case 'update-board':
-         var testing = spawn('ip',['link','set',args[3],'down']);
-         testing.on('close', function (code) {
-         var testing2 = spawn('ip',['addr','del',args[4],'dev',args[3]]);
-         testing2.on('close',function (code) {
-         var testing3 = spawn('ip',['addr','add',args[2],'broadcast',args[5],'dev',args[3]]);
-         testing3.on('close',function (code) {
-         spawn('ip',['link','set',args[3],'up']);
-         })
-         });
-         });
-         break;
-         */
-
 
     }
 
