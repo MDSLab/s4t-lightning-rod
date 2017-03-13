@@ -24,6 +24,9 @@ var socat_pid = null;
 var wstt_pid = null;
 
 
+var spawn = require('child_process').spawn;
+
+
 function update_net_conf(configFile, section) {
     //Updates the settings.json file
     fs.writeFile(configFileName, JSON.stringify(configFile, null, 4), function (err) {
@@ -35,16 +38,6 @@ function update_net_conf(configFile, section) {
     });
 }
 
-
-// This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportNetworkCommands = function (session) {
-
-    //Register all the module functions as WAMP RPCs
-    session.register(boardCode + '.command.rpc.network.setSocatOnBoard', exports.setSocatOnBoard);
-    session_wamp = session;
-    logger.info('[WAMP-EXPORTS] Network commands exported to the cloud!');
-
-};
 
 
 // This function starts the creation of the SOCAT tunnel
@@ -213,17 +206,171 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 };
 
 
+
+// This function adds a node to a VNET
+exports.addToNetwork = function (args) {
+
+    logger.info("[NETWORK] - Add node to VNET...");
+
+    if (net_backend == 'iotronic') {
+        //INPUT PARAMETERS: args[0]: boardID - args[1]:vlanID - args[2]:boardVlanIP - args[3]:vlanMask - args[4]:vlanName
+
+        var nodeID = args[0];
+        var vlanID = args[1];
+        var boardVlanIP = args[2];
+        var vlanMask = args[3];
+        var vlanName = args[4];
+
+        logger.info("[NETWORK] - ADDING BOARD TO VLAN " + vlanName + "...");
+
+        //ip link add link gre-lr0 name gre-lr0.<vlan> type vlan id <vlan>
+        var add_vlan_iface = spawn('ip', ['link', 'add', 'link', 'gre-lr0', 'name', 'gre-lr0.' + vlanID, 'type', 'vlan', 'id', vlanID]);
+        logger.debug('[NETWORK] --> NETWORK COMMAND: ip link add link gre-lr0 name gre-lr0.' + vlanID + ' type vlan id ' + vlanID);
+
+        add_vlan_iface.stdout.on('data', function (data) {
+            logger.debug('[NETWORK] ----> stdout - add_vlan_iface: ' + data);
+        });
+        add_vlan_iface.stderr.on('data', function (data) {
+            logger.debug('[NETWORK] ----> stderr - add_vlan_iface: ' + data);
+        });
+
+        add_vlan_iface.on('close', function (code) {
+
+            //ip addr add <ip/mask> dev gre-lr0.<vlan>
+            var add_vlan_ip = spawn('ip', ['addr', 'add', boardVlanIP + '/' + vlanMask, 'dev', 'gre-lr0.' + vlanID]);
+            logger.debug('[NETWORK] --> NETWORK COMMAND: ip addr add ' + boardVlanIP + '/' + vlanMask + ' dev gre-lr0.' + vlanID);
+
+            add_vlan_ip.stdout.on('data', function (data) {
+                logger.debug('[NETWORK] ----> stdout - add_vlan_ip: ' + data);
+            });
+            add_vlan_ip.stderr.on('data', function (data) {
+                logger.debug('[NETWORK] ----> stderr - add_vlan_ip: ' + data);
+            });
+
+            add_vlan_ip.on('close', function (code) {
+
+                //ip link set gre-lr0.<vlan> up
+                var greVlan_up = spawn('ip', ['link', 'set', 'gre-lr0.' + vlanID, 'up']);
+                logger.debug('[NETWORK] --> GRE IFACE UP: ip link set gre-lr0.' + vlanID + ' up');
+
+                greVlan_up.stdout.on('data', function (data) {
+                    logger.debug('[NETWORK] ----> stdout - greVlan_up: ' + data);
+                });
+                greVlan_up.stderr.on('data', function (data) {
+                    logger.debug('[NETWORK] ----> stderr - greVlan_up: ' + data);
+                });
+                greVlan_up.on('close', function (code) {
+                    logger.debug('[NETWORK] --> VLAN IFACE gre-lr0.' + vlanID + ' is UP!');
+                    logger.info("[NETWORK] --> BOARD SUCCESSFULLY ADDED TO VLAN " + vlanName + " with IP " + boardVlanIP);
+                });
+
+            });
+
+        });
+        
+    } else {
+
+        //INPUT PARAMETERS: args[0]: boardID - args[1]:vlanID - args[2]:port
+        var vlanID = args[1];
+        var port = args[2];
+        var cidr = args[3];
+
+        logger.info("ADDING BOARD TO VLAN " + port.networkId + "...");
+
+        iface = 'socat0.' + vlanID;
+
+        mac = port.macAddress;
+        var add_vlan_iface = utility.execute('ip link add link socat0 address ' + mac + ' name ' + iface + ' type vlan id ' + vlanID, ' --> NETWORK');
+
+        add_vlan_iface.on('close', function (code) {
+            logger.info('--> CREATED ' + iface);
+
+            var ip = port.fixedIps[0].ip_address;
+            var add_vlan_ip = utility.execute('ip addr add ' + ip + '/' + cidr + ' dev ' + iface, ' --> NETWORK');
+
+            add_vlan_ip.on('close', function (code) {
+
+                logger.info("--> VLAN IFACE configured with ip " + ip + "/" + cidr);
+                var iface_up = utility.execute('ip link set ' + iface + ' up', ' --> NETWORK');
+                iface_up.on('close', function (code) {
+                    logger.info("--> VLAN IFACE UP!");
+                    logger.info("BOARD SUCCESSFULLY ADDED TO VLAN: " + port.networkId);
+
+                });
+
+            });
+
+        });
+        
+    }
+    
+
+};
+
+// This function adds a node to a VNET
+exports.removeFromNetwork = function (args) {
+
+    logger.info("[NETWORK] - Remove node from VNET...");
+
+    if (net_backend == 'iotronic') {
+
+        //INPUT PARAMETERS: args[0]: boardID - args[1]:vlanID - args[2]:vlanName
+        var nodeID = args[0];
+        var vlanID = args[1];
+        var vlanName = args[2];
+
+        logger.info("[NETWORK] - REMOVING BOARD FROM VLAN " + vlanName + "...");
+
+        //ip link del gre-lr0.<vlan>
+        var del_greVlan = spawn('ip', ['link', 'del', 'gre-lr0.' + vlanID]);
+        logger.debug('[NETWORK] --> DEL GRE IFACE: ip link del gre-lr0.' + vlanID);
+
+        del_greVlan.stdout.on('data', function (data) {
+            logger.info('[NETWORK] ----> stdout - del_greVlan: ' + data);
+        });
+        del_greVlan.stderr.on('data', function (data) {
+            logger.info('[NETWORK] ----> stderr - del_greVlan: ' + data);
+        });
+        del_greVlan.on('close', function (code) {
+            logger.info("[NETWORK] --> VLAN IFACE gre-lr0." + vlanID + " DELETED!");
+            logger.info("[NETWORK] --> BOARD SUCCESSFULLY REMOVED FROM VLAN " + vlanName);
+        });
+        
+
+    } else {
+
+        //INPUT PARAMETERS: args[0]: - args[1]:vlanID - args[2]:net_uuid
+        var vlanID = args[1];
+        var net_uuid = args[2];
+
+        logger.info("REMOVING BOARD FROM LAN " + net_uuid + "...");
+
+        iface = 'socat0.' + vlanID;
+
+        var add_vlan_iface = utility.execute('ip link del ' + iface, ' --> NETWORK');
+
+        add_vlan_iface.on('close', function (code) {
+            logger.info('--> DELETED ' + iface);
+
+        });
+
+    }    
+
+
+};
+
+
+/*
 // This function manages the network following functionalities:
 // - add-to-network
 // - remove-from-network
 // All of these functions are called by Iotronic via RPC.
 exports.manageNetworks = function (args) {
 
-    var spawn = require('child_process').spawn;
-
     switch (args[1]) {
 
         case 'add-to-network':
+            
             if (net_backend == 'iotronic') {
                 //INPUT PARAMETERS: args[0]: boardID args[1]:'add-to-network' args[2]:vlanID - args[3]:boardVlanIP - args[4]:vlanMask - args[5]:vlanName
                 var vlanID = args[2];
@@ -279,7 +426,6 @@ exports.manageNetworks = function (args) {
                 });
             } else {
 
-                //NEW-net
                 //INPUT PARAMETERS: args[0]: boardID args[1]:'add-to-network' args[2]:vlanID - args[3]:port
                 var vlanID = args[2];
                 var port = args[3]
@@ -342,7 +488,6 @@ exports.manageNetworks = function (args) {
 
             } else {
 
-                //NEW-net
                 //INPUT PARAMETERS: args[0]: boardID args[1]:'remove-from-network' args[2]:vlanID - args[3]:net_uuid
                 var vlanID = args[2];
                 var net_uuid = args[3];
@@ -365,5 +510,22 @@ exports.manageNetworks = function (args) {
 
 
     }
+
+};
+*/
+
+
+
+// This function exports all the functions in the module as WAMP remote procedure calls
+exports.exportNetworkCommands = function (session) {
+
+    session_wamp = session;
+    
+    //Register all the module functions as WAMP RPCs
+    session.register(boardCode + '.command.rpc.network.setSocatOnBoard', exports.setSocatOnBoard);
+    session.register(boardCode + '.command.rpc.network.addToNetwork', exports.addToNetwork);
+    session.register(boardCode + '.command.rpc.network.removeFromNetwork', exports.removeFromNetwork);
+
+    logger.info('[WAMP-EXPORTS] Network commands exported to the cloud!');
 
 };
