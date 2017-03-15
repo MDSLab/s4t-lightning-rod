@@ -76,7 +76,9 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		});
 
 		var wampIP = wampUrl.split("//")[1].split(":")[0];
-		logger.debug("[SYSTEM] - WAMP server IP: "+wampIP);
+		logger.info("[SYSTEM] - WAMP server IP: "+wampIP);
+
+		logger.info("[SYSTEM] - Node ID: "+boardCode);
 
 
 		//----------------------------------------------------------------------------------------
@@ -98,11 +100,12 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 			logger.info('[WAMP] - Connection to WAMP server '+ wampUrl + ' created successfully:');
 			logger.info('[WAMP] |--> Realm: '+ wampRealm);
 			logger.info('[WAMP] |--> Session ID: '+ session._id);
-			logger.debug('[WAMP] |--> Connection details:\n'+ JSON.stringify(details));
+			//logger.debug('[WAMP] |--> Connection details:\n'+ JSON.stringify(details));
 
 
 			// RPC registration of Board Management Commands
 			manageBoard.exportManagementCommands(session);
+			
 
 			var configFile = JSON.parse(fs.readFileSync(configFileName, 'utf8'));
 			var board_config = configFile.config["board"];
@@ -120,8 +123,8 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 						logger.info("\n\nPROVISIONING "+boardCode+" RECEIVED: " + JSON.stringify(result) + "\n\n");
 
-						board_position = result[0];
-						board_config["position"]=result[0];
+						board_position = result.message[0];
+						board_config["position"]=result.message[0];
 						board_config["status"]="registered";
 
 						logger.info("\n[CONFIGURATION] - BOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]));
@@ -167,12 +170,12 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 				var connectionTester = require('connection-tester');
 				connectionTester.test(wampIP, 8888, 1000, function (err, output) {
 
-					//logger.debug("[WAMP-STATUS] - CONNECTION STATUS: "+JSON.stringify(output));
+					//logger.debug("[WAMP] - CONNECTION STATUS: "+JSON.stringify(output));
 
 					var reachable = output.success;
 					var error_test = output.error;
 
-					//logger.debug("[WAMP-STATUS] - CONNECTION STATUS: "+reachable);
+					//logger.debug("[WAMP] - CONNECTION STATUS: "+reachable);
 
 					if(!reachable){
 
@@ -326,7 +329,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 			}, 10 * 1000);
 
-			logger.info('[WAMP] - TIMER to keep alive WAMP connection set up!');
+			logger.debug('[WAMP] - TIMER to keep alive WAMP connection set up!');
 
 			//----------------------------------------------------------------------------------------------------
 
@@ -343,7 +346,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 				wamp_check = true;  // IMPORTANT: for ethernet connections this flag avoid to start recovery procedure (tcpkill will not start!)
 
-				logger.error('[WAMP-STATUS] - Error in connecting to WAMP server!');
+				logger.error('[WAMP] - Error in connecting to WAMP server!');
 				logger.error('- Reason: ' + reason);
 				logger.error('- Reconnection Details: ');
 				logger.error("  - retry_delay:", details.retry_delay);
@@ -351,15 +354,15 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 				logger.error("  - will_retry:", details.will_retry);
 
 				if(wampConnection.isOpen){
-					logger.info("[WAMP-STATUS] - connection is open!");
+					logger.info("[WAMP] - connection is open!");
 				}
 				else{
-					logger.warn("[WAMP-STATUS] - connection is closed!");
+					logger.warn("[WAMP] - connection is closed!");
 				}
 
 			}
 			catch(err){
-				logger.warn('[WAMP-STATUS] - Error in WAMP connection: '+ err);
+				logger.warn('[WAMP] - Error in WAMP connection: '+ err);
 			}
 
 

@@ -58,7 +58,7 @@ process.once('message', function (message) {
     var socatServer_ip = message.socatServer_ip;
     net_backend = message.net_backend;
 
-    logger.info("[NETWORK] - NetWRAPPER loaded!");
+    logger.debug("[NETWORK] - NetWRAPPER loaded!");
     logger.info("[NETWORK] - SOCAT starting...");
 
     //var socatProcess = spawn('socat', ['-d','-d','TCP-L:'+ basePort +',bind=localhost,reuseaddr,forever,interval=10','TUN:'+socatBoard_ip+'/31,tun-name=socat0,tun-type=tap,up'])
