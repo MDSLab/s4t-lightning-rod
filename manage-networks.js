@@ -101,7 +101,16 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
     if (socat_pid != null) {
 
         logger.warn("[NETWORK] ... Socat cleaning PID [" + socat_pid + "]");
-        process.kill(socat_pid);
+
+        try{
+
+            process.kill(socat_pid);
+
+        }catch (e) {
+
+            logger.error('[NETWORK] ... Socat cleaning error: ', e);
+
+        }
 
     } else {
 
@@ -124,7 +133,15 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
     if (wstt_pid != null) {
 
         logger.warn("[NETWORK] ... WSTT cleaning PID [" + wstt_pid + "]");
-        process.kill(wstt_pid)
+        try{
+
+            process.kill(wstt_pid)
+
+        }catch (e) {
+
+            logger.error('[NETWORK] ... WSTT cleaning error: ', e);
+
+        }
 
     } else {
         var wstt_pid_conf = nconf.get('config:reverse:pid');
@@ -210,10 +227,10 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 };
 
 
-// This function adds a node to a VNET
+// This function adds a board to a VNET
 exports.addToNetwork = function (args) {
 
-    logger.info("[NETWORK] - Add node to VNET...");
+    logger.info("[NETWORK] - Add board to VNET...");
 
     if (net_backend == 'iotronic') {
         //INPUT PARAMETERS: args[0]: boardID - args[1]:vlanID - args[2]:boardVlanIP - args[3]:vlanMask - args[4]:vlanName
@@ -312,10 +329,10 @@ exports.addToNetwork = function (args) {
 };
 
 
-// This function adds a node to a VNET
+// This function adds a board to a VNET
 exports.removeFromNetwork = function (args) {
 
-    logger.info("[NETWORK] - Remove node from VNET...");
+    logger.info("[NETWORK] - Remove board from VNET...");
 
     if (net_backend == 'iotronic') {
 

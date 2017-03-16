@@ -239,7 +239,7 @@ exports.checkSettings = function (callback) {
 //This function contains the logic that has to be performed if I'm connected to the WAMP server
 exports.manage_WAMP_connection = function (session, details) {
 
-    logger.info('[CONFIGURATION] - Registered node configuration starting...');
+    logger.info('[CONFIGURATION] - Registered board configuration starting...');
     
     //EXPORTING NETWORK COMMANDS 
     var manageNetworks = require('./manage-networks');
@@ -310,7 +310,7 @@ exports.setBoardPosition = function (args) {
 
 };
 
-// This function manages the wrong/unregistered status of the node
+// This function manages the wrong/unregistered status of the board
 exports.checkRegistrationStatus = function(args){
 
     var response = args[0];

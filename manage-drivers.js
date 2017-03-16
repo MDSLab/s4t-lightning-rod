@@ -1322,7 +1322,7 @@ function manageDriversConf(operation, driver_name, autostart, status, remote, mi
 		      
 			case 'remove':
 		    
-				logger.debug("[DRIVER] - "+driver_name+" --> Removing driver node from drivers.json...");
+				logger.debug("[DRIVER] - "+driver_name+" --> Removing driver board from drivers.json...");
 		      
 		      	if(driversConf["drivers"].hasOwnProperty(driver_name)){
 	      
@@ -1338,7 +1338,7 @@ function manageDriversConf(operation, driver_name, autostart, status, remote, mi
 								callback(mng_result);
 
 							} else {
-								mng_result.message = "Driver node successfully removed from drivers.json!";
+								mng_result.message = "Driver board successfully removed from drivers.json!";
 								mng_result.result = "SUCCESS";
 								logger.debug("[DRIVER] - "+driver_name+" --> " + mng_result.message );
 								callback(mng_result);

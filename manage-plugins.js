@@ -873,7 +873,7 @@ exports.removePlugin = function(args){
 	
 	  		pluginsConf.plugins[plugin_name]=null;
 	  		delete pluginsConf.plugins[plugin_name];
-	  		logger.debug("[PLUGIN] --> Plugin node successfully removed from plugins.json!" );
+	  		logger.debug("[PLUGIN] --> Plugin board successfully removed from plugins.json!" );
 	  
 	  		fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
 
