@@ -6,13 +6,14 @@
   "scripts": {
     "test": "node lightning-rod.js",
     "copy:package.dist.json": "cp package.dist.json dist/package.json",
-    "build:index.js": "noderify -f nconf -f log4js -f ideino-linino-lib lightning-rod.js > dist/index.js",
+    "build:index.js": "noderify -f nconf -f log4js -f fuse-bindings -f ideino-linino-lib lightning-rod.js > dist/index.js",
     "build": "npm run clean && mkdir -p dist && npm run build:index.js && npm run copy:package.dist.json",
     "clean": "rimraf dist"
   },
   "dependencies": {
     "autobahn": ">=0.9.6",
     "connection-tester": ">=0.1.0",
+    "fuse-bindings": "^2.11.0",
     "is-running": ">=2.0.0",
     "log4js": ">=0.6.33",
     "nconf": ">=0.7.1",

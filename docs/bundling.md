@@ -17,6 +17,7 @@ However, some npm packages cannot be bundled (see the `build:index.js` script in
 
 - `log4js` - loads appenders from a filesystem
 - `nconf` - loads stores from a filesystem 
+- `fuse-bindings` - contains binary objects
 - `ideino-linino-lib` - Arduino Yun specific - not needed on other boards
 - `node-reverse-wstunnel` - is used by LR as a program, not as a CommonJS module.
 
