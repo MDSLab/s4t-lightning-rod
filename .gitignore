@@ -3,3 +3,8 @@ node_modules
 settings.json
 .idea
 dist
+*.log
+
+drivers.json
+plugins.json
+settings.json
