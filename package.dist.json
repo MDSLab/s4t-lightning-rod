@@ -8,6 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "fuse-bindings": "^2.11.0",
     "log4js": ">=0.6.33",
     "nconf": ">=0.7.1",
     "node-reverse-wstunnel": ">=0.1.2"
