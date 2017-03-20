@@ -324,11 +324,80 @@ exports.checkRegistrationStatus = function(args){
 };
 
 
+var exec = require('child_process').exec;
+var Q = require("q");
+
+// Reboot LR
+exports.execAction = function(args){
+
+    var d = Q.defer();
+
+    var action = args[0];
+    var params = args[1];
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    switch (action) {
+
+        case 'reboot':
+
+            exec('reboot', function(error, stdout, stderr){
+
+                if(error) {
+                    logger.error('[SYSTEM] - Reboot result: ' + error);
+                    response.message = error;
+                    response.result = "ERROR";
+                    d.resolve(response);
+                }
+                else if (stderr){
+                    if (stderr == "")
+                        stderr = "rebooting...";
+
+                    logger.info('[SYSTEM] - Reboot result: ' + stderr);
+                    response.message = stderr;
+                    response.result = "WARNING";
+                    d.resolve(response);
+                }
+                else{
+                    logger.info('[SYSTEM] - Reboot result: ' + stdout);
+                    response.message = stdout;
+                    response.result = "SUCCESS";
+                    d.resolve(response);
+                }
+
+
+            });
+            break;
+
+        default:
+            
+            response.message = "Board operation '" + action + "' not supported!";
+            response.result = 'ERROR';
+            logger.error("[SYSTEM] - " + response.message);
+            d.resolve(JSON.stringify(response));
+
+            break;
+
+    }
+
+
+
+
+    return d.promise;
+
+
+};
+
+
 exports.exportManagementCommands = function (session) {
 
     //Register all the module functions as WAMP RPCs
     logger.info('[WAMP-EXPORTS] Management commands exported to the cloud!');
     session.register(boardCode + '.command.setBoardPosition', exports.setBoardPosition);
     session.register(boardCode + '.command.checkRegistrationStatus', exports.checkRegistrationStatus);
+    session.register(boardCode + '.command.execAction', exports.execAction);
     
 };

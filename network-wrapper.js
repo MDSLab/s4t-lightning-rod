@@ -23,6 +23,10 @@ var socat_pid = null;
 var logger = log4js.getLogger('network-wrapper');
 logger.setLevel(loglevel);
 
+
+//var manageNetworks = require('./manage-networks');//TO RESTORE
+//configFileName = './settings.json'; //TO RESTORE
+
 // We need to redefine the logging configuration because it is another spwaned process.
 try {
 
@@ -51,12 +55,22 @@ process.once('message', function (message) {
          "bSocatNum": bSocatNum,
          "socatClient": socatClient
      }
+
+     var socatServer_ip = args[0];
+     var socatServer_port = args[1];
+     var socatBoard_ip = args[2];
+     var net_backend = args[3];
+
+
      */
 
     var basePort = message.basePort;
     var socatBoard_ip = message.socatBoard_ip;
     var socatServer_ip = message.socatServer_ip;
     net_backend = message.net_backend;
+
+    //var socatServer_port = message.socatServer_port; //TO RESTORE
+    //var boardCode = message.boardCode; //TO RESTORE
 
     logger.debug("[NETWORK] - NetWRAPPER loaded!");
     logger.info("[NETWORK] - SOCAT starting...");
@@ -142,6 +156,9 @@ process.once('message', function (message) {
     socatProcess.on('close', function (code) {
         //in case of disconnection, delete all interfaces
         logger.info('[NETWORK] --> SOCAT - process exited with code ' + code);
+
+        //logger.warn(boardCode+" needs to be restored!");
+        //manageNetworks.setSocatOnBoard([socatServer_ip, socatServer_port, socatBoard_ip, net_backend, boardCode, true] );  //TO RESTORE
 
     });
 

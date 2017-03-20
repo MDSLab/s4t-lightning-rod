@@ -41,10 +41,16 @@ function update_net_conf(configFile, section) {
 
 
 // This function starts the creation of the SOCAT tunnel
-exports.setSocatOnBoard = function (args, details) {
+exports.setSocatOnBoard = function (args) {
 
     logger.info("[NETWORK] - Network manager loaded!");
 
+
+    if(args[5] != undefined){
+        logger.warn(args[4] + " RESTORING...." +args[5])
+        boardCode = args[4];
+    }
+    
     var d = Q.defer();
 
     var response = {
@@ -52,9 +58,9 @@ exports.setSocatOnBoard = function (args, details) {
         result: ''
     };
 
-    var socatServer_ip = args[0];
-    var socatServer_port = args[1];
-    var socatBoard_ip = args[2];
+    socatServer_ip = args[0];
+    socatServer_port = args[1];
+    socatBoard_ip = args[2];
     //var net_backend = args[3];
     net_backend = args[3];
     var socatRes = "Server:" + socatServer_ip + ":" + socatServer_port + " - Node: " + socatBoard_ip;
@@ -166,7 +172,9 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
         "socatBoard_ip": socatBoard_ip,
         "basePort": basePort,
         "socatServer_ip": socatServer_ip,
-        "net_backend": net_backend
+        "net_backend": net_backend,
+        //"socatServer_port":socatServer_port, //TO RESTORE
+        //"boardCode": boardCode //TO RESTORE
     };
 
     socat.send(input_message);
