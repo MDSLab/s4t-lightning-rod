@@ -21,6 +21,7 @@ mkdir /opt/stack4things/ && cd /opt/stack4things/
 wget https://github.com/MDSLab/s4t-lightning-rod/archive/api.zip --no-check-certificate
 unzip api.zip && rm -f api.zip
 mv s4t-lightning-rod-api lightning-rod
+mkdir /opt/stack4things/drivers
 cd lightning-rod && mkdir plugins && mkdir plugin_conf && mkdir drivers
 cp /opt/stack4things/lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/s4t-lightning-rod
 chmod +x /etc/init.d/s4t-lightning-rod
