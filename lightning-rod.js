@@ -373,6 +373,12 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		//--------------------------------------------------------------
 		switch(device){
 
+			case 'android':
+				logger.info("[SYSTEM] - L-R Android starting...");
+				var yun = require('./device/android');
+				yun.Main(wampConnection, logger);
+				break;
+
 			case 'arduino_yun':
 				logger.info("[SYSTEM] - L-R Arduino Yun starting...");
 				var yun = require('./device/arduino_yun');
