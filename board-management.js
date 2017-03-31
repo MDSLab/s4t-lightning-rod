@@ -69,8 +69,7 @@ exports.Init_Ligthning_Rod = function (callback){
 
 		if (logfile === "undefined" || logfile == ""){
 			// DEFAULT LOGGING CONFIGURATION LOADING
-			logfile = './s4t-lightning-rod.log';
-			log4js.addAppender(log4js.appenders.file(logfile));
+			// logger will output to /dev/stdout by default
 			logger = log4js.getLogger('main');		//service logging configuration: "main"
 			
 			LogoLR();
@@ -79,7 +78,9 @@ exports.Init_Ligthning_Rod = function (callback){
 
 		}else {
 
-			log4js.addAppender(log4js.appenders.file(logfile));
+            if (logfile !== "/dev/stdout") {
+                log4js.addAppender(log4js.appenders.file(logfile));
+            }
 			logger = log4js.getLogger('main');		//service logging configuration: "main"
 
 			LogoLR();
@@ -115,8 +116,7 @@ exports.Init_Ligthning_Rod = function (callback){
 	}
 	catch(err){
 		// DEFAULT LOGGING
-		logfile = './s4t-lightning-rod.log';
-		log4js.addAppender(log4js.appenders.file(logfile));
+        // logger will output to /dev/stdout by default
 		logger = log4js.getLogger('main');		//service logging configuration: "main"
 		LogoLR();
 		logger.error('[SYSTEM] - Logger configuration error: '+ err);
@@ -229,10 +229,7 @@ exports.checkSettings = function (callback){
     catch(err){
 		// DEFAULT LOGGING
 		log4js = require('log4js');
-		log4js.loadAppender('file');
-		logfile = './s4t-lightning-rod.log';
-		log4js.addAppender(log4js.appenders.file(logfile));
-
+        // logger will output to /dev/stdout by default
 		//service logging configuration: "main"
 		logger = log4js.getLogger('main');
 
