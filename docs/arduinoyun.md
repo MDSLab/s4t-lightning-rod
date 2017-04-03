@@ -4,20 +4,13 @@
 
 ```
 opkg update
-opkg install unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib node-fuse-bindings -d mnt
+opkg install unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs -d mnt
 ```
 
 ####Install necessary node.js modules via npm:
 
 ```
-npm install -g requestify is-running connection-tester log4js q
-```
-
-####Configure npm NODE_PATH variable
-```
-echo "export NODE_PATH=/usr/lib/node_modules" | tee -a /etc/profile
-source /etc/profile > /dev/null
-echo $NODE_PATH
+npm install -g requestify is-running connection-tester log4js q fs-access util
 ```
 
 
@@ -28,6 +21,7 @@ mkdir /opt/stack4things/ && cd /opt/stack4things/
 wget https://github.com/MDSLab/s4t-lightning-rod/archive/api.zip --no-check-certificate
 unzip api.zip && rm -f api.zip
 mv s4t-lightning-rod-api lightning-rod
+mkdir /opt/stack4things/drivers
 cd lightning-rod && mkdir plugins && mkdir plugin_conf && mkdir drivers
 cp /opt/stack4things/lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/s4t-lightning-rod
 chmod +x /etc/init.d/s4t-lightning-rod
