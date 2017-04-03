@@ -236,6 +236,15 @@ exports.checkSettings = function (callback) {
 
 };
 
+
+function onTopicConnection(args) {
+    var message = args[0];
+    if (message == 'Iotronic-connected')
+        logger.info("Message on board.connection: " + args[0])
+    
+
+}
+
 //This function contains the logic that has to be performed if I'm connected to the WAMP server
 exports.manage_WAMP_connection = function (session, details) {
 
@@ -245,16 +254,17 @@ exports.manage_WAMP_connection = function (session, details) {
     var manageNetworks = require('./manage-networks');
     manageNetworks.exportNetworkCommands(session);
 
+    
     //Topic on which the board can send a message to be registered 
     var connectionTopic = 'board.connection';
-
-    //Topic on which the board can listen for commands
-    var commandTopic = 'board.command';
-
+    session.subscribe(connectionTopic, onTopicConnection);
     //Registering the board to the Cloud by sending a message to the connection topic
     logger.info('[WAMP] - Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
     session.publish(connectionTopic, [boardCode, 'connection', session._id]);
 
+    
+    //Topic on which the board can listen for commands
+    var commandTopic = 'board.command';
     //Subscribing to the command topic to receive messages for asyncronous operation to be performed
     //Maybe everything can be implemented as RPCs
     //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
@@ -262,6 +272,7 @@ exports.manage_WAMP_connection = function (session, details) {
     var manageCommands = require('./manage-commands');
     session.subscribe(commandTopic, manageCommands.onCommand);
 
+    
     //If I'm connected to the WAMP server I can export my pins on the Cloud as RPCs
     var managePins = require('./manage-pins');
     managePins.exportPins(session);
