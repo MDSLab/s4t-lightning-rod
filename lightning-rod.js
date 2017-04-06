@@ -279,6 +279,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 												// Check if the tcpkill process was killed after a previous connection recovery
 												// Through this check we will avoid to start another tcpkill process
 												var tcpkill_status = running(tcpkill_pid);
+
 												logger.warn("[WAMP-ALIVE-STATUS] - TCPKILL STATUS: " + tcpkill_status + " - PID: " +tcpkill_pid);
 
 
@@ -290,6 +291,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 													//tcpkill -9 port 8181
 													var tcpkill = spawn('tcpkill',['-9','port','8181']);
+													tcpkill_pid = tcpkill.pid;
 
 													tcpkill.stdout.on('data', function (data) {
 														logger.debug('[WAMP-RECOVERY] ... tcpkill stdout: ' + data);
@@ -303,17 +305,30 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 														if(data.toString().indexOf("listening") > -1){
 
 															// LISTENING: to manage the starting of tcpkill (listening on port 8181)
-															logger.debug('[WAMP-RECOVERY] ... tcpkill listening...');
+															logger.debug('[WAMP-RECOVERY] ... tcpkill['+tcpkill_pid+'] listening...');
 
-															tcpkill_pid = tcpkill.pid;
-															logger.debug('[WAMP-RECOVERY] ... tcpkill -9 port 8181 - PID ['+tcpkill_pid+']');
+															//tcpkill_pid = tcpkill.pid;
+															//logger.debug('[WAMP-RECOVERY] ... tcpkill -9 port 8181 - PID ['+tcpkill_pid+']');
 
 														}else if (data.toString().indexOf("win 0") > -1){
 
 															// TCPKILL DETECTED WAMP ACTIVITY (WAMP reconnection attempts)
 															// This is the stage triggered when the WAMP socket was killed by tcpkill and WAMP reconnection process automaticcally started:
 															// in this phase we need to kill tcpkill to allow WAMP reconnection.
+															try{
+
+																logger.debug('[WAMP-RECOVERY] ... killing tcpkill process with PID: ' + tcpkill_pid);
+																process.kill(tcpkill_pid);
+
+
+															}catch (e) {
+
+																logger.error('[WAMP-RECOVERY] ... tcpkill killing error: ', e);
+
+															}
+															/*
 															tcpkill.kill('SIGINT');
+
 
 															//double check: It will test after a while if the tcpkill process has been killed
 															setTimeout(function(){
@@ -330,6 +345,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 																}
 
 															}, 3000);
+															*/
 
 														}
 
