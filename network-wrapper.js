@@ -72,72 +72,72 @@ process.once('message', function (message) {
     //var socatServer_port = message.socatServer_port; //TO RESTORE
     //var boardCode = message.boardCode; //TO RESTORE
 
-    logger.debug("[NETWORK] - NetWRAPPER loaded!");
-    logger.info("[NETWORK] - SOCAT starting...");
+    logger.debug("[VNET] - NetWRAPPER loaded!");
+    logger.info("[VNET] - SOCAT starting...");
 
     //var socatProcess = spawn('socat', ['-d','-d','TCP-L:'+ basePort +',bind=localhost,reuseaddr,forever,interval=10','TUN:'+socatBoard_ip+'/31,tun-name=socat0,tun-type=tap,up'])
     //logger.info('SOCAT COMMAND: socat -d -d TCP-L:'+ basePort +',bind=localhost,reuseaddr,forever,interval=10 TUN:'+socatBoard_ip+'/31,tun-name=socat0,tun-type=tap,up' );
     var socatProcess = spawn('socat', ['-d', '-d', 'TCP-L:' + basePort + ',bind=localhost,nodelay,reuseaddr,forever,interval=10', 'TUN:' + socatBoard_ip + '/31,tun-name=socat0,tun-type=tap,up'])
     //socat -d -d TCP-L:20000,bind=localhost,nodelay,reuseaddr,forever,interval=10 TUN:10.0.0.5/30,tun-name=socat0,tun-type=tap,iff-up &	  
 
-    logger.debug("[NETWORK] --> SOCAT PID: " + socatProcess.pid);
+    logger.debug("[VNET] --> SOCAT PID: " + socatProcess.pid);
 
     if (socatProcess.pid != undefined)
-        logger.debug("[NETWORK] --> SOCAT daemon succefully started!");
+        logger.debug("[VNET] --> SOCAT daemon succefully started!");
     
     socat_pid = socatProcess.pid;
 
 
     socatProcess.stdout.on('data', function (data) {
-        logger.debug('[NETWORK] --> SOCAT - stdout: ' + data);
+        logger.debug('[VNET] --> SOCAT - stdout: ' + data);
     });
 
     socatProcess.stderr.on('data', function (data) {
 
         var textdata = 'stderr: ' + data;
-        logger.debug("[NETWORK] --> SOCAT - " + textdata);
+        logger.debug("[VNET] --> SOCAT - " + textdata);
 
         if (textdata.indexOf("starting data transfer loop") > -1) {
 
-            logger.debug('[NETWORK] --> WSTT configuration completed!');
+            logger.debug('[VNET] --> WSTT configuration completed!');
 
             //ip link set $TUNNAME up
             spawn('ifconfig', ['socat0', 'up']);
 
-            logger.debug('[NETWORK] --> NETWORK COMMAND: ifconfig socattun socat0 up');
-            logger.info('[NETWORK] --> SOCAT TUNNEL SUCCESSFULLY ESTABLISHED!');
+            logger.debug('[VNET] --> NETWORK COMMAND: ifconfig socattun socat0 up');
+            logger.info('[VNET] --> SOCAT TUNNEL SUCCESSFULLY ESTABLISHED!');
 
             if (net_backend == 'iotronic') {
 
                 // Shared GRE tunnel initialization
                 //ip link add gre-lr0 type gretap remote <serverip> local <boadip>
                 var greIface = spawn('ip', ['link', 'add', 'gre-lr0', 'type', 'gretap', 'remote', socatServer_ip, 'local', socatBoard_ip]);
-                logger.debug('[NETWORK] --> GRE IFACE CREATION: ip link add gre-lr0 type gretap remote ' + socatServer_ip + ' local ' + socatBoard_ip);
+                logger.debug('[VNET] --> GRE IFACE CREATION: ip link add gre-lr0 type gretap remote ' + socatServer_ip + ' local ' + socatBoard_ip);
 
                 greIface.stdout.on('data', function (data) {
-                    logger.debug('[NETWORK] ----> GRE IFACE CREATION stdout: ' + data);
+                    logger.debug('[VNET] ----> GRE IFACE CREATION stdout: ' + data);
                 });
                 greIface.stderr.on('data', function (data) {
-                    logger.debug('[NETWORK] ----> GRE IFACE CREATION stderr: ' + data);
+                    logger.debug('[VNET] ----> GRE IFACE CREATION stderr: ' + data);
                 });
                 greIface.on('close', function (code) {
 
-                    logger.debug("[NETWORK] --> GRE IFACE CREATED!");
+                    logger.debug("[VNET] --> GRE IFACE CREATED!");
 
                     //ip link set gre-lr0 up
                     var greIface_up = spawn('ip', ['link', 'set', 'gre-lr0', 'up']);
-                    logger.debug('[NETWORK] --> GRE IFACE UP COMMAND: ip link set gre-lr0 up');
+                    logger.debug('[VNET] --> GRE IFACE UP COMMAND: ip link set gre-lr0 up');
 
                     greIface_up.stdout.on('data', function (data) {
-                        logger.debug('[NETWORK] ----> GRE IFACE UP stdout: ' + data);
+                        logger.debug('[VNET] ----> GRE IFACE UP stdout: ' + data);
                     });
                     greIface_up.stderr.on('data', function (data) {
-                        logger.debug('[NETWORK] ----> GRE IFACE UP stderr: ' + data);
+                        logger.debug('[VNET] ----> GRE IFACE UP stderr: ' + data);
                     });
                     greIface_up.on('close', function (code) {
 
-                        logger.debug("[NETWORK] --> GRE IFACE UP!");
-                        logger.info('[NETWORK] --> GRE tunnel info: server ip = ' + socatServer_ip + ' - local ip = ' + socatBoard_ip);
+                        logger.debug("[VNET] --> GRE IFACE UP!");
+                        logger.info('[VNET] --> GRE tunnel info: server ip = ' + socatServer_ip + ' - local ip = ' + socatBoard_ip);
 
                         //SEND MESSAGE TO IOTRONIC
                         process.send({name: "socat", status: "complete", logmsg: "tunnels configured", pid: socat_pid});
@@ -155,7 +155,7 @@ process.once('message', function (message) {
 
     socatProcess.on('close', function (code) {
         //in case of disconnection, delete all interfaces
-        logger.info('[NETWORK] --> SOCAT - process exited with code ' + code);
+        logger.info('[VNET] --> SOCAT - process exited with code ' + code);
 
         //logger.warn(boardCode+" needs to be restored!");
         //manageNetworks.setSocatOnBoard([socatServer_ip, socatServer_port, socatBoard_ip, net_backend, boardCode, true] );  //TO RESTORE

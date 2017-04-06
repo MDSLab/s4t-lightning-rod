@@ -31,9 +31,9 @@ function update_net_conf(configFile, section) {
     //Updates the settings.json file
     fs.writeFile(configFileName, JSON.stringify(configFile, null, 4), function (err) {
         if (err) {
-            logger.error('[NETWORK] --> Error writing settings.json file in ' + section + ' : ' + err);
+            logger.error('[VNET] --> Error writing settings.json file in ' + section + ' : ' + err);
         } else {
-            logger.debug("[NETWORK] --> Section " + section + " in settings.json file updated.");
+            logger.debug("[VNET] --> Section " + section + " in settings.json file updated.");
         }
     });
 }
@@ -43,7 +43,7 @@ function update_net_conf(configFile, section) {
 // This function starts the creation of the SOCAT tunnel
 exports.setSocatOnBoard = function (args) {
 
-    logger.info("[NETWORK] - Network manager loaded!");
+    logger.info("[VNET] - Network manager loaded!");
 
 
     if(args[5] != undefined){
@@ -68,8 +68,8 @@ exports.setSocatOnBoard = function (args) {
     response.result = "SUCCESS";
     response.message = boardCode + " ("+socatRes+")";
 
-    logger.info("[NETWORK] - Socat parameters received: " + socatRes);
-    logger.info("[NETWORK] - Network backend used: " + net_backend);
+    logger.info("[VNET] - Socat parameters received: " + socatRes);
+    logger.info("[VNET] - Network backend used: " + net_backend);
 
     exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip, net_backend);
 
@@ -86,7 +86,7 @@ exports.setSocatOnBoard = function (args) {
 // 3. On tunnels completion it will advise Iotronic; later Iotronic will add this device to its VLANs.
 exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip, net_backend) {
 
-    logger.info("[NETWORK] - Network initialization...");
+    logger.info("[VNET] - Network initialization...");
 
     var spawn = require('child_process').spawn;
 
@@ -99,14 +99,14 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
     var wstt_config = configFile.config["reverse"];
 
 
-    logger.info("[NETWORK] - Boot status:");
+    logger.info("[VNET] - Boot status:");
 
     // Kill Socat and WSTT processes to clean network status after a network failure
-    logger.info("[NETWORK] --> Boot Socat PID: " + socat_pid);
+    logger.info("[VNET] --> Boot Socat PID: " + socat_pid);
 
     if (socat_pid != null) {
 
-        logger.warn("[NETWORK] ... Socat cleaning PID [" + socat_pid + "]");
+        logger.warn("[VNET] ... Socat cleaning PID [" + socat_pid + "]");
 
         try{
 
@@ -114,7 +114,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 
         }catch (e) {
 
-            logger.error('[NETWORK] ... Socat cleaning error: ', e);
+            logger.error('[VNET] ... Socat cleaning error: ', e);
 
         }
 
@@ -125,27 +125,27 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
         if (socat_pid_conf != "") {
 
             if (running(socat_pid_conf)) {
-                logger.warn("[NETWORK] ... Socat first cleaning PID [" + socat_pid_conf + "]");
+                logger.warn("[VNET] ... Socat first cleaning PID [" + socat_pid_conf + "]");
                 process.kill(socat_pid_conf);
             }else{
-                logger.debug("[NETWORK] ... Socat no cleaning needed!");
+                logger.debug("[VNET] ... Socat no cleaning needed!");
             }
 
         }
     }
 
-    logger.info("[NETWORK] --> Boot WSTT PID: " + wstt_pid);
+    logger.info("[VNET] --> Boot WSTT PID: " + wstt_pid);
 
     if (wstt_pid != null) {
 
-        logger.warn("[NETWORK] ... WSTT cleaning PID [" + wstt_pid + "]");
+        logger.warn("[VNET] ... WSTT cleaning PID [" + wstt_pid + "]");
         try{
 
             process.kill(wstt_pid)
 
         }catch (e) {
 
-            logger.error('[NETWORK] ... WSTT cleaning error: ', e);
+            logger.error('[VNET] ... WSTT cleaning error: ', e);
 
         }
 
@@ -155,10 +155,10 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
         if (wstt_pid_conf != "") {
 
             if (running(wstt_pid_conf)) {
-                logger.warn("[NETWORK] ... WSTT first cleaning PID [" + wstt_pid_conf + "]");
+                logger.warn("[VNET] ... WSTT first cleaning PID [" + wstt_pid_conf + "]");
                 process.kill(wstt_pid_conf)
             }else{
-                logger.debug("[NETWORK] ... WSTT no cleaning needed!");
+                logger.debug("[VNET] ... WSTT no cleaning needed!");
             }
 
         }
@@ -186,11 +186,11 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
             if (msg.status === "alive") {
 
                 // START WSTT ------------------------------------------------------------------------------------------------
-                logger.info("[NETWORK] - WSTT activating...");
+                logger.info("[VNET] - WSTT activating...");
 
-                logger.debug("[NETWOR] - WSTT - " + rtpath + ' -r ' + socatServer_port + ':localhost:' + basePort, reverseS_url);
+                logger.debug("[VNET] - WSTT - " + rtpath + ' -r ' + socatServer_port + ':localhost:' + basePort, reverseS_url);
                 var wstt_proc = spawn(rtpath, ['-r ' + socatServer_port + ':localhost:' + basePort, reverseS_url]);
-                //logger.debug("[NETWOR] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
+                //logger.debug("[VNET] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
 
                 // Save WSTT PID to clean network status after a network failure
                 wstt_pid = wstt_proc.pid;
@@ -198,19 +198,19 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
                 update_net_conf(configFile, "WSTT");
 
                 wstt_proc.stdout.on('data', function (data) {
-                    logger.debug('[NETWORK] - WSTT - stdout: ' + data);
+                    logger.debug('[VNET] - WSTT - stdout: ' + data);
                 });
                 wstt_proc.stderr.on('data', function (data) {
-                    logger.debug('[NETWORK] - WSTT - stderr: ' + data);
+                    logger.debug('[VNET] - WSTT - stderr: ' + data);
                 });
                 wstt_proc.on('close', function (code) {
-                    logger.warn('[NETWORK] - WSTT - process exited with code ' + code);
+                    logger.warn('[VNET] - WSTT - process exited with code ' + code);
                 });
                 //------------------------------------------------------------------------------------------------------------
 
             } else if (msg.status === "complete") {
 
-                logger.info('[NETWORK] - Sending notification to IOTRONIC: ' + msg.status + ' - ' + msg.logmsg + ' - PID: ' + msg.pid + ' - wstt pid: ' + wstt_pid);
+                logger.info('[VNET] - Sending notification to IOTRONIC: ' + msg.status + ' - ' + msg.logmsg + ' - PID: ' + msg.pid + ' - wstt pid: ' + wstt_pid);
 
                 // Save Socat PID to clean network status after a network failure
                 socat_pid = msg.pid;
@@ -219,8 +219,8 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 
                 session_wamp.call('iotronic.rpc.command.result_network_board', [msg.logmsg, boardCode]).then(
                     function (response) {
-                        logger.info('[NETWORK] --> response from IOTRONIC: \n' + response.message);
-                        logger.info('[NETWORK] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
+                        logger.info('[VNET] --> response from IOTRONIC: \n' + response.message);
+                        logger.info('[VNET] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
                     }
                 );
 
@@ -238,7 +238,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 // This function adds a board to a VNET
 exports.addToNetwork = function (args) {
 
-    logger.info("[NETWORK] - Add board to VNET...");
+    logger.info("[VNET] - Add board to VNET...");
 
     if (net_backend == 'iotronic') {
         //INPUT PARAMETERS: args[0]: boardID - args[1]:vlanID - args[2]:boardVlanIP - args[3]:vlanMask - args[4]:vlanName
@@ -249,47 +249,47 @@ exports.addToNetwork = function (args) {
         var vlanMask = args[3];
         var vlanName = args[4];
 
-        logger.info("[NETWORK] - ADDING BOARD TO VLAN " + vlanName + "...");
+        logger.info("[VNET] - ADDING BOARD TO VLAN " + vlanName + "...");
 
         //ip link add link gre-lr0 name gre-lr0.<vlan> type vlan id <vlan>
         var add_vlan_iface = spawn('ip', ['link', 'add', 'link', 'gre-lr0', 'name', 'gre-lr0.' + vlanID, 'type', 'vlan', 'id', vlanID]);
-        logger.debug('[NETWORK] --> NETWORK COMMAND: ip link add link gre-lr0 name gre-lr0.' + vlanID + ' type vlan id ' + vlanID);
+        logger.debug('[VNET] --> NETWORK COMMAND: ip link add link gre-lr0 name gre-lr0.' + vlanID + ' type vlan id ' + vlanID);
 
         add_vlan_iface.stdout.on('data', function (data) {
-            logger.debug('[NETWORK] ----> stdout - add_vlan_iface: ' + data);
+            logger.debug('[VNET] ----> stdout - add_vlan_iface: ' + data);
         });
         add_vlan_iface.stderr.on('data', function (data) {
-            logger.debug('[NETWORK] ----> stderr - add_vlan_iface: ' + data);
+            logger.debug('[VNET] ----> stderr - add_vlan_iface: ' + data);
         });
 
         add_vlan_iface.on('close', function (code) {
 
             //ip addr add <ip/mask> dev gre-lr0.<vlan>
             var add_vlan_ip = spawn('ip', ['addr', 'add', boardVlanIP + '/' + vlanMask, 'dev', 'gre-lr0.' + vlanID]);
-            logger.debug('[NETWORK] --> NETWORK COMMAND: ip addr add ' + boardVlanIP + '/' + vlanMask + ' dev gre-lr0.' + vlanID);
+            logger.debug('[VNET] --> NETWORK COMMAND: ip addr add ' + boardVlanIP + '/' + vlanMask + ' dev gre-lr0.' + vlanID);
 
             add_vlan_ip.stdout.on('data', function (data) {
-                logger.debug('[NETWORK] ----> stdout - add_vlan_ip: ' + data);
+                logger.debug('[VNET] ----> stdout - add_vlan_ip: ' + data);
             });
             add_vlan_ip.stderr.on('data', function (data) {
-                logger.debug('[NETWORK] ----> stderr - add_vlan_ip: ' + data);
+                logger.debug('[VNET] ----> stderr - add_vlan_ip: ' + data);
             });
 
             add_vlan_ip.on('close', function (code) {
 
                 //ip link set gre-lr0.<vlan> up
                 var greVlan_up = spawn('ip', ['link', 'set', 'gre-lr0.' + vlanID, 'up']);
-                logger.debug('[NETWORK] --> GRE IFACE UP: ip link set gre-lr0.' + vlanID + ' up');
+                logger.debug('[VNET] --> GRE IFACE UP: ip link set gre-lr0.' + vlanID + ' up');
 
                 greVlan_up.stdout.on('data', function (data) {
-                    logger.debug('[NETWORK] ----> stdout - greVlan_up: ' + data);
+                    logger.debug('[VNET] ----> stdout - greVlan_up: ' + data);
                 });
                 greVlan_up.stderr.on('data', function (data) {
-                    logger.debug('[NETWORK] ----> stderr - greVlan_up: ' + data);
+                    logger.debug('[VNET] ----> stderr - greVlan_up: ' + data);
                 });
                 greVlan_up.on('close', function (code) {
-                    logger.debug('[NETWORK] --> VLAN IFACE gre-lr0.' + vlanID + ' is UP!');
-                    logger.info("[NETWORK] --> BOARD SUCCESSFULLY ADDED TO VLAN " + vlanName + " with IP " + boardVlanIP);
+                    logger.debug('[VNET] --> VLAN IFACE gre-lr0.' + vlanID + ' is UP!');
+                    logger.info("[VNET] --> BOARD SUCCESSFULLY ADDED TO VLAN " + vlanName + " with IP " + boardVlanIP);
                 });
 
             });
@@ -340,7 +340,7 @@ exports.addToNetwork = function (args) {
 // This function adds a board to a VNET
 exports.removeFromNetwork = function (args) {
 
-    logger.info("[NETWORK] - Remove board from VNET...");
+    logger.info("[VNET] - Remove board from VNET...");
 
     if (net_backend == 'iotronic') {
 
@@ -349,21 +349,21 @@ exports.removeFromNetwork = function (args) {
         var vlanID = args[1];
         var vlanName = args[2];
 
-        logger.info("[NETWORK] - REMOVING BOARD FROM VLAN " + vlanName + "...");
+        logger.info("[VNET] - REMOVING BOARD FROM VLAN " + vlanName + "...");
 
         //ip link del gre-lr0.<vlan>
         var del_greVlan = spawn('ip', ['link', 'del', 'gre-lr0.' + vlanID]);
-        logger.debug('[NETWORK] --> DEL GRE IFACE: ip link del gre-lr0.' + vlanID);
+        logger.debug('[VNET] --> DEL GRE IFACE: ip link del gre-lr0.' + vlanID);
 
         del_greVlan.stdout.on('data', function (data) {
-            logger.info('[NETWORK] ----> stdout - del_greVlan: ' + data);
+            logger.info('[VNET] ----> stdout - del_greVlan: ' + data);
         });
         del_greVlan.stderr.on('data', function (data) {
-            logger.info('[NETWORK] ----> stderr - del_greVlan: ' + data);
+            logger.info('[VNET] ----> stderr - del_greVlan: ' + data);
         });
         del_greVlan.on('close', function (code) {
-            logger.info("[NETWORK] --> VLAN IFACE gre-lr0." + vlanID + " DELETED!");
-            logger.info("[NETWORK] --> BOARD SUCCESSFULLY REMOVED FROM VLAN " + vlanName);
+            logger.info("[VNET] --> VLAN IFACE gre-lr0." + vlanID + " DELETED!");
+            logger.info("[VNET] --> BOARD SUCCESSFULLY REMOVED FROM VLAN " + vlanName);
         });
         
 
