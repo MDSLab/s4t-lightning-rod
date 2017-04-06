@@ -174,6 +174,16 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 									}
 								});
 
+								//Create a backup file of settings.json
+								fs.writeFile(configFileName + ".BKP", JSON.stringify(configFile, null, 4), function(err) {
+									if(err) {
+										logger.error('Error writing settings.json.BKP file: ' + err);
+
+									} else {
+										logger.info("settings.json.BKP configuration file saved to " + configFileName + ".BKP");
+									}
+								});
+
 
 							}, session.log);
 
