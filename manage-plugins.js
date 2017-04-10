@@ -512,7 +512,7 @@ exports.run = function (args){
     catch(err){
 		response.result = "ERROR";
 		response.message = 'Error parsing plugins.json!';
-        logger.error('[PLUGIN] - "'+plugin_name + '" plugin execution error: '+response.message);
+        logger.error('[PLUGIN] - '+plugin_name + ' plugin execution error: '+response.message);
 		d.resolve(response);
     }
     
@@ -572,7 +572,7 @@ exports.run = function (args){
 
 									response.result = "ERROR";
 									response.message = 'Error parsing plugins.json configuration file: ' + err;
-									logger.error('[PLUGIN] - "'+plugin_name + '" - '+response.message);
+									logger.error('[PLUGIN] - '+plugin_name + ' - '+response.message);
 
 									d.resolve(response);
 
@@ -778,6 +778,7 @@ exports.injectPlugin = function(args){
     
     // Writing the file
     var fileName = './plugins/' + plugin_name + '.js';
+
     fs.writeFile(fileName, plugin_code, function(err) {
       
         if(err) {
