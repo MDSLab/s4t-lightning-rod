@@ -1,20 +1,24 @@
 {
   "name": "s4t-lightning-rod",
-  "version": "0.1.0",
-  "description": "Implementation of the Lightning-rod, the Stack4Things node-side probe (this version works with the standalone version of IoTronic) http://stack4things.unime.it/",
+  "version": "0.1.1",
+  "description": "Implementation of the Lightning-rod, the Stack4Things board-side probe (this version works with the standalone version of IoTronic) http://stack4things.unime.it/",
   "main": "lightning-rod.js",
   "scripts": {
     "test": "node lightning-rod.js"
   },
   "dependencies":{
     "node-reverse-wstunnel": ">=0.1.2",
-    "autobahn": ">=0.9.6",
-    "nconf":">=0.7.1",
+    "autobahn": ">=0.9.9",
+    "nconf":">=0.8.4",
     "requestify":">=0.1.17",
     "is-running":">=2.0.0",
-    "connection-tester":">=0.1.0",
-    "log4js":">=0.6.33",
-    "q":">=0.9.7"
+    "connection-tester":">=0.1.1",
+    "log4js":">=0.6.37",
+    "q":">=0.9.7",
+    "fs-access":">=1.0.1",
+    "mknod":">=1.1.0",
+    "statvfs":"<=2.1.0",
+    "fuse-bindings":">=2.8.1"
   },
   "repository": {
     "type": "git",
@@ -24,7 +28,9 @@
     "IoT",
     "WAMP",
     "Cloud",
-    "WebSocket"
+    "WebSocket",
+    "stack4things",
+    "s4t"
   ],
   "author": "Nicola Peditto <npeditto@unime.it>",
   "contributors": [

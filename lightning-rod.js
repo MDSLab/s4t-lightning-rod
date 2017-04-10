@@ -437,26 +437,26 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 				switch(device){
 
 					case 'arduino_yun':
-						logger.info("[SYSTEM] - L-R Arduino Yun starting...");
+						logger.info("[SYSTEM] - Lightning-rod Arduino Yun starting...");
 						var yun = require('./device/arduino_yun');
 						yun.Main(wampConnection, logger);
 						break;
 
-					case 'laptop':
-						logger.info("[SYSTEM] - L-R laptop starting...");
-						var laptop = require('./device/laptop');
-						laptop.Main(wampConnection, logger);
+					case 'server':
+						logger.info("[SYSTEM] - Lightning-rod server starting...");
+						var server = require('./device/server');
+						server.Main(wampConnection, logger);
 						break;
 
 					case 'raspberry_pi':
-						logger.info("[SYSTEM] - L-R Raspberry Pi starting...");
+						logger.info("[SYSTEM] - Lightning-rod Raspberry Pi starting...");
 						var raspberry_pi = require('./device/raspberry_pi');
 						raspberry_pi.Main(wampConnection, logger);
 						break;
 
 					default:
 						logger.warn('[SYSTEM] - Device "' + device + '" not supported!');
-						logger.warn('[SYSTEM] - Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
+						logger.warn('[SYSTEM] - Supported devices are: "server", "arduino_yun", "raspberry_pi".');
 						process.exit();
 						break;
 
