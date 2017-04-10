@@ -1,7 +1,7 @@
 exports.Main = function (wampConnection, logger){
 
     // CONNECTION TO WAMP SERVER --------------------------------------------------------------------------
-    logger.info('[WAMP-STATUS] - Opening connection to WAMP server...');
+    logger.info('[WAMP] - Opening connection to WAMP server...');
     wampConnection.open();
     //-----------------------------------------------------------------------------------------------------
 
@@ -11,4 +11,4 @@ exports.Main = function (wampConnection, logger){
     managePlugins.pluginsLoader();
     //-----------------------------------------------------------------------------------------------------
 
-}
+};
