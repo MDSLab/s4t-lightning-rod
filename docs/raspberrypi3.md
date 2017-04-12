@@ -38,7 +38,7 @@ npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ####Configure npm NODE_PATH variable
 
 ```
-echo "NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a 
+echo "NODE_PATH=/usr/lib/node_modules" | sudo tee -a
 source /etc/profile > /dev/null
 echo $NODE_PATH
 ```
@@ -46,29 +46,31 @@ echo $NODE_PATH
 ####Install the Lightning-rod:
 
 ```
-# mkdir /opt/stack4things/ && cd /opt/stack4things/
-# wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
-# unzip master.zip && rm -f master.zip
-# mv s4t-lightning-rod-master lightning-rod
-# cd lightning-rod && mkdir plugins && mkdir plugin_conf && mkdir drivers
-# cp /opt/stack4things/lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/s4t-lightning-rod.service
-# chmod +x /etc/systemd/system/s4t-lightning-rod.service
-# systemctl daemon-reload
-# systemctl enable s4t-lightning-rod.service
-# touch /var/log/s4t-lightning-rod.log
+mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
+wget https://github.com/MDSLab/s4t-lightning-rod/archive/api.zip --no-check-certificate
+unzip api.zip && rm -f api.zip
+mv s4t-lightning-rod-api lightning-rod
+mkdir plugins && mkdir mkdir drivers
+cp /var/lib/iotronic/lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+chmod +x /etc/systemd/system/lightning-rod.service
+systemctl daemon-reload
+systemctl enable lightning-rod.service
+touch /var/log/iotronic/lightning-rod.log
 ```
 
 ####Configure and start the Lightning-rod
 (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
-# cp /opt/stack4things/lightning-rod/plugins.example.json /opt/stack4things/lightning-rod/plugins.json
-# cp /opt/stack4things/lightning-rod/drivers.example.json /opt/stack4things/lightning-rod/drivers.json
-# cp /opt/stack4things/lightning-rod/settings.example.json /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"device\":.*\"\"/\"device\": \"raspberry_pi\"/g" /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
-# sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /opt/stack4things/lightning-rod/settings.json
-# systemctl start s4t-lightning-rod
+cp /var/lib/iotronic/lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+cp /var/lib/iotronic/lightning-rod/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+cp /var/lib/iotronic/lightning-rod/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+
+sed -i "s/\"device\":.*\"\"/\"device\": \"raspberry_pi\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
+
+systemctl start lightning-rod.service
 ```

@@ -9,7 +9,7 @@ exports.main = function (arguments){
     var m_authid = arguments.m_authid;
     var m_resourceid = arguments.m_resourceid;
     
-    var api = require('../plugin-apis');
+    var api = require('../modules/plugins-manager/plugin-apis');
     var position = api.getPosition();
     
     var linino = require('ideino-linino-lib');

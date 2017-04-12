@@ -4,7 +4,7 @@ Stack4Things is an Internet of Things framework developed by the Mobile and Dist
 
 More details about Stack4Things can be found [here](https://github.com/MDSLab/stack4things).
 
-Lighthing-rod is the node-side component in the Stack4Things architecture. In this repository, you find the version that works with the standalone version of the IoTronic service that you can find [**here**](https://github.com/MDSLab/s4t-iotronic-standalone).
+Lighthing-rod is the board-side component in the Stack4Things architecture. In this repository, you find the version that works with the standalone version of the IoTronic service that you can find [**here**](https://github.com/MDSLab/s4t-iotronic-standalone).
 
 Lightning-rod (in its standalone version) has been tested to work on:
 

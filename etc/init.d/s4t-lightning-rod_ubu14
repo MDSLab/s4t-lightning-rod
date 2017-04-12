@@ -3,10 +3,10 @@
 export NODE_PATH=/usr/local/lib/node_modules:$NODE_PATH
 
 NAME=lightning-rod
-FOLDER=/opt/stack4things/lightning-rod
-DAEMON=/opt/stack4things/lightning-rod/lr-laptop.js
+FOLDER=/usr/local/lib/node_modules/iotronic-lightning-rod
+DAEMON=/usr/local/lib/node_modules/iotronic-lightning-rod/lr-server.js
 DESC=lightning-rod
-LOGFILE="/var/log/s4t-lightning-rod.log"
+LOGFILE="/var/log/iotronic/lightning-rod.log"
 PIDFILE="/var/run/s4t-lightning-rod.pid"
 
 
@@ -26,7 +26,7 @@ case "$1" in
 		if [[ -z $MYPID ]];
 		then
 			start-stop-daemon --start -d $FOLDER --quiet --make-pidfile --pidfile $PIDFILE --exec $DAEMON >> /dev/null & # ${LOGFILE} &
-		
+
 		elif [[ -s $PIDFILE && `cat $PIDFILE` == $MYPID ]];
 		then
 			echo -e "Already started!"

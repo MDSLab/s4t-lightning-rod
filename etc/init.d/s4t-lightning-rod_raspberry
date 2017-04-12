@@ -5,12 +5,12 @@
 # Required-Stop:     $local_fs $network $named $time $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Description:       The\\\ IoTronic\\\ node-side\\\ probe
+# Description:       The\\\ IoTronic\\\ board-side\\\ probe
 ### END INIT INFO
 
-SCRIPT="node /opt/stack4things/lightning-rod/lightning-rod.js"
+SCRIPT="node /usr/lib/node_modules/iotronic-lightning-rod/lightning-rod.js"
 RUNAS=root
-NAME=s4t-lightning-rod
+NAME=lightning-rod
 
 PIDFILE=/var/run/$NAME.pid
 LOGFILE=/var/log/$NAME.log

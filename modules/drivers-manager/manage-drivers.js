@@ -32,9 +32,9 @@ mode_lookup_table = {
 };
 
 
-
-var drivers_json_file = './drivers.json';
-
+var DRIVERS_SETTING = '/var/lib/iotronic/drivers/drivers.json';
+var DRIVERS_STORE = '/var/lib/iotronic/drivers/';
+var MP_DRIVERS = "/var/lib/iotronic/drivers/mountpoints/";
 
 /*
 This function mounts all enabled drivers ("autostart" flag set at true) every LR restarting.
@@ -49,7 +49,7 @@ exports.restartDrivers = function (){
     try{
       
 	  	// Get the driver's configuration.
-	  	var driversConf = JSON.parse(fs.readFileSync(drivers_json_file, 'utf8'));
+	  	var driversConf = JSON.parse(fs.readFileSync(DRIVERS_SETTING, 'utf8'));
 	  	var drivers_keys = Object.keys( driversConf["drivers"] );
 		var driver_num = drivers_keys.length;
 	  	logger.debug('[DRIVER] - Number of installed drivers: '+ driver_num);
@@ -241,10 +241,6 @@ exports.restartDrivers = function (){
 
 
 
-
-
-
-
 // Wrapper for Fuse read-directory function
 function readdirFunction(driver_name){
 
@@ -295,7 +291,6 @@ function openFunction(driver_name){
     }
 
 }
-
 
 // Wrapper for Fuse read-file function
 function readFunction(driver_name, mirror_board){
@@ -639,7 +634,7 @@ function RegisterFiles(driver_name, file, driver_mp_node, idx, list){
 // if the driver mounting happens after a connection recovery we will only register again the RPC functions without re-mounting the driver via FUSE.
 function LoadDriver(driver_name, mountpoint, remote, mirror_board){
     
-	var driver_path = "./drivers/"+driver_name;
+	var driver_path = DRIVERS_STORE+driver_name;
     var driver_conf = driver_path+"/"+driver_name+".json";
     var driver_module = driver_path+"/"+driver_name+".js";
 
@@ -894,8 +889,8 @@ exports.mountDriver = function (args){
     logger.debug("[DRIVER] - "+driver_name+" --> Parameters:\n - remote: "+remote+"\n - mirror_board: " + mirror_board);
     
     var rest_response = {};
-
-    var mountpoint = '../drivers/'+driver_name;
+	
+    var mountpoint = MP_DRIVERS + driver_name;
     
     logger.debug("[DRIVER] - "+driver_name+" --> Driver folder ("+mountpoint+") checking...");
     
@@ -1072,11 +1067,11 @@ exports.unmountDriver = function (args){
 
 	var rest_response = {};
 
-	var mountpoint = '../drivers/'+driver_name;
+	var mountpoint = MP_DRIVERS + driver_name;
 
 	logger.info("[DRIVER] - UNMOUNTING driver '"+driver_name+"'...");
 
-	var driver_path = "./drivers/"+driver_name;
+	var driver_path = DRIVERS_STORE+driver_name;
 	var driver_conf = driver_path+"/"+driver_name+".json";
 	var driver_module = driver_path+"/"+driver_name+".js";
 
@@ -1183,7 +1178,7 @@ exports.injectDriver = function (args){
     var rpc_result = "";
     
     // Writing the driver's files (code and json schema)
-    var driver_folder = './drivers/'+driver_name;
+    var driver_folder = DRIVERS_STORE+driver_name;
     var driver_file_name = driver_folder+'/' + driver_name + '.js';  
     var driver_schema_name = driver_folder+'/' + driver_name + '.json'; 
     
@@ -1266,7 +1261,7 @@ function manageDriversConf(operation, driver_name, autostart, status, remote, mi
 
 	try{
 	  
-		var driversConf = JSON.parse(fs.readFileSync(drivers_json_file, 'utf8'));
+		var driversConf = JSON.parse(fs.readFileSync(DRIVERS_SETTING, 'utf8'));
 	      
 		var mng_result = {};
 	
@@ -1299,14 +1294,14 @@ function manageDriversConf(operation, driver_name, autostart, status, remote, mi
 
 				try{
 					//Updates the JSON file
-					fs.writeFile(drivers_json_file, JSON.stringify(driversConf, null, 4), function(err) {
+					fs.writeFile(DRIVERS_SETTING, JSON.stringify(driversConf, null, 4), function(err) {
 						if(err) {
 							mng_result.message = 'Error writing drivers.json file: ' + err;
 							mng_result.result = "ERROR";
 							callback(mng_result);
 
 						} else {
-							mng_result.message = "Drivers changes file saved to " + drivers_json_file;
+							mng_result.message = "Drivers changes file saved to " + DRIVERS_SETTING;
 							mng_result.result = "SUCCESS";
 							callback(mng_result)
 
@@ -1330,7 +1325,7 @@ function manageDriversConf(operation, driver_name, autostart, status, remote, mi
 						driversConf.drivers[driver_name]=null;
 						delete driversConf.drivers[driver_name];
 
-						fs.writeFile(drivers_json_file, JSON.stringify(driversConf, null, 4), function(err) {
+						fs.writeFile(DRIVERS_SETTING, JSON.stringify(driversConf, null, 4), function(err) {
 							if(err) {
 								mng_result.message = "drivers.json file updating FAILED: "+err;
 								mng_result.result = "ERROR";
@@ -1416,7 +1411,8 @@ exports.removeDriver = function(args){
     
     var d = Q.defer();
     var rpc_result = "";
-    var driver_folder = './drivers/'+driver_name;
+    var driver_folder = DRIVERS_STORE + driver_name;
+	var mp_driver_folder =  MP_DRIVERS+ driver_name;
 
     // Check driver folder
     if ( fs.existsSync(driver_folder) === true ){
@@ -1424,7 +1420,7 @@ exports.removeDriver = function(args){
 		manageDriversConf("remove", driver_name, null, null, null, null, function(mng_result){
 
 			deleteFolderRecursive(driver_folder);		//delete driver files folder
-			deleteFolderRecursive("."+driver_folder);	//delete driver mountpoint folder
+			deleteFolderRecursive(mp_driver_folder);	//delete driver mountpoint folder
 
 			rpc_result = "Driver " + driver_name + " successfully removed!";
 			logger.info("[DRIVER] - "+driver_name+" --> " + rpc_result);

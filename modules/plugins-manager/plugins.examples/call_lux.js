@@ -1,31 +1,28 @@
 exports.main = function (arguments, callback){
 
-    /* {"m_authid" : "", "m_resourceid" : "", "autostart":"false"} */
+    /* {"m_authid" : "", "m_resourceid" : "", "pin" : "A1", "autostart":"false"} */
       
+    var pin = arguments.pin;
     var m_authid = arguments.m_authid;
     var m_resourceid = arguments.m_resourceid;
     
-    var api = require('../plugin-apis');
+    var api = require('../modules/plugins-manager/plugin-apis');
     var position = api.getPosition();
     
     var linino = require('ideino-linino-lib');
     var board = new linino.Board();
-    
-    board.addI2c('BAR', 'mpl3115', '0x60', 0);
 
     
     board.connect(function() {
 
 	var record = [];
-	
-	var in_pressure_raw = board.i2cRead('BAR', 'in_pressure_raw');
-	//var in_pressure_scale = board.i2cRead('BAR', 'in_pressure_scale');
-	var pressure = in_pressure_raw*0.00025*10;
+        var voltage = board.analogRead(pin);
+        var ldr = (2500/(5-voltage*0.004887)-500)/3.3;
         
 	
 	record.push({
 	    Date: new Date().toISOString(),
-	    Pressure: pressure,
+	    Brightness: ldr,
 	    Altitude: position.altitude,
 	    Latitude: position.latitude, 
 	    Longitude: position.longitude  
@@ -33,7 +30,7 @@ exports.main = function (arguments, callback){
 
 	api.sendToCKAN(m_authid, m_resourceid, record, function(payloadJSON){
     
-	    results="Pressure: " + pressure + " hPa";
+	    results="Brightness: " + ldr + " (lux) sent to CKAN";
 	    console.log("PAYLOAD:\n" + payloadJSON);	
 	    console.log(results);
 	    callback("OK", results);
@@ -42,8 +39,6 @@ exports.main = function (arguments, callback){
 
       
     });
-    
-    
     
     
     

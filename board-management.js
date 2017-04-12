@@ -251,7 +251,7 @@ exports.manage_WAMP_connection = function (session, details) {
     logger.info('[CONFIGURATION] - Registered board configuration starting...');
     
     //EXPORTING NETWORK COMMANDS 
-    var manageNetworks = require('./manage-networks');
+    var manageNetworks = require('./modules/vnets-manager/manage-networks');
     manageNetworks.exportNetworkCommands(session);
 
     
@@ -269,27 +269,27 @@ exports.manage_WAMP_connection = function (session, details) {
     //Maybe everything can be implemented as RPCs
     //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
     logger.info('[WAMP] - Registering to command topic ' + commandTopic);
-    var manageCommands = require('./manage-commands');
+    var manageCommands = require('./modules/services-manager/manage-commands');
     session.subscribe(commandTopic, manageCommands.onCommand);
 
     
     //If I'm connected to the WAMP server I can export my pins on the Cloud as RPCs
-    var managePins = require('./manage-pins');
+    var managePins = require('./modules/gpio-manager/manage-pins');
     managePins.exportPins(session);
 
     //If I'm connected to the WAMP server I can receive plugins to be scheduled as RPCs
-    var managePlugins = require('./manage-plugins');
+    var managePlugins = require('./modules/plugins-manager/manage-plugins');
     managePlugins.exportPluginCommands(session);
 
     //If I'm connected to the WAMP server I can receive RPC command requests to manage drivers
-    var driversManager = require("./manage-drivers");
+    var driversManager = require("./modules/drivers-manager/manage-drivers");
     driversManager.exportDriverCommands(session);
     driversManager.restartDrivers();
 
     //If I'm connected to the WAMP server I can receive RPC command requests to manage FUSE filesystem
-    var fsManager = require("./manage-fs");
+    var fsManager = require("./modules/vfs-manager/manage-fs");
     fsManager.exportFSCommands(session);
-    var fsLibsManager = require("./manage-fs-libs.js");
+    var fsLibsManager = require("./modules/vfs-manager/manage-fs-libs.js");
     fsLibsManager.exportFSLibs(session);
 
 };
@@ -300,7 +300,7 @@ exports.setBoardPosition = function (args) {
     var board_position = args[0];
     logger.info("[SYSTEM] - Set board position: " + JSON.stringify(board_position));
 
-    var configFile = JSON.parse(fs.readFileSync(configFileName, 'utf8'));
+    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
     var board_config = configFile.config["board"];
     logger.info("[SYSTEM] --> BOARD CONFIGURATION " + JSON.stringify(board_config));
 
@@ -308,11 +308,11 @@ exports.setBoardPosition = function (args) {
     logger.info("[SYSTEM] --> BOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]));
 
     //Updates the settings.json file
-    fs.writeFile(configFileName, JSON.stringify(configFile, null, 4), function (err) {
+    fs.writeFile(SETTINGS, JSON.stringify(configFile, null, 4), function (err) {
         if (err) {
             logger.error('[SYSTEM] --> Error writing settings.json file: ' + err);
         } else {
-            logger.debug("[SYSTEM] --> settings.json configuration file saved to " + configFileName);
+            logger.debug("[SYSTEM] --> settings.json configuration file saved to " + SETTINGS);
         }
     });
 

@@ -9,9 +9,9 @@ Group=root
 StandardInput=null
 StandardOutput=journal
 StandardError=journal
-WorkingDirectory=/opt/stack4things/lightning-rod
+WorkingDirectory=/usr/lib/node_modules/iotronic-lightning-rod
 Environment="NODE_PATH=/usr/lib/node_modules"
-ExecStart=/usr/bin/node /opt/stack4things/lightning-rod/lightning-rod.js
+ExecStart=/usr/bin/node /usr/lib/node_modules/iotronic-lightning-rod/lightning-rod.js
 Restart=always
 
 [Install]

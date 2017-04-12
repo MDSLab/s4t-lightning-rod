@@ -18,7 +18,7 @@ var fs = require("fs");
 
 var session_wamp;
 
-var utility = require('./board-management');
+var utility = require('./../../board-management');
 
 var socat_pid = null;
 var wstt_pid = null;
@@ -29,7 +29,7 @@ var spawn = require('child_process').spawn;
 
 function update_net_conf(configFile, section) {
     //Updates the settings.json file
-    fs.writeFile(configFileName, JSON.stringify(configFile, null, 4), function (err) {
+    fs.writeFile(SETTINGS, JSON.stringify(configFile, null, 4), function (err) {
         if (err) {
             logger.error('[VNET] --> Error writing settings.json file in ' + section + ' : ' + err);
         } else {
@@ -94,7 +94,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
     var rtpath = nconf.get('config:reverse:lib:bin');
     var reverseS_url = nconf.get('config:reverse:server:url_reverse') + ":" + nconf.get('config:reverse:server:port_reverse');
 
-    var configFile = JSON.parse(fs.readFileSync(configFileName, 'utf8'));
+    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
     var socat_config = configFile.config["socat"];
     var wstt_config = configFile.config["reverse"];
 
@@ -166,7 +166,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
     }
 
     var cp = require('child_process');
-    var socat = cp.fork('./network-wrapper');
+    var socat = cp.fork('./modules/vnets-manager/network-wrapper');
 
     var input_message = {
         "socatBoard_ip": socatBoard_ip,

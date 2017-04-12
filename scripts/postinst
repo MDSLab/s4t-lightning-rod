@@ -1,0 +1,21 @@
+#!/bin/sh       
+
+echo "Installing..."
+
+#/usr/bin/npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+
+mkdir /var/lib/iotronic/
+cd /var/lib/iotronic/ && mkdir plugins && mkdir drivers
+
+cp -n /usr/lib/node_modules/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+cp -n /usr/lib/node_modules/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+cp -n /usr/lib/node_modules/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+
+mkdir /var/log/iotronic/
+touch /var/log/iotronic/lightning-rod.log
+
+echo "Configuring..."
+
+echo "After the installation execute lr_configure.sh script in order to complete the Lightning-rod configuration!"
+echo "--> /usr/lib/node_modules/iotronic-lightning-rod/scripts/lr_configure.sh"
+chmod +x /usr/lib/node_modules/iotronic-lightning-rod/scripts/lr_configure.sh

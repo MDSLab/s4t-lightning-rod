@@ -36,7 +36,7 @@ exports.exportService = function(args){
         //I spawn a process executing the reverse tunnel client with appropriate parameters
         var spawn = require('child_process').spawn;
 
-        logger.debug('[SERVICE] - Executing command: ' + reverseTunnellingClient + '-r '+remotePort+':'+'127.0.0.1'+':'+localPort + ' ' + reverseTunnellingServer);
+        logger.debug('[SERVICE] - Executing command: ' + reverseTunnellingClient + ' -r '+remotePort+':'+'127.0.0.1'+':'+localPort + ' ' + reverseTunnellingServer);
 
         //I insert the new service in the array so that I can find it later when I have to stop the service
         var newService = {

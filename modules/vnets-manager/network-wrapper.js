@@ -8,7 +8,8 @@
  */
 
 nconf = require('nconf');
-nconf.file({file: 'settings.json'});
+SETTINGS = '/var/lib/iotronic/settings.json';
+nconf.file ({file: SETTINGS});
 
 log4js = require('log4js');
 log4js.loadAppender('file');
@@ -23,9 +24,6 @@ var socat_pid = null;
 var logger = log4js.getLogger('network-wrapper');
 logger.setLevel(loglevel);
 
-
-//var manageNetworks = require('./manage-networks');//TO RESTORE
-//configFileName = './settings.json'; //TO RESTORE
 
 // We need to redefine the logging configuration because it is another spwaned process.
 try {

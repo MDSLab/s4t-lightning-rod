@@ -3,7 +3,7 @@
 echo Number of parameters: $#
 
 if [ "$#" -ne 4 ]; then
-        echo "Usage: ./install_LR_ubuntu16.04.sh <BRANCH> <NODE_UUID> <WAMP_IP> <WS_IP>"
+        echo "Usage: ./install_LR_ubuntu16.04.sh <BRANCH> <BOARD_ID> <WAMP_IP> <WS_IP>"
         exit
 fi
 

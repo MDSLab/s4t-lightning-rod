@@ -1,12 +1,13 @@
-exports.main = function (arguments, callback){
+exports.main = function (arguments){
     
-    /* {"m_authid" : "", "m_resourceid" : "", "pin" : "A0", "autostart":"false"} */
+    /* {"m_authid" : "", "m_resourceid" : "", "pin" : "A0", "timer" : "5000", "autostart":"false"} */
     
     var pin = arguments.pin;
+    var timer = arguments.timer;
     var m_authid = arguments.m_authid;
     var m_resourceid = arguments.m_resourceid;
     
-    var api = require('../plugin-apis');
+    var api = require('../modules/plugins-manager/plugin-apis');
     var position = api.getPosition();
     
     var linino = require('ideino-linino-lib');
@@ -15,11 +16,13 @@ exports.main = function (arguments, callback){
 
     board.connect(function() {
     
-	    var ADCres = 1023.0;
-	    var Beta = 3950;		 
-	    var Kelvin = 273.15;	  
-	    var Rb = 10000;		       
-	    var Ginf = 120.6685;	   
+	var ADCres = 1023.0;
+	var Beta = 3950;		 
+	var Kelvin = 273.15;	  
+	var Rb = 10000;		       
+	var Ginf = 120.6685;	   
+	
+	setInterval(function(){
 	  
 	    var record = [];
 	    var sensor = board.analogRead(pin);
@@ -38,13 +41,14 @@ exports.main = function (arguments, callback){
 		    
 	    api.sendToCKAN(m_authid, m_resourceid, record, function(payloadJSON){
 	
-		results="Temperature " + temp + " °C sent to CKAN\n\n";
 		console.log("PAYLOAD:\n" + payloadJSON);
-		console.log(results);
-		callback("OK", results);
+		console.log("Temperature " + temp + " °C sent to CKAN\n\n");
 	
 	    });
 
+	    
+	    
+	  },timer);
 	
     });
     

@@ -3,7 +3,7 @@
 	
 		"device":"",
 		"log": {
-		    "logfile": "/var/log/s4t-lightning-rod.log",
+		    "logfile": "/var/log/iotronic/lightning-rod.log",
 		    "loglevel": "info"
 		},
 		"wamp":

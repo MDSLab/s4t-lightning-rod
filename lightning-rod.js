@@ -17,8 +17,8 @@ var autobahn = require('autobahn');
 
 //settings parser
 nconf = require('nconf');
-configFileName = './settings.json';
-nconf.file ({file: configFileName});
+SETTINGS = '/var/lib/iotronic/settings.json';
+nconf.file ({file: SETTINGS});
 
 //logging configuration: "board-management"
 log4js = require('log4js');
@@ -90,12 +90,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 			} else {
 
-
-
-
 				logger.info('[SYSTEM] - DEVICE: ' + device);
-
-				//var manageNetworks = require('./manage-networks');//TO RESTORE
 
 				//----------------------------------------
 				// 1. Set WAMP connection configuration
@@ -140,7 +135,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 					manageBoard.exportManagementCommands(session);
 
 
-					var configFile = JSON.parse(fs.readFileSync(configFileName, 'utf8'));
+					var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
 					var board_config = configFile.config["board"];
 
 					logger.info("[CONFIGURATION] - Board configuration parameters: " + JSON.stringify(board_config));
@@ -163,24 +158,24 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 								logger.info("\n[CONFIGURATION] - BOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]));
 
 								//Updates the settings.json file
-								fs.writeFile(configFileName, JSON.stringify(configFile, null, 4), function(err) {
+								fs.writeFile(SETTINGS, JSON.stringify(configFile, null, 4), function(err) {
 									if(err) {
 										logger.error('Error writing settings.json file: ' + err);
 
 									} else {
-										logger.info("settings.json configuration file saved to " + configFileName);
+										logger.info("settings.json configuration file saved to " + SETTINGS);
 										//Calling the manage_WAMP_connection function that contains the logic that has to be performed if the device is connected to the WAMP server
 										manageBoard.manage_WAMP_connection(session, details);
 									}
 								});
 
 								//Create a backup file of settings.json
-								fs.writeFile(configFileName + ".BKP", JSON.stringify(configFile, null, 4), function(err) {
+								fs.writeFile(SETTINGS + ".BKP", JSON.stringify(configFile, null, 4), function(err) {
 									if(err) {
 										logger.error('Error writing settings.json.BKP file: ' + err);
 
 									} else {
-										logger.info("settings.json.BKP configuration file saved to " + configFileName + ".BKP");
+										logger.info("settings.json.BKP configuration file saved to " + SETTINGS + ".BKP");
 									}
 								});
 
