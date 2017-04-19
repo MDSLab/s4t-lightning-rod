@@ -4,7 +4,7 @@
 
 ```
 opkg update
-opkg install unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs -d mnt
+opkg install unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs
 ```
 
 ####Install necessary node.js modules via npm:

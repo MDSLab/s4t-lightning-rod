@@ -4,15 +4,26 @@ echo "Installing..."
 
 #/usr/bin/npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 
-mkdir /var/lib/iotronic/
-cd /var/lib/iotronic/ && mkdir plugins && mkdir drivers
+rm_check=
+echo -n "Do you want to keep iotronic home (/var/lib/iotronic) ? (yes/no) "
+read rm_check
 
-cp -n /usr/lib/node_modules/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
-cp -n /usr/lib/node_modules/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
-cp -n /usr/lib/node_modules/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+if [ "$rm_check" = "yes" ]; then
+	echo "--> iotronic home is save!"
+else
+	mkdir /var/lib/iotronic/
+	cd /var/lib/iotronic/ && mkdir plugins && mkdir drivers
 
-mkdir /var/log/iotronic/
-touch /var/log/iotronic/lightning-rod.log
+	cp /usr/lib/node_modules/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+	cp /usr/lib/node_modules/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+	cp /usr/lib/node_modules/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+
+	mkdir /var/log/iotronic/
+	touch /var/log/iotronic/lightning-rod.log
+fi
+
+
+
 
 echo "Configuring..."
 

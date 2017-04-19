@@ -11,19 +11,6 @@
     "postinstall" : "./scripts/postinst",
     "uninstall" : "./scripts/postuninst"
   },
-  "dependencies":{
-    "node-reverse-wstunnel":">=0.1.2",
-    "autobahn": ">=0.9.9",
-    "nconf":">=0.8.4",
-    "requestify":">=0.1.17",
-    "is-running":">=2.0.0",
-    "connection-tester":">=0.1.1",
-    "log4js":">=0.6.37",
-    "q":">=0.9.7",
-    "fs-access":">=1.0.1",
-    "mknod":">=1.1.0",
-    "fuse-bindings":">=2.8.1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MDSLab/s4t-lightning-rod.git"
