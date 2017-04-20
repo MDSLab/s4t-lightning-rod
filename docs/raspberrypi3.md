@@ -1,7 +1,7 @@
-#Raspberry Pi 3 installation guide
+# Raspberry Pi 3 installation guide
 We tested this procedure on a ubuntu-16.04-preinstalled-server. Everything needs to be run as root.
 
-####Install OS distribution "ubuntu-16.04-preinstalled-server":
+#### Install OS distribution "ubuntu-16.04-preinstalled-server":
 ```
 wget http://www.finnie.org/software/raspberrypi/ubuntu-rpi3/ubuntu-16.04-preinstalled-server-armhf+raspi3.img.xz
 sudo unxz ubuntu-16.04-preinstalled-server-armhf+raspi3.img.xz
@@ -9,7 +9,7 @@ sudo dd bs=4M if=ubuntu-16.04-preinstalled-server-armhf+raspi3.img of=/dev/sdb
 ```
 
 
-####Install dependencies via apt-get:
+#### Install dependencies via apt-get:
 
 ```
 sudo apt update
@@ -18,14 +18,14 @@ sudo reboot
 apt -y install unzip socat dsniff fuse libfuse-dev pkg-config
 ```
 
-####Install NodeJS 7.x:
+#### Install NodeJS 7.x:
 ```
 curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 apt-get install -y nodejs
 node -v
 ```
 
-####Install necessary node.js modules via npm:
+#### Install necessary node.js modules via npm:
 
 ```
 npm install -g npm
@@ -35,7 +35,7 @@ npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bin
 npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 
-####Configure npm NODE_PATH variable
+#### Configure npm NODE_PATH variable
 
 ```
 echo "NODE_PATH=/usr/lib/node_modules" | sudo tee -a
@@ -43,13 +43,13 @@ source /etc/profile > /dev/null
 echo $NODE_PATH
 ```
 
-####Install the Lightning-rod:
+#### Install the Lightning-rod:
 
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
-wget https://github.com/MDSLab/s4t-lightning-rod/archive/api.zip --no-check-certificate
-unzip api.zip && rm -f api.zip
-mv s4t-lightning-rod-api lightning-rod
+wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
+unzip master.zip && rm -f master.zip
+mv s4t-lightning-rod-master lightning-rod
 mkdir plugins && mkdir mkdir drivers
 cp /var/lib/iotronic/lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
 chmod +x /etc/systemd/system/lightning-rod.service
@@ -58,7 +58,7 @@ systemctl enable lightning-rod.service
 touch /var/log/iotronic/lightning-rod.log
 ```
 
-####Configure and start the Lightning-rod
+#### Configure and start the Lightning-rod
 (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
