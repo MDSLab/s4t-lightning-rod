@@ -1,33 +1,33 @@
-#Arduino YUN/Linino ONE installation guide
+# Arduino YUN/Linino ONE installation guide
 
-####Install dependencies via opkg:
+#### Install dependencies via opkg:
 
 ```
 opkg update
 opkg install unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs
 ```
 
-####Install necessary node.js modules via npm:
+#### Install necessary node.js modules via npm:
 
 ```
 npm install -g requestify is-running connection-tester log4js q fs-access util
 ```
 
 
-####Install the Lightning-rod:
+#### Install the Lightning-rod:
 
 ```
 mkdir /var/lib/iotronic && cd /var/lib/iotronic
-wget https://github.com/MDSLab/s4t-lightning-rod/archive/api.zip --no-check-certificate
-unzip api.zip && rm -f api.zip
-mv s4t-lightning-rod-api lightning-rod
+wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
+unzip master.zip && rm -f master.zip
+mv s4t-lightning-rod-master lightning-rod
 mkdir plugins && mkdir drivers
 cp /var/lib/iotronic/lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
 chmod +x /etc/init.d/lightning-rod
 touch /var/log/iotronic/lightning-rod.log
 ```
 
-####Configure the Lightning-rod
+#### Configure the Lightning-rod
 (note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
 
 ```
@@ -42,14 +42,14 @@ sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
 ```
 
-####Start the Lightning-rod and configure it to start at boot:
+#### Start the Lightning-rod and configure it to start at boot:
 
 ```
 /etc/init.d/lightning-rod enable
 /etc/init.d/lightning-rod start
 ```
 
-####Configure cron to launch the Lightning-rod if not yet running:
+#### Configure cron to launch the Lightning-rod if not yet running:
 
 ```
 /etc/init.d/cron stop
