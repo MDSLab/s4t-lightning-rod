@@ -448,6 +448,12 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 						var raspberry_pi = require('./device/raspberry_pi');
 						raspberry_pi.Main(wampConnection, logger);
 						break;
+						
+					case 'android':
+						logger.info("[SYSTEM] - L-R Android starting...");
+						var yun = require('./device/android');
+						yun.Main(wampConnection, logger);
+						break;
 
 					default:
 						logger.warn('[SYSTEM] - Device "' + device + '" not supported!');

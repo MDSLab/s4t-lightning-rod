@@ -3,4 +3,5 @@ node_modules
 settings.json
 .idea
 *.tgz
+dist
 package.json.*
