@@ -33,9 +33,9 @@ echo $NODE_PATH
 #### Install the Lightning-rod
 ```
 mkdir /var/lib/iotronic && cd /var/lib/iotronic
-wget https://github.com/MDSLab/s4t-lightning-rod/archive/api.zip --no-check-certificate
-unzip api.zip  && rm -f api.zip
-mv s4t-lightning-rod-api lightning-rod
+wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
+unzip master.zip  && rm -f master.zip
+mv s4t-lightning-rod-master lightning-rod
 mkdir plugins && mkdir drivers
 cp /var/lib/iotronic/lightning-rod/settings.example.json /var/lib/iotronic/settings.json
 cp /var/lib/iotronic/lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
