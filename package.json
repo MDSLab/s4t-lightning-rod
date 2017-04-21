@@ -6,8 +6,10 @@
   "scripts": {
     "test": "node lightning-rod.js",
     "copy:package.dist.json": "cp package.dist.json dist/package.json",
-    "build:index.js": "noderify -f nconf -f log4js -f fuse-bindings -f ideino-linino-lib lightning-rod.js > dist/index.js",
-    "build": "npm run clean && mkdir -p dist && npm run build:index.js && npm run copy:package.dist.json",
+    "build:index.js": "noderify -f fuse-bindings -f ideino-linino-lib -f ./build/Release/bufferutil.node -f ./build/Release/validation.node lightning-rod.js > dist/index.js",
+    "build:wstt": "noderify -f ../build/Release/bufferutil -f ../build/default/bufferutil -f ../build/Release/validation -f ../build/default/validation node_modules/node-reverse-wstunnel/bin/wstt.js > dist/wstt.js",
+    "build:log4js_workaround": "mkdir -p dist/appenders && echo \"module.exports = require('log4js/lib/appenders/stdout');\" > dist/appenders/stdout.js",
+    "build": "npm run clean && mkdir -p dist && npm run build:index.js && npm run build:wstt && npm run build:log4js_workaround && npm run copy:package.dist.json",
     "clean": "rimraf dist"
   },
   "dependencies": {
@@ -15,8 +17,8 @@
     "connection-tester": ">=0.1.0",
     "fuse-bindings": "^2.11.0",
     "is-running": ">=2.0.0",
-    "log4js": ">=0.6.33",
-    "nconf": ">=0.7.1",
+    "log4js": "^1.1.1",
+    "nconf": "KostyaEsmukov/nconf#bundling_support",
     "node-reverse-wstunnel": ">=0.1.2",
     "q": ">=0.9.7",
     "requestify": ">=0.1.17"

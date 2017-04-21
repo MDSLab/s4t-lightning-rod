@@ -11,12 +11,8 @@ nconf = require('nconf');
 nconf.file ({file: 'settings.json'});
 
 log4js = require('log4js');
-log4js.loadAppender('file');
 logfile = nconf.get('config:log:logfile');
 loglevel = nconf.get('config:log:loglevel');
-if (logfile !== "/dev/stdout") {
-    log4js.addAppender(log4js.appenders.file(logfile));
-}
 
 
 var socat_pid = null

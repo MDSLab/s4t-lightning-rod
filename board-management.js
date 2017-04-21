@@ -43,8 +43,6 @@ exports.execute = function(command,label) {
 // - settings control
 exports.Init_Ligthning_Rod = function (callback){
 
-	log4js.loadAppender('file');
-
 	function LogoLR() {
 		logger.info('##############################');
 		logger.info('  Stack4Things Lightning-rod');
@@ -78,9 +76,6 @@ exports.Init_Ligthning_Rod = function (callback){
 
 		}else {
 
-            if (logfile !== "/dev/stdout") {
-                log4js.addAppender(log4js.appenders.file(logfile));
-            }
 			logger = log4js.getLogger('main');		//service logging configuration: "main"
 
 			LogoLR();

@@ -22,6 +22,20 @@ nconf.file ({file: configFileName});
 
 //logging configuration: "board-management"
 log4js = require('log4js');
+logfile = nconf.get('config:log:logfile');
+if (logfile === "/dev/stdout") {
+    require('log4js/lib/appenders/stdout'); // tell noderify to bundle this module
+    log4js.configure({
+        appenders: [{ type: 'stdout' }],
+        replaceConsole: true
+    });
+
+} else {
+    log4js.configure({
+        appenders: [{ type: 'file', filename: logfile }],
+        replaceConsole: true
+    });
+}
 logger = log4js.getLogger('main');
 
 // Device settings
