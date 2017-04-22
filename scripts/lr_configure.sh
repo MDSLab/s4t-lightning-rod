@@ -8,11 +8,14 @@ echo "-->" $DEVICE
 sed -i "s/\"device\":.*\"\"/\"device\": \"$DEVICE\"/g" /var/lib/iotronic/settings.json
 
 if [ "$DEVICE" = "arduino_yun" ]; then
+
     cp /usr/lib/node_modules/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
     chmod +x /etc/init.d/lightning-rod
+
 fi
 
 if [ "$DEVICE" = "server" ]; then
+
     DISTRO=`cat /etc/*release | grep DISTRIB_RELEASE | cut -d "=" -f2`
 
     echo "--> Server Distribution: " $DISTRO
@@ -80,4 +83,5 @@ else
 	read REVERSE_IP
 	echo "-->" $REVERSE_IP
 	sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/$REVERSE_IP\"/g" /var/lib/iotronic/settings.json
+	
 fi
