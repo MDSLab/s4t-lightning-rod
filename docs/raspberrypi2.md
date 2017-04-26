@@ -1,8 +1,10 @@
 # Raspberry Pi 2 installation guide
 
 
-#### Install dependencies via apt-get:
 
+## Install requirements
+
+#### Install dependencies via apt-get:
 ```
 apt-get install unzip socat dsniff fuse libfuse-dev pkg-config
 
@@ -15,17 +17,6 @@ apt-get install -y nodejs
 node -v
 ```
 
-#### Install necessary node.js modules via npm:
-
-```
-npm install -g npm
-npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod util path
-
-# Install statvfs node module compliant with NodeJS 7.x:
-npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
-```
-
-
 #### Configure npm NODE_PATH variable
 
 ```
@@ -34,8 +25,42 @@ source /etc/profile > /dev/null
 echo $NODE_PATH
 ```
 
-#### Install the Lightning-rod:
 
+## Install from NPM
+```
+npm install -g --skip-installed --unsafe iotronic-lightning-rod
+```
+
+##### Configure Lightning-rod
+At the end of the installation process we have to execute the LR configuration script:
+```
+$NODE_PATH/iotronic-lightning-rod/scripts/lr_configure.sh
+```
+This script asks the following information:
+```
+* device type: [ "arduino_yun" | "server" | "raspberry_pi"]
+
+* Board ID: UUID released by the registration process managed by IoTronic.
+
+* IoTronic server IP
+
+* WAMP server IP
+```
+
+
+
+## Install from source code
+
+##### Install required NodeJS modules via npm:
+```
+npm install -g npm
+npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod util path
+
+# Install statvfs node module compliant with NodeJS 7.x:
+npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+```
+
+##### Install Lightning-rod:
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
 wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
@@ -49,8 +74,8 @@ systemctl enable lightning-rod.service
 touch /var/log/iotronic/lightning-rod.log
 ```
 
-#### Configure and start the Lightning-rod
-(note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
+##### Configure and start the Lightning-rod
+Note that you need the <NODE_ID> that is the code returned by the IoTronic service after node registration:
 
 ```
 cp /var/lib/iotronic/lightning-rod/settings.example.json /var/lib/iotronic/settings.json
@@ -62,6 +87,9 @@ sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /var/lib/iotronic/settings.
 sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
+```
 
+## Start Lightning-rod
+```
 systemctl start lightning-rod.service
 ```

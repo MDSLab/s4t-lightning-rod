@@ -83,5 +83,5 @@ else
 	read REVERSE_IP
 	echo "-->" $REVERSE_IP
 	sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/$REVERSE_IP\"/g" /var/lib/iotronic/settings.json
-	
+
 fi

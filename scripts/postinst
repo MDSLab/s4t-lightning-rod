@@ -17,6 +17,8 @@ if [ "$rm_check" = "no" ]; then
 	cp /usr/lib/node_modules/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
 	cp /usr/lib/node_modules/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
 
+	chmod +x /usr/local/lib/node_modules/iotronic-lightning-rod/lr-server.js
+
 	mkdir /var/log/iotronic/
 	touch /var/log/iotronic/lightning-rod.log
 

@@ -10,5 +10,5 @@ if [ "$rm_check" = "no" ]; then
     rm -rf /var/lib/iotronic/
 
 else
-	echo "--> IoTronic ome is save!"
+	echo "--> IoTronic home is save!"
 fi
