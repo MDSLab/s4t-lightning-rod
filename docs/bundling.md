@@ -39,3 +39,12 @@ and a `package.json` with all the non-bundled dependencies.
 - `cd` to that directory on a board and run `npm install` to install non-bundled dependencies 
 locally.
 - Use `npm start` to launch the LR, or simply `node index.js`. 
+
+## Used hacks
+
+Noderify can't bundle dynamic imports. The libraries below use them. And here are the
+solutions/hacks to prevent it, thus making these libraries bundle-able:
+
+- `log4js`: dynamically requires appenders. The hack is in the `_build:log4js_workaround` script.
+- `nconf`: loads store implementations as JS files on a file system. Fixed in a fork: 
+https://github.com/KostyaEsmukov/nconf/commit/9ca067850615aa8668583d30deb80f0d6d395431
