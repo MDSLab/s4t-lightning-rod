@@ -48,3 +48,5 @@ solutions/hacks to prevent it, thus making these libraries bundle-able:
 - `log4js`: dynamically requires appenders. The hack is in the `_build:log4js_workaround` script.
 - `nconf`: loads store implementations as JS files on a file system. Fixed in a fork: 
 https://github.com/KostyaEsmukov/nconf/commit/9ca067850615aa8668583d30deb80f0d6d395431
+- `shelljs` (not a direct dependency): starting from 0.7.6 it uses dynamic imports for command
+implementations. 0.7.5 is fine though. 

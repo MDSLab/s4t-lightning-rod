@@ -33,7 +33,8 @@
     "nconf": "KostyaEsmukov/nconf#bundling_support",
     "node-reverse-wstunnel": ">=0.1.2",
     "q": ">=0.9.7",
-    "requestify": ">=0.1.17"
+    "requestify": ">=0.1.17",
+    "shelljs": "0.7.5"
   },
   "devDependencies": {
     "noderify": "^2.0.0",
