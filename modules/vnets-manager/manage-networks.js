@@ -9,8 +9,8 @@
 
 
 //service logging configuration: "manageNetworks"   
+var log4js = require('log4js');
 var logger = log4js.getLogger('manageNetworks');
-logger.setLevel(loglevel);
 
 var Q = require("q");
 var running = require('is-running');

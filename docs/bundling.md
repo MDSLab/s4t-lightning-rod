@@ -12,16 +12,19 @@ significant on slow boards).
 
 ## Maintenance
 
-However, some npm packages cannot be bundled (see the `build:index.js` script in the 
-`/package.json`), such as:
+Npm packages, requiring building binaries, must not be bundled, because shared libraries cannot be 
+bundled to a JS.
 
-- `log4js` - loads appenders from a filesystem
-- `nconf` - loads stores from a filesystem 
-- `node-reverse-wstunnel` - is used by LR as a program, not as a CommonJS module.
-- `ideino-linino-lib` - Arduino Yun specific - not needed on other boards. Must be installed 
-manually.
+See the `_noderify_lr` script in the `/package.json` for a complete list of such npm packages.
+
+- `statvfs` - Platform-specific, contains binary objects. Not needed on Android. Must be 
+installed manually.
+- `mknod` - Platform-specific, contains binary objects. Not needed on Android. Must be 
+installed manually.
 - `fuse-bindings` - Platform-specific, contains binary objects. Not needed on Android. Must be 
 installed manually.
+- `ideino-linino-lib` - Arduino Yun specific - not needed on other boards. Must be installed 
+manually.
 
 So these non-bundled dependencies are still required to be installed on a board. For convenience,
 they're listed in the `/package.dist.json` file. It it important to keep it in sync with the 

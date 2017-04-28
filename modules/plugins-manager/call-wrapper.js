@@ -12,8 +12,8 @@ var plugin_name;
 var plugin_json;
 
 var fs = require('fs');
-var PLUGINS_SETTING = '/var/lib/iotronic/plugins/plugins.json';
-var PLUGINS_STORE = '/var/lib/iotronic/plugins/';
+var PLUGINS_SETTING = './plugins/plugins.json';
+var PLUGINS_STORE = './plugins/';
 
 process.once('message', function(message) {
   

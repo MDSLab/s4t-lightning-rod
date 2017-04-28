@@ -8,36 +8,17 @@
  */
 
 nconf = require('nconf');
-SETTINGS = '/var/lib/iotronic/settings.json';
+SETTINGS = './settings.json';
 nconf.file ({file: SETTINGS});
 
-log4js = require('log4js');
-log4js.loadAppender('file');
-logfile = nconf.get('config:log:logfile');
-loglevel = nconf.get('config:log:loglevel');
-log4js.addAppender(log4js.appenders.file(logfile));
-
+var log4js = require('log4js');
+// We need to redefine the logging configuration because it is another spwaned process.
+require('../utils/log4js-configuration')();
 
 var socat_pid = null;
 
 //service logging configuration: "network-wrapper"
 var logger = log4js.getLogger('network-wrapper');
-logger.setLevel(loglevel);
-
-
-// We need to redefine the logging configuration because it is another spwaned process.
-try {
-
-    loglevel = nconf.get('config:log:loglevel');
-    if (loglevel === undefined) {
-        logger.setLevel('INFO');
-    } else {
-        logger.setLevel(loglevel);
-    }
-}
-catch (err) {
-    logger.setLevel('INFO');
-}
 
 
 process.once('message', function (message) {

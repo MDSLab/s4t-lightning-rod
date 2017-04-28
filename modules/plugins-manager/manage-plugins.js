@@ -7,9 +7,9 @@
 * 
 */
 
-//service logging configuration: "managePlugins"   
+//service logging configuration: "managePlugins"
+var log4js = require('log4js');
 var logger = log4js.getLogger('managePlugins');
-logger.setLevel(loglevel);
 
 var fs = require("fs");
 var Q = require("q");
@@ -18,8 +18,8 @@ var running = require('is-running');  	//In order to verify if a plugin is alive
 
 
 var plugins = {};	// This data structure collects all status information of all plugins started in this LR session
-var PLUGINS_SETTING = '/var/lib/iotronic/plugins/plugins.json';
-var PLUGINS_STORE = '/var/lib/iotronic/plugins/';
+var PLUGINS_SETTING = './plugins/plugins.json';
+var PLUGINS_STORE = './plugins/';
     
     
 

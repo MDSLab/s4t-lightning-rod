@@ -17,11 +17,12 @@ var autobahn = require('autobahn');
 
 //settings parser
 nconf = require('nconf');
-SETTINGS = '/var/lib/iotronic/settings.json';
+SETTINGS = './settings.json';
 nconf.file ({file: SETTINGS});
 
 //logging configuration: "board-management"
-log4js = require('log4js');
+var log4js = require('log4js');
+require('./modules/utils/log4js-configuration')();
 logger = log4js.getLogger('main');
 
 // Device settings

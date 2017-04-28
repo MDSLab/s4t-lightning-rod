@@ -8,6 +8,7 @@
  */
 
 //service logging configuration: "board-management"   
+var log4js = require('log4js');
 var logger = log4js.getLogger('board-management');
 
 
@@ -42,8 +43,6 @@ exports.execute = function (command, label) {
 // - settings control
 exports.Init_Ligthning_Rod = function (callback) {
 
-    log4js.loadAppender('file');
-
     function LogoLR() {
         logger.info('##############################');
         logger.info('  Stack4Things Lightning-rod');
@@ -61,66 +60,25 @@ exports.Init_Ligthning_Rod = function (callback) {
      ALL	everything is logged
      */
 
+    LogoLR();
+
     try {
 
-        //check logfile parameter
-        logfile = nconf.get('config:log:logfile');
+        //Start LR settings checks
+        exports.checkSettings(function (check) {
 
-        if (logfile === "undefined" || logfile == "") {
-            // DEFAULT LOGGING CONFIGURATION LOADING
-            logfile = './s4t-lightning-rod.log';
-            log4js.addAppender(log4js.appenders.file(logfile));
-            logger = log4js.getLogger('main');		//service logging configuration: "main"
-
-            LogoLR();
-
-            callback({result: "ERROR"});
-
-        } else {
-
-            log4js.addAppender(log4js.appenders.file(logfile));
-            logger = log4js.getLogger('main');		//service logging configuration: "main"
-
-            LogoLR();
-
-            //check loglevel parameter
-            loglevel = nconf.get('config:log:loglevel');
-
-            if (loglevel === "undefined" || loglevel == "") {
-
-                logger.setLevel('INFO');
-                logger.warn('[SYSTEM] - LOG LEVEL not specified... default has been set: INFO');
-
+            if (check === true) {
+                callback({result: "SUCCESS"});
             } else {
-
-                logger.setLevel(loglevel);
-                logger.info('[SYSTEM] - LOG LEVEL: ' + loglevel);
-
+                callback({result: "ERROR"});
             }
 
-            //Start LR settings checks
-            exports.checkSettings(function (check) {
-
-                if (check === true) {
-                    callback({result: "SUCCESS"});
-                } else {
-                    callback({result: "ERROR"});
-                }
-
-            });
-
-        }
+        });
 
     }
     catch (err) {
-        // DEFAULT LOGGING
-        logfile = './s4t-lightning-rod.log';
-        log4js.addAppender(log4js.appenders.file(logfile));
-        logger = log4js.getLogger('main');		//service logging configuration: "main"
-        LogoLR();
-        logger.error('[SYSTEM] - Logger configuration error: ' + err);
+        logger.error('[SYSTEM] - error: ' + err);
         callback({result: "ERROR"});
-
     }
 
 };
@@ -219,20 +177,10 @@ exports.checkSettings = function (callback) {
 
     }
     catch (err) {
-        // DEFAULT LOGGING
-        log4js = require('log4js');
-        log4js.loadAppender('file');
-        logfile = './s4t-lightning-rod.log';
-        log4js.addAppender(log4js.appenders.file(logfile));
-
-        //service logging configuration: "main"
-        logger = log4js.getLogger('main');
-
         logger.error('[SYSTEM] - ' + err);
         process.exit();
 
     }
-
 
 };
 

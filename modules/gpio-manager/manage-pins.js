@@ -8,8 +8,8 @@
  */
 
 //service logging configuration: "managePins"
+var log4js = require('log4js');
 var logger = log4js.getLogger('managePins');
-logger.setLevel(loglevel);
 
 var response = {
     message: '',

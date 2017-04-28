@@ -8,8 +8,8 @@
 */
 
 //service logging configuration: "manageDrivers"   
+var log4js = require('log4js');
 var logger = log4js.getLogger('manageDrivers');
-logger.setLevel(loglevel);
 
 var fs = require('fs');
 var fuse = require('fuse-bindings');
@@ -32,9 +32,9 @@ mode_lookup_table = {
 };
 
 
-var DRIVERS_SETTING = '/var/lib/iotronic/drivers/drivers.json';
-var DRIVERS_STORE = '/var/lib/iotronic/drivers/';
-var MP_DRIVERS = "/var/lib/iotronic/drivers/mountpoints/";
+var DRIVERS_SETTING = './drivers/drivers.json';
+var DRIVERS_STORE = './drivers/';
+var MP_DRIVERS = "./drivers/mountpoints/";
 
 /*
 This function mounts all enabled drivers ("autostart" flag set at true) every LR restarting.

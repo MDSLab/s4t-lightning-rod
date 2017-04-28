@@ -11,16 +11,8 @@
 nconf = require('nconf');
 nconf.file ({file: 'settings.json'});
 
-log4js = require('log4js');
-log4js.loadAppender('file');
-
-
-logfile = nconf.get('config:log:logfile');
-loglevel = nconf.get('config:log:loglevel');
-log4js.addAppender(log4js.appenders.file(logfile));    
+var log4js = require('log4js');
 var logger = log4js.getLogger('plugin-apis');
-logger.setLevel(loglevel);
-
 
 var requestify = require('requestify');
 var Q = require("q");

@@ -8,8 +8,8 @@
 */
 
 //service logging configuration: "manageCommands"   
+var log4js = require('log4js');
 var logger = log4js.getLogger('manageServices');
-logger.setLevel(loglevel);
 
 //Services list: it is used to store the services process data that are started in the current LR session
 servicesProcess = [];

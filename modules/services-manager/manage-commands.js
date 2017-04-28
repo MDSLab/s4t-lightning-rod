@@ -8,8 +8,8 @@
 */
 
 //service logging configuration: "manageCommands"   
+var log4js = require('log4js');
 var logger = log4js.getLogger('manageCommands');
-logger.setLevel(loglevel);
 
 //This function is called when a message is received on the command topic 
 exports.onCommand = function (args){

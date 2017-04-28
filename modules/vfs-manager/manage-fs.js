@@ -8,8 +8,8 @@
 */
 
 //service logging configuration: "manageFS"
+var log4js = require('log4js');
 var logger = log4js.getLogger('manageFS');
-logger.setLevel(loglevel);
 
 var fs = require('fs');
 var fuse = require('fuse-bindings');
