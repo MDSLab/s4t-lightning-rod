@@ -19,7 +19,8 @@
     "build:plugin-wrapper": "npm run -s _noderify_lr ./modules/plugins-manager/plugin-wrapper.js > dist/modules/plugins-manager/plugin-wrapper.js",
     "build:network-wrapper": "npm run -s _noderify_lr ./modules/vnets-manager/network-wrapper.js > dist/modules/vnets-manager/network-wrapper.js && npm run _build:log4js_workaround dist/modules/vnets-manager",
     "build:package.dist.json": "cp package.dist.json dist/package.json",
-    "build": "npm run build:init && npm run build:index.js && npm run build:wstt && npm run build:call-wrapper && npm run build:plugin-wrapper && npm run build:network-wrapper && npm run build:package.dist.json",
+    "build:target": "mkdir -p target && { cd dist && GZIP=-9 tar czf ../target/dist.tar.gz .; } ",
+    "build": "npm run build:init && npm run build:index.js && npm run build:wstt && npm run build:call-wrapper && npm run build:plugin-wrapper && npm run build:network-wrapper && npm run build:package.dist.json && npm run build:target",
     "clean": "rimraf dist"
   },
   "dependencies": {

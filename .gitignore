@@ -4,4 +4,5 @@ settings.json
 .idea
 *.tgz
 dist
+target
 package.json.*
