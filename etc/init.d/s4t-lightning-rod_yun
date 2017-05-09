@@ -28,7 +28,7 @@ start () {
 
         if [ -r $pid ]; then
                 cd $LIGHTNINGROD_HOME
-                node lightning-rod.js >> /dev/null & # /var/log/s4t-lightning-rod.log &
+                node lightning-rod.js >> /dev/null & # /var/log/iotronic/lightning-rod.log &
                 echo "Lightning-rod is started"
         else
                 echo "Lightning-rod is already started with PID $pid"
