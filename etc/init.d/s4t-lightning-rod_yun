@@ -13,6 +13,7 @@ export LD_LIBRARY_PATH=/usr/lib
 export NPM=/usr/bin/npm
 export NODE_PATH=/usr/lib/node_modules:/usr/lib/node_modules:$NODE_PATH
 
+export IOTRONIC_HOME=/var/lib/iotronic
 <LIGHTNINGROD_HOME>
 
 START=99
