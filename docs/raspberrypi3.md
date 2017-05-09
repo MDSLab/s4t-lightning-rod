@@ -78,6 +78,7 @@ mv s4t-lightning-rod iotronic-lightning-rod
 mkdir plugins && mkdir drivers
 
 cp /var/lib/iotronic/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/var\/lib\/iotronic\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
 chmod +x /etc/systemd/system/lightning-rod.service
 systemctl daemon-reload
 
@@ -92,15 +93,15 @@ source /etc/profile
 Note that you need the NODE_ID that is the code returned by the IoTronic service after node registration.
 
 ```
-cp /var/lib/iotronic/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/iotronic-lightning-rod/settings.json
-cp /var/lib/iotronic/iotronic-lightning-rod/plugins.example.json /var/lib/iotronic/iotronic-lightning-rod/plugins/plugins.json
-cp /var/lib/iotronic/iotronic-lightning-rod/drivers.example.json /var/lib/iotronic/iotronic-lightning-rod/drivers/drivers.json
+cp /var/lib/iotronic/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+cp /var/lib/iotronic/iotronic-lightning-rod/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+cp /var/lib/iotronic/iotronic-lightning-rod/drivers.example.json /var/lib/iotronic/drivers/drivers.json
 
-sed -i "s/\"device\":.*\"\"/\"device\": \"raspberry_pi\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
-sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
-sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
-sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
+sed -i "s/\"device\":.*\"\"/\"device\": \"raspberry_pi\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
 ```
 
 ##### Configure logrotate
