@@ -26,6 +26,8 @@ var wstt_pid = null;
 
 var spawn = require('child_process').spawn;
 
+var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
+
 
 function update_net_conf(configFile, section) {
     //Updates the settings.json file
@@ -166,7 +168,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
     }
 
     var cp = require('child_process');
-    var socat = cp.fork('./modules/vnets-manager/network-wrapper');
+    var socat = cp.fork(LIGHTNINGROD_HOME + '/modules/vnets-manager/network-wrapper');
 
     var input_message = {
         "socatBoard_ip": socatBoard_ip,

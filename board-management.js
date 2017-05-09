@@ -16,6 +16,8 @@ var fs = require("fs");
 
 var spawn = require('child_process').spawn;
 
+var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
+
 exports.execute = function (command, label) {
     cmd = command.split(' ');
     logger.debug(label + ' COMMAND: ' + command);
@@ -251,7 +253,7 @@ exports.manage_WAMP_connection = function (session, details) {
     logger.info('[CONFIGURATION] - Registered board configuration starting...');
     
     //EXPORTING NETWORK COMMANDS 
-    var manageNetworks = require('./modules/vnets-manager/manage-networks');
+    var manageNetworks = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
     manageNetworks.exportNetworkCommands(session);
 
     
@@ -269,27 +271,27 @@ exports.manage_WAMP_connection = function (session, details) {
     //Maybe everything can be implemented as RPCs
     //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
     logger.info('[WAMP] - Registering to command topic ' + commandTopic);
-    var manageCommands = require('./modules/services-manager/manage-commands');
+    var manageCommands = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-commands');
     session.subscribe(commandTopic, manageCommands.onCommand);
 
     
     //If I'm connected to the WAMP server I can export my pins on the Cloud as RPCs
-    var managePins = require('./modules/gpio-manager/manage-pins');
+    var managePins = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-pins');
     managePins.exportPins(session);
 
     //If I'm connected to the WAMP server I can receive plugins to be scheduled as RPCs
-    var managePlugins = require('./modules/plugins-manager/manage-plugins');
+    var managePlugins = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
     managePlugins.exportPluginCommands(session);
 
     //If I'm connected to the WAMP server I can receive RPC command requests to manage drivers
-    var driversManager = require("./modules/drivers-manager/manage-drivers");
+    var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
     driversManager.exportDriverCommands(session);
     driversManager.restartDrivers();
 
     //If I'm connected to the WAMP server I can receive RPC command requests to manage FUSE filesystem
-    var fsManager = require("./modules/vfs-manager/manage-fs");
+    var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
     fsManager.exportFSCommands(session);
-    var fsLibsManager = require("./modules/vfs-manager/manage-fs-libs.js");
+    var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs.js");
     fsLibsManager.exportFSLibs(session);
 
 };

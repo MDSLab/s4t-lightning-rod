@@ -20,9 +20,8 @@ var running = require('is-running');  	//In order to verify if a plugin is alive
 var plugins = {};	// This data structure collects all status information of all plugins started in this LR session
 var PLUGINS_SETTING = process.env.IOTRONIC_HOME + '/plugins/plugins.json';
 var PLUGINS_STORE = process.env.IOTRONIC_HOME + '/plugins/';
-    
-    
 
+var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
 
 // This function executes a syncronous plugin ("call" as the exection of a command that returns a value to the "caller"): it is called by Iotronic via RPC
 exports.call = function (args, details){
@@ -59,7 +58,7 @@ exports.call = function (args, details){
             logger.info("[PLUGIN] --> Plugin " + plugin_name + " being started");
             
             //Create a new process that has plugin-wrapper as code
-            var child = cp.fork('./modules/plugins-manager/call-wrapper');
+            var child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/call-wrapper');
 
             //Prepare the message I will send to the process with name of the plugin to start and json file as argument
             var input_message = {
@@ -234,7 +233,7 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip) {
 					//Create a new process that has plugin-wrapper as code
 					try{
 
-						plugins[plugin_name].child = cp.fork('./modules/plugins-manager/plugin-wrapper');
+						plugins[plugin_name].child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/plugin-wrapper');
 
 						var plugin_json_schema = JSON.parse(fs.readFileSync(plugin_json_name));
 						var input_message = {
@@ -526,7 +525,7 @@ exports.run = function (args){
             logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin starting...');
             
             //Create a new process that has plugin-wrapper as code
-            var child = cp.fork('./modules/plugins-manager/plugin-wrapper');
+            var child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/plugin-wrapper');
             
             //Prepare the message I will send to the process with name of the plugin to start and json file as argument
             var input_message = {
