@@ -1,7 +1,7 @@
 # Raspberry Pi 3 installation guide
 We tested this procedure on a ubuntu-16.04-preinstalled-server. Everything needs to be run as root.
 
-## Install OS distribution "ubuntu-16.04-preinstalled-server":
+## Install OS distribution "ubuntu-16.04-preinstalled-server"
 ```
 wget http://www.finnie.org/software/raspberrypi/ubuntu-rpi3/ubuntu-16.04-preinstalled-server-armhf+raspi3.img.xz
 sudo unxz ubuntu-16.04-preinstalled-server-armhf+raspi3.img.xz
@@ -10,7 +10,7 @@ sudo dd bs=4M if=ubuntu-16.04-preinstalled-server-armhf+raspi3.img of=/dev/sdb
 
 ## Install requirements
 
-##### Install dependencies via apt-get:
+##### Install dependencies via apt-get
 ```
 sudo apt update
 sudo apt upgrade
@@ -18,7 +18,7 @@ sudo reboot
 apt -y install unzip socat dsniff fuse libfuse-dev pkg-config
 ```
 
-##### Install NodeJS 7.x:
+##### Install NodeJS 7.x
 ```
 curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 apt-get install -y nodejs
@@ -55,9 +55,9 @@ This script asks the following information:
 
 
 
-## Install from source code
+## Install from source-code
 
-##### Install required NodeJS modules via npm:
+##### Install required NodeJS modules via npm
 
 ```
 npm install -g npm
@@ -69,7 +69,7 @@ npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 
 
 
-##### Install the Lightning-rod:
+##### Install the Lightning-rod
 
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
@@ -85,7 +85,7 @@ touch /var/log/iotronic/lightning-rod.log
 ```
 
 ##### Configure and start the Lightning-rod
-(note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
+Note that you need the NODE_ID that is the code returned by the IoTronic service after node registration.
 
 ```
 cp /var/lib/iotronic/lightning-rod/settings.example.json /var/lib/iotronic/settings.json

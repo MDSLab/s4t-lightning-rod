@@ -3,7 +3,7 @@
 
 ## Install requirements
 
-##### Install dependencies via opkg:
+##### Install dependencies via opkg
 
 ```
 opkg update
@@ -14,6 +14,7 @@ opkg install unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-n
 ```
 npm install -g --skip-installed --unsafe iotronic-lightning-rod
 ```
+If you get some problems during npm dependencies installation phase we suggest you to follow the "Install from source-code" procedure.
 
 ##### Configure Lightning-rod
 At the end of the installation process we have to execute the LR configuration script:
@@ -33,15 +34,15 @@ This script asks the following information:
 
 
 
-## Install from source code
+## Install from source-code
 
-##### Install required NodeJS modules via npm:
+##### Install required NodeJS modules via npm
 
 ```
 npm install -g requestify is-running connection-tester log4js q fs-access util
 ```
 
-##### Install the Lightning-rod:
+##### Install the Lightning-rod
 
 ```
 mkdir /var/lib/iotronic && cd /var/lib/iotronic
@@ -55,7 +56,7 @@ touch /var/log/iotronic/lightning-rod.log
 ```
 
 ##### Configure Lightning-rod
-(note that you need the NODE_ID that is the code returned by the IoTronic service after node registration):
+Note that you need the NODE_ID that is the code returned by the IoTronic service after node registration.
 
 ```
 cp /var/lib/iotronic/lightning-rod/settings.example.json /var/lib/iotronic/settings.json
@@ -69,7 +70,7 @@ sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
 ```
 
-##### Configure cron to launch the Lightning-rod if not yet running:
+##### Configure cron to launch the Lightning-rod if not yet running
 
 ```
 /etc/init.d/cron stop
@@ -77,7 +78,7 @@ cp /var/lib/iotronic/lightning-rod/etc/cron.d/root_yun /etc/crontabs/root
 /etc/init.d/cron start
 ```
 
-##### Start Lightning-rod and configure it to start at boot:
+##### Start Lightning-rod and configure it to start at boot
 
 ```
 /etc/init.d/lightning-rod enable

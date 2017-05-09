@@ -5,11 +5,11 @@ We tested this procedure on a Ubuntu 16.04 (also within a LXD container). Everyt
 
 ## Install requirements
 
-##### Install dependencies via apt-get:
+##### Install dependencies via apt-get
 ```
 apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python
 ```
-##### Install latest NodeJS release:
+##### Install latest NodeJS release
 ```
 curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 apt-get install -y nodejs
@@ -50,7 +50,7 @@ This script asks the following information:
 
 
 
-## Install from source code
+## Install from source-code
 
 ##### Install required NodeJS modules via npm:
 ```

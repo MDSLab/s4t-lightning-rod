@@ -3,12 +3,12 @@
 We tested this procedure on a Ubuntu 14.04 (also within a LXD container). Everything needs to be run as root.
 
 ## Install requirements
-##### Install dependencies via apt-get:
+##### Install dependencies via apt-get
 ```
 apt -y install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev pkg-config
 ```
 
-##### Install required NodeJS modules via npm:
+##### Install required NodeJS modules via npm
 ```
 npm install -g npm
 npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys
@@ -47,7 +47,7 @@ This script asks the following information:
 
 
 
-## Install from source code
+## Install from source-code
 
 ##### Install Lightning-rod
 ```

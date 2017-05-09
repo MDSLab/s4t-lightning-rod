@@ -4,13 +4,13 @@
 
 ## Install requirements
 
-#### Install dependencies via apt-get:
+#### Install dependencies via apt-get
 ```
 apt-get install unzip socat dsniff fuse libfuse-dev pkg-config
 
 ```
 
-#### Install NodeJS 7.x:
+#### Install NodeJS 7.x
 ```
 curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 apt-get install -y nodejs
@@ -49,9 +49,9 @@ This script asks the following information:
 
 
 
-## Install from source code
+## Install from source-code
 
-##### Install required NodeJS modules via npm:
+##### Install required NodeJS modules via npm
 ```
 npm install -g npm
 npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod util path
@@ -60,7 +60,7 @@ npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bin
 npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 
-##### Install Lightning-rod:
+##### Install Lightning-rod
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
 wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
