@@ -7,9 +7,9 @@
 * 
 */
 
-
+SETTINGS = process.env.IOTRONIC_HOME+'/settings.json';
 nconf = require('nconf');
-nconf.file ({file: 'settings.json'});
+nconf.file ({file: SETTINGS});
 
 log4js = require('log4js');
 log4js.loadAppender('file');
@@ -26,7 +26,7 @@ var requestify = require('requestify');
 var Q = require("q");
 
 
-var ckan_addr = '';
+var ckan_addr = 'smartme-data.unime.it';
 var ckan_host = 'http://'+ckan_addr;
 
 

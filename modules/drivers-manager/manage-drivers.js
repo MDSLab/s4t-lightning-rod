@@ -32,9 +32,9 @@ mode_lookup_table = {
 };
 
 
-var DRIVERS_SETTING = '/var/lib/iotronic/drivers/drivers.json';
-var DRIVERS_STORE = '/var/lib/iotronic/drivers/';
-var MP_DRIVERS = "/var/lib/iotronic/drivers/mountpoints/";
+var DRIVERS_SETTING = process.env.IOTRONIC_HOME + '/drivers/drivers.json';
+var DRIVERS_STORE = process.env.IOTRONIC_HOME + '/drivers/';
+var MP_DRIVERS = process.env.IOTRONIC_HOME + "/drivers/mountpoints/";
 
 /*
 This function mounts all enabled drivers ("autostart" flag set at true) every LR restarting.

@@ -4,7 +4,7 @@
 #        Version 2.0, January 2004
 #     http://www.apache.org/licenses/
 #
-#Copyright (c) 2014 2015 Andrea Rocco Lotronto
+#Copyright (c) 2017 Nicola Peditto
 
 
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
@@ -12,6 +12,9 @@ export NODEJS=/usr/bin/node
 export LD_LIBRARY_PATH=/usr/lib
 export NPM=/usr/bin/npm
 export NODE_PATH=/usr/lib/node_modules:/usr/lib/node_modules:$NODE_PATH
+
+export IOTRONIC_HOME=/var/lib/iotronic
+export LIGHTNINGROD_HOME=/var/lib/iotronic/lightning-rod
 
 START=99
 STOP=99
@@ -27,7 +30,7 @@ start () {
         pid=`ps www | grep lightning-rod.js | grep -v grep | awk {'print $1'}`
 
         if [ -r $pid ]; then
-                cd /usr/lib/node_modules/iotronic-lightning-rod
+                cd $LIGHTNINGROD_HOME
                 node lightning-rod.js >> /dev/null & # /var/log/s4t-lightning-rod.log &
                 echo "Lightning-rod is started"
         else

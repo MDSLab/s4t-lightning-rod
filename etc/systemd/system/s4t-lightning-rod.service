@@ -11,7 +11,9 @@ StandardOutput=journal
 StandardError=journal
 WorkingDirectory=/usr/lib/node_modules/iotronic-lightning-rod
 Environment="NODE_PATH=/usr/lib/node_modules"
-ExecStart=/usr/bin/node /usr/lib/node_modules/iotronic-lightning-rod/lightning-rod.js
+Environment="IOTRONIC_HOME=/var/lib/iotronic"
+Environment="LIGHTNINGROD_HOME=/var/lib/iotronic/lightning-rod"
+ExecStart=/usr/bin/node $LIGHTNINGROD_HOME/lightning-rod.js
 Restart=always
 
 [Install]

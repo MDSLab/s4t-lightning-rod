@@ -8,7 +8,7 @@
  */
 
 nconf = require('nconf');
-SETTINGS = '/var/lib/iotronic/settings.json';
+SETTINGS = process.env.IOTRONIC_HOME + '/settings.json';
 nconf.file ({file: SETTINGS});
 
 log4js = require('log4js');

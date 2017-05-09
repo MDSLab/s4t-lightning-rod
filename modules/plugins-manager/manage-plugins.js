@@ -18,8 +18,8 @@ var running = require('is-running');  	//In order to verify if a plugin is alive
 
 
 var plugins = {};	// This data structure collects all status information of all plugins started in this LR session
-var PLUGINS_SETTING = '/var/lib/iotronic/plugins/plugins.json';
-var PLUGINS_STORE = '/var/lib/iotronic/plugins/';
+var PLUGINS_SETTING = process.env.IOTRONIC_HOME + '/plugins/plugins.json';
+var PLUGINS_STORE = process.env.IOTRONIC_HOME + '/plugins/';
     
     
 
@@ -500,7 +500,7 @@ exports.run = function (args){
 	};
     
     logger.info('[PLUGIN] - Run plugin RPC called for plugin '+ plugin_name +' plugin...');
-    logger.info("[PLUGIN] --> Input parameters: "+ plugin_json);
+    logger.info("[PLUGIN] --> Input parameters:\n"+ plugin_json);
     
     try{
         //Reading the plugin configuration file
@@ -640,7 +640,7 @@ exports.run = function (args){
 
 			response.result = "SUCCESS";
 			response.message = 'Plugin is running!';
-			logger.info('[PLUGIN] - "'+plugin_name + '" - '+response.message);
+			logger.info('[PLUGIN] - '+plugin_name + ' - '+response.message);
 			d.resolve(response);
 
 

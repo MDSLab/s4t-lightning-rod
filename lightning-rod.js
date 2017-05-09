@@ -17,7 +17,7 @@ var autobahn = require('autobahn');
 
 //settings parser
 nconf = require('nconf');
-SETTINGS = '/var/lib/iotronic/settings.json';
+SETTINGS = process.env.IOTRONIC_HOME+'/settings.json';
 nconf.file ({file: SETTINGS});
 
 //logging configuration: "board-management"

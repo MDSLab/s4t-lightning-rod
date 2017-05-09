@@ -27,7 +27,7 @@ node -v
 
 ##### Configure npm NODE_PATH variable
 ```
-echo "NODE_PATH=/usr/lib/node_modules" | sudo tee -a
+echo "export NODE_PATH=/usr/lib/node_modules" | tee -a
 source /etc/profile > /dev/null
 echo $NODE_PATH
 ```
@@ -82,6 +82,9 @@ chmod +x /etc/systemd/system/lightning-rod.service
 systemctl daemon-reload
 systemctl enable lightning-rod.service
 touch /var/log/iotronic/lightning-rod.log
+echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/profile
+echo "export LIGHTNINGROD_HOME=$IOTRONIC_HOME/lightning-rod" >> /etc/profile
+source /etc/profile
 ```
 
 ##### Configure and start the Lightning-rod

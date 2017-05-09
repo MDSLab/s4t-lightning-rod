@@ -64,6 +64,10 @@ chmod +x /etc/init.d/lightning-rod
 chmod +x /var/lib/iotronic/lightning-rod/lr-server.js
 chmod +x /usr/local/lib/node_modules/iotronic-lightning-rod/lr-server.js
 touch /var/log/iotronic/lightning-rod.log
+
+echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
+echo "LIGHTNINGROD_HOME=$IOTRONIC_HOME/lightning-rod" | tee -a /etc/environment
+source /etc/environment > /dev/null
 ```
 
 ##### Configure Lightning-rod
