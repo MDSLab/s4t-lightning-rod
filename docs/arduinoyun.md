@@ -59,6 +59,7 @@ mv s4t-lightning-rod iotronic-lightning-rod
 mkdir plugins && mkdir drivers
 
 cp /var/lib/iotronic/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
+sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/var\/lib\/iotronic\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
 chmod +x /etc/init.d/lightning-rod
 
 mkdir /var/log/iotronic/
