@@ -63,17 +63,18 @@ npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ##### Install Lightning-rod
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
-wget https://github.com/MDSLab/s4t-lightning-rod/archive/master.zip --no-check-certificate
-unzip master.zip && rm -f master.zip
-mv s4t-lightning-rod-master lightning-rod
+git clone git://github.com/MDSLab/s4t-lightning-rod.git
+mv s4t-lightning-rod iotronic-lightning-rod
 mkdir plugins && mkdir drivers
-cp /var/lib/iotronic/lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+
+cp /var/lib/iotronic/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
 chmod +x /etc/systemd/system/lightning-rod.service
 systemctl daemon-reload
-systemctl enable lightning-rod.service
+
 touch /var/log/iotronic/lightning-rod.log
-echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/profile
-echo "export LIGHTNINGROD_HOME=$IOTRONIC_HOME/lightning-rod" >> /etc/profile
+
+echo "export IOTRONIC_HOME=/var/lib/iotronic >> /etc/profile
+echo "export LIGHTNINGROD_HOME=/var/lib/iotronic/iotronic-lightning-rod >> /etc/profile
 source /etc/profile
 ```
 
@@ -81,18 +82,34 @@ source /etc/profile
 Note that you need the <NODE_ID> that is the code returned by the IoTronic service after node registration:
 
 ```
-cp /var/lib/iotronic/lightning-rod/settings.example.json /var/lib/iotronic/settings.json
-cp /var/lib/iotronic/lightning-rod/plugins.example.json /var/lib/iotronic/plugins/plugins.json
-cp /var/lib/iotronic/lightning-rod/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+cp /var/lib/iotronic/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/iotronic-lightning-rod/settings.json
+cp /var/lib/iotronic/iotronic-lightning-rod/plugins.example.json /var/lib/iotronic/iotronic-lightning-rod/plugins/plugins.json
+cp /var/lib/iotronic/iotronic-lightning-rod/drivers.example.json /var/lib/iotronic/iotronic-lightning-rod/drivers/drivers.json
 
-sed -i "s/\"device\":.*\"\"/\"device\": \"raspberry_pi\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"device\":.*\"\"/\"device\": \"raspberry_pi\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
+sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
+sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
+sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
+```
+
+##### Configure logrotate
+nano /etc/logrotate.d/lightning-rod.log
+```
+/var/log/iotronic/lightning-rod.log {
+    weekly
+    rotate = 3
+    compress
+    su root root
+    maxsize 5M
+}
 ```
 
 ## Start Lightning-rod
 ```
+systemctl enable lightning-rod.service
+
 systemctl start lightning-rod.service
+
+tail -f /var/log/iotronic/lightning-rod.log
 ```
