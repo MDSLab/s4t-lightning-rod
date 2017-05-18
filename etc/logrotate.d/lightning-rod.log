@@ -1,0 +1,7 @@
+/var/log/iotronic/lightning-rod.log {
+    weekly
+    rotate = 3
+    compress
+    su root root
+    maxsize 5M
+}

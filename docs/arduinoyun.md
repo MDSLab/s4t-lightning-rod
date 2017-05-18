@@ -4,7 +4,6 @@
 ## Install requirements
 
 #### Configure npm NODE_PATH variable
-
 ```
 echo "export NODE_PATH=/usr/lib/node_modules" >> /etc/profile
 source /etc/profile > /dev/null
@@ -45,13 +44,11 @@ This script asks the following information:
 ## Install from source-code
 
 ##### Install required NodeJS modules via npm
-
 ```
 npm install -g requestify is-running connection-tester log4js q fs-access util
 ```
 
 ##### Install the Lightning-rod
-
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
 git clone git://github.com/MDSLab/s4t-lightning-rod.git
@@ -61,6 +58,8 @@ mkdir plugins && mkdir drivers
 cp /var/lib/iotronic/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
 sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/var\/lib\/iotronic\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
 chmod +x /etc/init.d/lightning-rod
+
+cp /var/lib/iotronic/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 mkdir /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
@@ -85,20 +84,7 @@ sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
 ```
 
-##### Configure logrotate
-nano /etc/logrotate.d/lightning-rod.log
-```
-/var/log/iotronic/lightning-rod.log {
-    weekly
-    rotate = 3
-    compress
-    su root root
-    maxsize 5M
-}
-```
-
 ##### Configure cron to launch the Lightning-rod if not yet running
-
 ```
 /etc/init.d/cron stop
 cp /var/lib/iotronic/iotronic-lightning-rod/etc/cron.d/root_yun /etc/crontabs/root
@@ -106,7 +92,6 @@ cp /var/lib/iotronic/iotronic-lightning-rod/etc/cron.d/root_yun /etc/crontabs/ro
 ```
 
 ##### Start Lightning-rod and configure it to start at boot
-
 ```
 /etc/init.d/lightning-rod enable
 /etc/init.d/lightning-rod start
