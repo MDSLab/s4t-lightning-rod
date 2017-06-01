@@ -4,7 +4,7 @@ export NODE_PATH=/usr/local/lib/node_modules:$NODE_PATH
 
 NAME=lightning-rod
 FOLDER=/usr/local/lib/node_modules/iotronic-lightning-rod
-DAEMON=/usr/local/lib/node_modules/iotronic-lightning-rod/lr-server.js
+DAEMON=$FOLDER/lr-server.js
 DESC=lightning-rod
 LOGFILE="/var/log/iotronic/lightning-rod.log"
 PIDFILE="/var/run/s4t-lightning-rod.pid"

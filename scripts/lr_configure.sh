@@ -27,6 +27,7 @@ if [ "$DEVICE" = "server" ]; then
 
         cp /usr/local/lib/node_modules/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/lightning-rod
         chmod +x /etc/init.d/lightning-rod
+        chmod +x /usr/local/lib/node_modules/iotronic-lightning-rod/lr-server.js
 
     elif [ "$DISTRO" = "16.04" ]; then
 
@@ -35,6 +36,7 @@ if [ "$DEVICE" = "server" ]; then
         /usr/bin/npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 
         cp /usr/lib/node_modules/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+        sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
         chmod +x /etc/systemd/system/lightning-rod.service
         systemctl daemon-reload
 
@@ -45,6 +47,7 @@ fi
 
 if [ "$DEVICE" = "raspberry_pi" ]; then
     cp /usr/lib/node_modules/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+    sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
     chmod +x /etc/systemd/system/lightning-rod.service
     systemctl daemon-reload
 fi
