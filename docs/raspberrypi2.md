@@ -6,7 +6,7 @@
 
 #### Install dependencies via apt-get
 ```
-apt-get install unzip socat dsniff fuse libfuse-dev pkg-config
+apt-get install python unzip socat dsniff fuse libfuse-dev pkg-config 
 
 ```
 
@@ -15,12 +15,16 @@ apt-get install unzip socat dsniff fuse libfuse-dev pkg-config
 curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 apt-get install -y nodejs
 node -v
+
+npm install -g npm
+npm config set python `which python2.7`
+npm -v
 ```
 
 #### Configure npm NODE_PATH variable
 
 ```
-echo "export NODE_PATH=/usr/lib/node_modules" | tee -a
+echo "export NODE_PATH=/usr/lib/node_modules" | tee -a /etc/profile
 source /etc/profile > /dev/null
 echo $NODE_PATH
 ```
@@ -28,7 +32,7 @@ echo $NODE_PATH
 
 ## Install from NPM
 ```
-npm install -g --skip-installed --unsafe iotronic-lightning-rod
+npm install -g --unsafe iotronic-lightning-rod
 ```
 
 ##### Configure Lightning-rod
