@@ -291,8 +291,13 @@ exports.manage_WAMP_connection = function (session, details) {
     //If I'm connected to the WAMP server I can receive RPC command requests to manage FUSE filesystem
     var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
     fsManager.exportFSCommands(session);
-    var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs.js");
+    var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
     fsLibsManager.exportFSLibs(session);
+
+    var manageServices = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
+    manageServices.exportServiceCommands(session);
+
+
 
 };
 

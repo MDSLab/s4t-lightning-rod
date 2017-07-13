@@ -14,6 +14,123 @@ logger.setLevel(loglevel);
 //Services list: it is used to store the services process data that are started in the current LR session
 servicesProcess = [];
 
+var Q = require("q");
+
+// This function expose a service
+exports.enableService = function(args){
+
+    // Parsing the input arguments
+    var serviceName = String(args[0]);
+    var localPort = String(args[1]);
+    var publicPort = String(args[2]);
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    var d = Q.defer();
+
+    reverseTunnellingServer = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
+
+    logger.info('[SERVICE] - Exposing service ' + serviceName + ' (local port ' + localPort + ') on public port ' + publicPort + ' contacting remote server ' + reverseTunnellingServer);
+
+    //Getting the path of the wstt.js module from the configuration file
+    var reverseTunnellingClient = nconf.get('config:reverse:lib:bin');
+
+    //I spawn a process executing the reverse tunnel client with appropriate parameters
+    var spawn = require('child_process').spawn;
+
+    logger.debug('[SERVICE] --> executing command: ' + reverseTunnellingClient + ' -r '+publicPort+':'+'127.0.0.1'+':'+localPort + ' ' + reverseTunnellingServer);
+
+    //I insert the new service in the array so that I can find it later when I have to stop the service
+    var newService = {
+        key: serviceName,
+        port: publicPort,
+        process: spawn(reverseTunnellingClient, ['-r '+publicPort+':'+'127.0.0.1'+':'+localPort, reverseTunnellingServer])
+    };
+
+    servicesProcess.push(newService);
+
+    newService.process.stdout.on('data', function(data){
+        logger.debug('[SERVICE] - onData - '+newService.key+' stdout of process ' + newService.process.pid + ': '+data);
+    });
+    newService.process.stderr.on('data', function(data){
+        logger.error('[SERVICE] - onError - '+newService.key+' stderr of process ' + newService.process.pid + ': '+ data);
+    });
+    newService.process.on('close', function(code){
+        logger.debug('[SERVICE] - onClose - '+newService.key+' child process ' + newService.process.pid + ' exited with code '+ code);
+    });
+
+
+    response.result = "SUCCESS";
+    response.message = "Service "+ serviceName +" successfully exposed on port " + publicPort;
+    logger.info('[SERVICE] --> ' + response.message);
+    d.resolve(response);
+    
+    
+    return d.promise;
+
+};
+
+
+
+
+// This function expose a service
+exports.disableService = function(args){
+
+    var serviceName = args[0];
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    logger.info('[SERVICE] - Disabling ' + serviceName + " service...");
+
+    var d = Q.defer();
+
+    //Looking for the process in the array
+    var i = findValue(servicesProcess, serviceName, 'key');
+
+
+    //Killing the process
+    logger.debug('[SERVICE] --> killing '+serviceName+' process [ PID' + servicesProcess[i].process.pid + " ]");
+    servicesProcess[i].process.kill('SIGINT');
+
+
+    response.result = "SUCCESS";
+    response.message = "Tunnel for "+ serviceName +" service successfully removed from public port " + servicesProcess[i].port;
+    logger.info('[SERVICE] --> ' + response.message);
+
+    servicesProcess.splice(i,1);
+
+    d.resolve(response);
+
+
+    return d.promise;
+
+};
+
+
+//Function that search a process in the array
+function findValue(myArray, value, property) {
+    for(var i = 0, len = myArray.length; i < len; i++) {
+        if (myArray[i][property] === value) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+
+
+
+
+
+
+/*
 exports.exportService = function(args){
     
     //Parsing arguments
@@ -70,13 +187,24 @@ exports.exportService = function(args){
    }
     
 };
+*/
 
-//Function that search a process in the array
-function findValue(myArray, value, property) {
-   for(var i = 0, len = myArray.length; i < len; i++) {
-      if (myArray[i][property] === value) {
-         return i;
-      }
-   }
-   return -1;
-}
+
+
+
+
+
+
+//This function exports all the functions in the module as WAMP remote procedure calls
+exports.exportServiceCommands = function (session){
+
+    //Register all the module functions as WAMP RPCs
+    session.register('s4t.'+boardCode+'.service.enable', exports.enableService);
+    session.register('s4t.'+boardCode+'.service.disable', exports.disableService);
+    
+    logger.info('[WAMP-EXPORTS] Services commands exported to the cloud!');
+
+};
+
+
+

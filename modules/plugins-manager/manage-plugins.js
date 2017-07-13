@@ -20,7 +20,6 @@ var running = require('is-running');  	//In order to verify if a plugin is alive
 var plugins = {};	// This data structure collects all status information of all plugins started in this LR session
 var PLUGINS_SETTING = process.env.IOTRONIC_HOME + '/plugins/plugins.json';
 var PLUGINS_STORE = process.env.IOTRONIC_HOME + '/plugins/';
-
 var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
 
 // This function executes a syncronous plugin ("call" as the exection of a command that returns a value to the "caller"): it is called by Iotronic via RPC

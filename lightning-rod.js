@@ -316,6 +316,24 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 																process.kill(tcpkill_pid);
 
 
+																//double check: It will test after a while if the tcpkill process has been killed
+																setTimeout(function(){
+
+																	if ( running(tcpkill_pid) || tcpkill_pid == null){
+
+																		tcpkill_kill_count = tcpkill_kill_count + 1;
+
+																		logger.warn("[WAMP-RECOVERY] ... tcpkill still running!!! PID ["+tcpkill_pid+"]");
+																		logger.debug('[WAMP-RECOVERY] ... tcpkill killing retry_count '+ tcpkill_kill_count);
+
+																		tcpkill.kill('SIGINT');
+
+																	}
+
+																}, 3000);
+
+
+
 															}catch (e) {
 
 																logger.error('[WAMP-RECOVERY] ... tcpkill killing error: ', e);
