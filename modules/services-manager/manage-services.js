@@ -9,7 +9,7 @@
 
 //service logging configuration: "manageCommands"   
 var logger = log4js.getLogger('manageServices');
-logger.setLevel(loglevel);
+    logger.setLevel(loglevel);
 
 //Services list: it is used to store the services process data that are started in the current LR session
 servicesProcess = [];
@@ -31,49 +31,68 @@ exports.enableService = function(args){
 
     var d = Q.defer();
 
-    reverseTunnellingServer = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
+    //Looking for the process in the array
+    var i = findValue(servicesProcess, serviceName, 'key');
 
-    logger.info('[SERVICE] - Exposing service ' + serviceName + ' (local port ' + localPort + ') on public port ' + publicPort + ' contacting remote server ' + reverseTunnellingServer);
+    if ( i != -1) {
+        
+        logger.warn("Service already active!");
+        response.result = "WARNING";
+        response.message = "Service "+ serviceName +" already active!";
+        logger.info('[SERVICE] --> ' + response.message);
+        d.resolve(response);
 
-    //Getting the path of the wstt.js module from the configuration file
-    var reverseTunnellingClient = nconf.get('config:reverse:lib:bin');
+    }else{
 
-    //I spawn a process executing the reverse tunnel client with appropriate parameters
-    var spawn = require('child_process').spawn;
+        reverseTunnellingServer = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
 
-    logger.debug('[SERVICE] --> executing command: ' + reverseTunnellingClient + ' -r '+publicPort+':'+'127.0.0.1'+':'+localPort + ' ' + reverseTunnellingServer);
+        logger.info('[SERVICE] - Exposing service ' + serviceName + ' (local port ' + localPort + ') on public port ' + publicPort + ' contacting remote server ' + reverseTunnellingServer);
 
-    //I insert the new service in the array so that I can find it later when I have to stop the service
-    var newService = {
-        key: serviceName,
-        port: publicPort,
-        process: spawn(reverseTunnellingClient, ['-r '+publicPort+':'+'127.0.0.1'+':'+localPort, reverseTunnellingServer])
-    };
+        //Getting the path of the wstt.js module from the configuration file
+        var reverseTunnellingClient = nconf.get('config:reverse:lib:bin');
 
-    servicesProcess.push(newService);
+        //I spawn a process executing the reverse tunnel client with appropriate parameters
+        var spawn = require('child_process').spawn;
 
-    newService.process.stdout.on('data', function(data){
-        logger.debug('[SERVICE] - onData - '+newService.key+' stdout of process ' + newService.process.pid + ': '+data);
-    });
-    newService.process.stderr.on('data', function(data){
-        logger.error('[SERVICE] - onError - '+newService.key+' stderr of process ' + newService.process.pid + ': '+ data);
-    });
-    newService.process.on('close', function(code){
-        logger.debug('[SERVICE] - onClose - '+newService.key+' child process ' + newService.process.pid + ' exited with code '+ code);
-    });
+        logger.debug('[SERVICE] --> executing command: ' + reverseTunnellingClient + ' -r '+publicPort+':'+'127.0.0.1'+':'+localPort + ' ' + reverseTunnellingServer);
+
+        //I insert the new service in the array so that I can find it later when I have to stop the service
+        var newService = {
+            key: serviceName,
+            port: publicPort,
+            process: spawn(reverseTunnellingClient, ['-r '+publicPort+':'+'127.0.0.1'+':'+localPort, reverseTunnellingServer])
+        };
+
+        servicesProcess.push(newService);
+
+        newService.process.stdout.on('data', function(data){
+            logger.debug('[SERVICE] - onData - '+newService.key+' stdout of process ' + newService.process.pid + ': '+data);
+        });
+        newService.process.stderr.on('data', function(data){
+            logger.error('[SERVICE] - onError - '+newService.key+' stderr of process ' + newService.process.pid + ': '+ data);
+        });
+        newService.process.on('close', function(code){
+            logger.debug('[SERVICE] - onClose - '+newService.key+' child process ' + newService.process.pid + ' exited with code '+ code);
+        });
 
 
-    response.result = "SUCCESS";
-    response.message = "Service "+ serviceName +" successfully exposed on port " + publicPort;
-    logger.info('[SERVICE] --> ' + response.message);
-    d.resolve(response);
+        response.result = "SUCCESS";
+        response.message = "Service "+ serviceName +" successfully exposed on port " + publicPort;
+        logger.info('[SERVICE] --> ' + response.message);
+        d.resolve(response);
+
+    }
+
+
+
+
+
+
     
     
     return d.promise;
 
 };
-
-
 
 
 // This function expose a service
@@ -85,6 +104,13 @@ exports.disableService = function(args){
         message: '',
         result: ''
     };
+    
+    var service = {
+        status: "",
+        pid: "",
+        name: "",
+        message:""
+    };
 
     logger.info('[SERVICE] - Disabling ' + serviceName + " service...");
 
@@ -92,24 +118,89 @@ exports.disableService = function(args){
 
     //Looking for the process in the array
     var i = findValue(servicesProcess, serviceName, 'key');
+    
+    if(i != -1){
 
+        //Killing the process
+        logger.debug('[SERVICE] --> killing '+serviceName+' process [ PID ' + servicesProcess[i].process.pid + " ]");
+        servicesProcess[i].process.kill('SIGINT');
 
-    //Killing the process
-    logger.debug('[SERVICE] --> killing '+serviceName+' process [ PID' + servicesProcess[i].process.pid + " ]");
-    servicesProcess[i].process.kill('SIGINT');
+        response.result = "SUCCESS";
+        response.message = "Tunnel for "+ serviceName +" service successfully removed from public port " + servicesProcess[i].port;
+        logger.info('[SERVICE] --> ' + response.message);
 
+        servicesProcess.splice(i,1);
 
-    response.result = "SUCCESS";
-    response.message = "Tunnel for "+ serviceName +" service successfully removed from public port " + servicesProcess[i].port;
-    logger.info('[SERVICE] --> ' + response.message);
+        d.resolve(response);
 
-    servicesProcess.splice(i,1);
+    }else{
+        response.result = "WARNING";
+        service.message = serviceName +" service is inactive!";
+        service.status = "INACTIVE";
+        service.pid = null;
+        service.name = serviceName;
+        response.message = service;
+        logger.warn('[SERVICE] --> ' + JSON.stringify(response.message));
+        d.resolve(response);
+    }
 
-    d.resolve(response);
 
 
     return d.promise;
 
+};
+
+
+// This function check service status
+exports.checkService = function(args){
+
+    var serviceName = args[0];
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    var service = {
+        status: "",
+        pid: "",
+        name: "",
+        message:""
+    };
+
+    logger.info('[SERVICE] - Checking ' + serviceName + " service...");
+
+    var d = Q.defer();
+
+    //Looking for the process in the array
+    var i = findValue(servicesProcess, serviceName, 'key');
+
+    if(i == -1){
+
+        response.result = "SUCCESS";
+        service.message = serviceName +" service is inactive!";
+        service.status = "INACTIVE";
+        service.pid = null;
+        service.name = serviceName;
+        response.message = service;
+        logger.warn('[SERVICE] --> ' + JSON.stringify(response.message));
+        d.resolve(response);
+        
+    }else{
+
+        response.result = "WARNING";
+        service.message = serviceName +" service is active!";
+        service.status = "ACTIVE";
+        service.pid = servicesProcess[i].process.pid;
+        service.name = serviceName;
+        response.message = service;
+        logger.info('[SERVICE] --> ' + JSON.stringify(response.message));
+        d.resolve(response); 
+        
+    }
+
+    return d.promise;
+    
 };
 
 
@@ -201,6 +292,7 @@ exports.exportServiceCommands = function (session){
     //Register all the module functions as WAMP RPCs
     session.register('s4t.'+boardCode+'.service.enable', exports.enableService);
     session.register('s4t.'+boardCode+'.service.disable', exports.disableService);
+    session.register('s4t.'+boardCode+'.service.checkService', exports.checkService);
     
     logger.info('[WAMP-EXPORTS] Services commands exported to the cloud!');
 

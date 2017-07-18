@@ -264,7 +264,8 @@ exports.manage_WAMP_connection = function (session, details) {
     logger.info('[WAMP] - Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
     session.publish(connectionTopic, [boardCode, 'connection', session._id]);
 
-    
+
+    /*
     //Topic on which the board can listen for commands
     var commandTopic = 'board.command';
     //Subscribing to the command topic to receive messages for asyncronous operation to be performed
@@ -273,7 +274,7 @@ exports.manage_WAMP_connection = function (session, details) {
     logger.info('[WAMP] - Registering to command topic ' + commandTopic);
     var manageCommands = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-commands');
     session.subscribe(commandTopic, manageCommands.onCommand);
-
+    */
     
     //If I'm connected to the WAMP server I can export my pins on the Cloud as RPCs
     var managePins = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-pins');
