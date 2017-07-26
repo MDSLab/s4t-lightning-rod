@@ -9,12 +9,13 @@
 
 //service logging configuration: "manageCommands"   
 var logger = log4js.getLogger('manageServices');
-    logger.setLevel(loglevel);
+logger.setLevel(loglevel);
 
 //Services list: it is used to store the services process data that are started in the current LR session
 servicesProcess = [];
 
 var Q = require("q");
+
 
 // This function expose a service
 exports.enableService = function(args){
@@ -23,6 +24,7 @@ exports.enableService = function(args){
     var serviceName = String(args[0]);
     var localPort = String(args[1]);
     var publicPort = String(args[2]);
+    var restore = String(args[3]);
 
     var response = {
         message: '',
@@ -31,55 +33,57 @@ exports.enableService = function(args){
 
     var d = Q.defer();
 
+
+    logger.debug("[SERVICE] - RPC enableService called: " + args)
+
     //Looking for the process in the array
     var i = findValue(servicesProcess, serviceName, 'key');
 
     if ( i != -1) {
+
+        if(restore == "true"){
+
+            logger.info('[SERVICE] - Restoring tunnel for '+ serviceName + 'service...');
+
+            //Killing the process
+            logger.debug('[SERVICE] --> killing '+serviceName+' process [ PID ' + servicesProcess[i].process.pid + " ]");
+            servicesProcess[i].process.kill('SIGINT');
+            servicesProcess.splice(i,1);
+
+            createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
+
+                response.result = "SUCCESS";
+                response.message = "Service "+ serviceName +" successfully restored on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
+                logger.info('[SERVICE] --> ' + response.message);
+                d.resolve(response);
+
+            });
+
+
+        }else{
+
+            logger.warn("Service already active!");
+            response.result = "WARNING";
+            response.message = "Service "+ serviceName +" already active!";
+            logger.info('[SERVICE] - ' + response.message);
+            d.resolve(response);
+
+        }
         
-        logger.warn("Service already active!");
-        response.result = "WARNING";
-        response.message = "Service "+ serviceName +" already active!";
-        logger.info('[SERVICE] --> ' + response.message);
-        d.resolve(response);
+
 
     }else{
 
-        reverseTunnellingServer = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
 
-        logger.info('[SERVICE] - Exposing service ' + serviceName + ' (local port ' + localPort + ') on public port ' + publicPort + ' contacting remote server ' + reverseTunnellingServer);
+        logger.info('[SERVICE] - Exposing new tunnel for '+ serviceName + ' service...');
+        createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
 
-        //Getting the path of the wstt.js module from the configuration file
-        var reverseTunnellingClient = nconf.get('config:reverse:lib:bin');
+            response.result = "SUCCESS";
+            response.message = "Service "+ serviceName +" successfully exposed on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
+            logger.info('[SERVICE] --> ' + response.message);
+            d.resolve(response);
 
-        //I spawn a process executing the reverse tunnel client with appropriate parameters
-        var spawn = require('child_process').spawn;
-
-        logger.debug('[SERVICE] --> executing command: ' + reverseTunnellingClient + ' -r '+publicPort+':'+'127.0.0.1'+':'+localPort + ' ' + reverseTunnellingServer);
-
-        //I insert the new service in the array so that I can find it later when I have to stop the service
-        var newService = {
-            key: serviceName,
-            port: publicPort,
-            process: spawn(reverseTunnellingClient, ['-r '+publicPort+':'+'127.0.0.1'+':'+localPort, reverseTunnellingServer])
-        };
-
-        servicesProcess.push(newService);
-
-        newService.process.stdout.on('data', function(data){
-            logger.debug('[SERVICE] - onData - '+newService.key+' stdout of process ' + newService.process.pid + ': '+data);
         });
-        newService.process.stderr.on('data', function(data){
-            logger.error('[SERVICE] - onError - '+newService.key+' stderr of process ' + newService.process.pid + ': '+ data);
-        });
-        newService.process.on('close', function(code){
-            logger.debug('[SERVICE] - onClose - '+newService.key+' child process ' + newService.process.pid + ' exited with code '+ code);
-        });
-
-
-        response.result = "SUCCESS";
-        response.message = "Service "+ serviceName +" successfully exposed on port " + publicPort;
-        logger.info('[SERVICE] --> ' + response.message);
-        d.resolve(response);
 
     }
 
@@ -204,6 +208,44 @@ exports.checkService = function(args){
 };
 
 
+
+function createTunnel(serviceName, localPort, publicPort, callback) {
+
+    reverseTunnellingServer = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
+
+    logger.info('[SERVICE] --> exposing local port ' + localPort + ' on public port ' + publicPort + ' contacting remote server ' + reverseTunnellingServer);
+
+    //Getting the path of the wstt.js module from the configuration file
+    var reverseTunnellingClient = nconf.get('config:reverse:lib:bin');
+
+    //I spawn a process executing the reverse tunnel client with appropriate parameters
+    var spawn = require('child_process').spawn;
+
+    logger.debug('[SERVICE] --> executing command: ' + reverseTunnellingClient + ' -r '+publicPort+':'+'127.0.0.1'+':'+localPort + ' ' + reverseTunnellingServer);
+
+    //I insert the new service in the array so that I can find it later when I have to stop the service
+    var newTunnel = {
+        key: serviceName,
+        port: publicPort,
+        process: spawn(reverseTunnellingClient, ['-r '+publicPort+':'+'127.0.0.1'+':'+localPort, reverseTunnellingServer])
+    };
+
+    servicesProcess.push(newTunnel);
+
+    newTunnel.process.stdout.on('data', function(data){
+        logger.debug('[SERVICE] - onData - '+newTunnel.key+' stdout of process ' + newTunnel.process.pid + ': '+data);
+    });
+    newTunnel.process.stderr.on('data', function(data){
+        logger.error('[SERVICE] - onError - '+newTunnel.key+' stderr of process ' + newTunnel.process.pid + ': '+ data);
+    });
+    newTunnel.process.on('close', function(code){
+        logger.debug('[SERVICE] - onClose - '+newTunnel.key+' child process ' + newTunnel.process.pid + ' exited with code '+ code);
+    });
+
+    callback(newTunnel);
+
+}
+
 //Function that search a process in the array
 function findValue(myArray, value, property) {
     for(var i = 0, len = myArray.length; i < len; i++) {
@@ -213,10 +255,6 @@ function findValue(myArray, value, property) {
     }
     return -1;
 }
-
-
-
-
 
 
 
