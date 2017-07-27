@@ -219,7 +219,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
                 socat_config["pid"] = socat_pid;
                 update_net_conf(configFile, "Socat");
 
-                session_wamp.call('iotronic.rpc.command.result_network_board', [msg.logmsg, boardCode]).then(
+                session_wamp.call('s4t.iotronic.vnet.result_network_board', [msg.logmsg, boardCode]).then(
                     function (response) {
                         logger.info('[VNET] --> response from IOTRONIC: \n' + response.message);
                         logger.info('[VNET] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');

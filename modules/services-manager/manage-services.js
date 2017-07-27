@@ -334,6 +334,15 @@ exports.exportServiceCommands = function (session){
     
     logger.info('[WAMP-EXPORTS] Services commands exported to the cloud!');
 
+    logger.info('[SERVICE] - Service restoring started...');
+    session.call('s4t.iotronic.service.restore', [boardCode]).then(
+        function (response) {
+            logger.info('[SERVICE] --> response from IoTronic: ' + response.message);
+            logger.info('[SERVICE] --> Services restoring completed!');
+        }
+    );
+    
+
 };
 
 
