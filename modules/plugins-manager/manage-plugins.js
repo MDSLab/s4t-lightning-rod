@@ -1035,11 +1035,11 @@ exports.removePlugin = function(args){
 exports.exportPluginCommands = function (session){
 	
     //Register all the module functions as WAMP RPCs
-    session.register(boardCode+'.command.rpc.plugin.run', exports.run);
-    session.register(boardCode+'.command.rpc.plugin.kill', exports.kill);    
-    session.register(boardCode+'.command.rpc.injectplugin', exports.injectPlugin);
-    session.register(boardCode+'.command.rpc.plugin.call', exports.call);
-    session.register(boardCode+'.command.rpc.removeplugin', exports.removePlugin);
+    session.register('s4t'+ boardCode+'.plugin.run', exports.run);
+    session.register('s4t'+ boardCode+'.plugin.kill', exports.kill);
+    session.register('s4t'+ boardCode+'.plugin.inject', exports.injectPlugin);
+    session.register('s4t'+ boardCode+'.plugin.call', exports.call);
+    session.register('s4t'+ boardCode+'.plugin.remove', exports.removePlugin);
     
     logger.info('[WAMP-EXPORTS] Plugin commands exported to the cloud!');
     

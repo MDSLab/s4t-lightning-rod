@@ -1,6 +1,6 @@
 {
   "name": "iotronic-lightning-rod",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Implementation of the Lightning-rod, the Stack4Things node-side probe (this version works with the standalone version of IoTronic) http://stack4things.unime.it/",
   "main": "lightning-rod.js",
   "directories": {
@@ -22,7 +22,7 @@
     "requestify": ">=0.1.17",
     "is-running": ">=2.0.0",
     "connection-tester": ">=0.1.1",
-    "log4js": ">=0.6.37",
+    "log4js": "<=1.1.0",
     "q": ">=0.9.7",
     "fs-access": ">=1.0.1",
     "mknod": ">=1.1.0",

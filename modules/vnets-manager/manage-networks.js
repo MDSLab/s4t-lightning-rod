@@ -398,9 +398,9 @@ exports.exportNetworkCommands = function (session) {
     session_wamp = session;
     
     //Register all the module functions as WAMP RPCs
-    session.register(boardCode + '.command.rpc.network.setSocatOnBoard', exports.setSocatOnBoard);
-    session.register(boardCode + '.command.rpc.network.addToNetwork', exports.addToNetwork);
-    session.register(boardCode + '.command.rpc.network.removeFromNetwork', exports.removeFromNetwork);
+    session.register('s4t'+ boardCode + '.vnet.setSocatOnBoard', exports.setSocatOnBoard);
+    session.register('s4t'+ boardCode + '.vnet.addToNetwork', exports.addToNetwork);
+    session.register('s4t'+ boardCode + '.vnet.removeFromNetwork', exports.removeFromNetwork);
 
     logger.info('[WAMP-EXPORTS] Network commands exported to the cloud!');
 

@@ -30,6 +30,30 @@ fi
 
 echo "Configuring..."
 
+# Set Environment variables
+if grep -Fq "IOTRONIC_HOME" /etc/profile
+then
+    # if found
+    echo "IOTRONIC_HOME env var already set."
+else
+    # if not found
+    echo "Setting IOTRONIC_HOME env var."
+    echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/profile
+    source /etc/profile
+fi
+
+if grep -Fq "LIGHTNINGROD_HOME" /etc/profile
+then
+    # if found
+    echo "LIGHTNINGROD_HOME env var already set."
+else
+    # if not found
+    echo "Setting LIGHTNINGROD_HOME env var."
+    echo "export LIGHTNINGROD_HOME=/usr/lib/node_modules/iotronic-lightning-rod" >> /etc/profile
+    source /etc/profile
+fi
+
+
 echo "After the installation execute lr_configure.sh script in order to complete the Lightning-rod configuration!"
 echo "--> /usr/lib/node_modules/iotronic-lightning-rod/scripts/lr_configure.sh"
 chmod +x /usr/lib/node_modules/iotronic-lightning-rod/scripts/lr_configure.sh
