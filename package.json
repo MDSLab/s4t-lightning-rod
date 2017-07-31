@@ -1,35 +1,78 @@
 {
-  "name": "s4t-lighthing-rod",
-  "version": "0.0.1",
-  "description": "node-lighthing-rod is the client to connect Arduino YUN/Linino One or Raspberry Pi to s4t-node-cloud",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "iotronic-lightning-rod",
+  "version": "1.0.2",
+  "description": "Implementation of the Lightning-rod, the Stack4Things node-side probe (this version works with the standalone version of IoTronic) http://stack4things.unime.it/",
+  "main": "lightning-rod.js",
+  "directories": {
+    "doc": "docs"
   },
-  "dependencies":{
+  "scripts": {
+    "test": "node lightning-rod.js",
+    "postinstall": "./scripts/postinst",
+    "uninstall": "./scripts/postuninst",
+    "copy:package.dist.json": "cp package.dist.json dist/package.json",
+    "build:index.js": "noderify -f nconf -f log4js -f fuse-bindings -f ideino-linino-lib lightning-rod.js > dist/index.js",
+    "build": "npm run clean && mkdir -p dist && npm run build:index.js && npm run copy:package.dist.json",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
     "node-reverse-wstunnel": ">=0.1.2",
-    "autobahn": ">=0.9.6",
-    "nconf":">=0.7.1"
+    "autobahn": ">=0.9.9",
+    "nconf": ">=0.8.4",
+    "requestify": ">=0.1.17",
+    "is-running": ">=2.0.0",
+    "connection-tester": ">=0.1.1",
+    "log4js": ">=0.6.37",
+    "q": ">=0.9.7",
+    "fs-access": ">=1.0.1",
+    "mknod": ">=1.1.0",
+    "fuse-bindings": ">=2.8.1"
+  },
+  "devDependencies": {
+    "noderify": "^2.0.0",
+    "rimraf": "^2.6.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MDSLab/s4t-lighthing-rod.git"
+    "url": "git+https://github.com/MDSLab/s4t-lightning-rod.git"
   },
   "keywords": [
-    "WAMP",
     "IoT",
-    "WebSocket",
-    "Cloud"
+    "Stack4Things",
+    "s4t",
+    "Cloud",
+    "WAMP"
   ],
-  "author": "Andrea Rocco Lotronto <andrealotronto@gmail.com>",
-  "license": [
+  "author": "Nicola Peditto <npeditto@unime.it>",
+  "contributors": [
     {
-      "type": "Apache-2.0",
-      "url": "https://github.com/MDSLab/s4t-lighthing-rod/LICENSE"
+      "name": "Dario Bruneo",
+      "email": "dbruneo@unime.it"
+    },
+    {
+      "name": "Francesco Longo",
+      "email": "flongo@unime.it"
+    },
+    {
+      "name": "Giovanni Merlino",
+      "email": "gmerlino@unime.it"
+    },
+    {
+      "name": "Andrea Rocco Lotronto",
+      "email": "andrealotronto@gmail.com"
+    },
+    {
+      "name": "Fabio Verboso",
+      "email": "fverboso@unime.it"
+    },
+    {
+      "name": "Carmelo Romeo",
+      "email": "caromeo@unime.it"
     }
   ],
+  "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/MDSLab/s4t-lighthing-rod/issues"
+    "url": "https://github.com/MDSLab/s4t-lightning-rod/issues"
   },
-  "homepage": "https://github.com/MDSLab/s4t-lighthing-rod"
+  "homepage": "https://github.com/MDSLab/s4t-lightning-rod#readme"
 }

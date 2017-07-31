@@ -3,7 +3,7 @@
 	
 		"device":"",
 		"log": {
-		    "logfile": "/var/log/s4t-lightning-rod.log",
+		    "logfile": "/var/log/iotronic/lightning-rod.log",
 		    "loglevel": "info"
 		},
 		"wamp":
@@ -20,14 +20,16 @@
 				"port_reverse": "8080"
 			},
 			"lib":{
-				"bin":"/opt/usr/lib/node_modules/node-reverse-wstunnel/bin/wstt.js"
-			}
+				"bin":""
+			},
+			"pid":""
 		},
 
 		"socat":{
 			"client":{
 				"port":"20000"
-			}
+			},
+			"pid":""
 		},
 
 		"board":
