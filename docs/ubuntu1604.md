@@ -58,8 +58,8 @@ source /etc/environment > /dev/null
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod
-npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+npm install -g --unsafe gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js@1.1.1 q secure-keys fs-access mknod
+npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 
 ##### Install the Lightning-rod
