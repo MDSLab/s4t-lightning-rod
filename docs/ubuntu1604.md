@@ -96,7 +96,7 @@ sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<WAMP_IP>\"/g" /var/lib/iot
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<WS_IP>\"/g" /var/lib/iotronic/settings.json
 ```
 
-##### Configure logrotate
+## Configure logrotate
 nano /etc/logrotate.d/lightning-rod.log
 ```
 /var/log/iotronic/lightning-rod.log {
