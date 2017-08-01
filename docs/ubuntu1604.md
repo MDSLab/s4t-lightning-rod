@@ -27,7 +27,7 @@ echo $NODE_PATH
 
 ## Install from NPM
 ```
-npm install -g --skip-installed --unsafe iotronic-lightning-rod
+npm install -g --unsafe iotronic-lightning-rod
 ```
 
 ##### Configure Lightning-rod
@@ -45,7 +45,13 @@ This script asks the following information:
 
 * WAMP server IP
 ```
+Add ENV variables
+```
+echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
+echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/iotronic-lightning-rod" | tee -a /etc/environment
 
+source /etc/environment > /dev/null
+```
 
 
 ## Install from source-code
