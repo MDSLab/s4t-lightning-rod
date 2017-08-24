@@ -337,7 +337,7 @@ exports.exportServiceCommands = function (session){
     logger.info('[SERVICE] - Service restoring started...');
     session.call('s4t.iotronic.service.restore', [boardCode]).then(
         function (response) {
-            logger.info('[SERVICE] --> response from IoTronic: ' + response.message);
+            logger.info('[SERVICE] --> Response from IoTronic: ' + response.message);
             logger.info('[SERVICE] --> Services restoring completed!');
         }
     );
