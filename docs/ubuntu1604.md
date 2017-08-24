@@ -18,7 +18,9 @@ node -v
 npm install -g npm
 npm config set python `which python2.7`
 npm -v
-
+```
+##### Configure npm NODE_PATH variable
+```
 echo "NODE_PATH=/usr/lib/node_modules" | tee -a /etc/environment
 source /etc/environment > /dev/null
 echo $NODE_PATH
@@ -27,7 +29,7 @@ echo $NODE_PATH
 
 ## Install from NPM
 ```
-npm install -g --unsafe iotronic-lightning-rod
+npm install -g --skip-installed --unsafe iotronic-lightning-rod
 ```
 
 ##### Configure Lightning-rod
@@ -45,21 +47,15 @@ This script asks the following information:
 
 * WAMP server IP
 ```
-Add ENV variables
-```
-echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
-echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/iotronic-lightning-rod" | tee -a /etc/environment
 
-source /etc/environment > /dev/null
-```
 
 
 ## Install from source-code
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g --unsafe gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js@1.1.1 q secure-keys fs-access mknod
-npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod
+npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 
 ##### Install the Lightning-rod
@@ -89,14 +85,14 @@ cp /var/lib/iotronic/iotronic-lightning-rod/settings.example.json /var/lib/iotro
 cp /var/lib/iotronic/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
 cp /var/lib/iotronic/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
 
-sed -i "s/\"device\":.*\"\"/\"device\": \"server\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"device\":.*\"\"/\"device\": \"laptop\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_UUID>\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<WAMP_IP>\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<WS_IP>\"/g" /var/lib/iotronic/settings.json
 ```
 
-## Configure logrotate
+##### Configure logrotate
 nano /etc/logrotate.d/lightning-rod.log
 ```
 /var/log/iotronic/lightning-rod.log {

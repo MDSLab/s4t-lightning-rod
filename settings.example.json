@@ -36,21 +36,6 @@
 		{
 			"code":"",
 			"status": "new",
-			"services":{
-				"ssh":{
-					"port":"22"
-				},
-				"tty":{
-					"port":"2233"
-				},
-				"ideino":{
-					"port":"2424"
-				},
-				"osjs":{
-					"port":"8000"
-				}
-			},
-			
 			"position":{
 				"altitude":0,
 				"longitude":0,

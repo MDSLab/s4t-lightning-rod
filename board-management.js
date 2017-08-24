@@ -263,33 +263,19 @@ exports.manage_WAMP_connection = function (session, details) {
     //Registering the board to the Cloud by sending a message to the connection topic
     logger.info('[WAMP] - Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
     session.publish(connectionTopic, [boardCode, 'connection', session._id]);
-
-
-    /*
-    //Topic on which the board can listen for commands
-    var commandTopic = 'board.command';
-    //Subscribing to the command topic to receive messages for asyncronous operation to be performed
-    //Maybe everything can be implemented as RPCs
-    //Right now the onCommand method of the manageCommands object is invoked as soon as a message is received on the topic
-    logger.info('[WAMP] - Registering to command topic ' + commandTopic);
-    var manageCommands = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-commands');
-    session.subscribe(commandTopic, manageCommands.onCommand);
-    */
     
-    //If I'm connected to the WAMP server I can export my pins on the Cloud as RPCs
+    
+    // MODULES LOADING--------------------------------------------------------------------------------------------------
     var managePins = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-pins');
     managePins.exportPins(session);
 
-    //If I'm connected to the WAMP server I can receive plugins to be scheduled as RPCs
     var managePlugins = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
     managePlugins.exportPluginCommands(session);
 
-    //If I'm connected to the WAMP server I can receive RPC command requests to manage drivers
     var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
     driversManager.exportDriverCommands(session);
     driversManager.restartDrivers();
 
-    //If I'm connected to the WAMP server I can receive RPC command requests to manage FUSE filesystem
     var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
     fsManager.exportFSCommands(session);
     var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
@@ -297,7 +283,7 @@ exports.manage_WAMP_connection = function (session, details) {
 
     var manageServices = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
     manageServices.exportServiceCommands(session);
-
+    //------------------------------------------------------------------------------------------------------------------
 
 
 };
@@ -391,6 +377,36 @@ exports.execAction = function(args){
             });
             break;
 
+        case 'hostname':
+
+            exec('echo `hostname`', function(error, stdout, stderr){
+
+                if(error) {
+                    logger.error('[SYSTEM] - Echo result: ' + error);
+                    response.message = error;
+                    response.result = "ERROR";
+                    d.resolve(response);
+                }
+                else if (stderr){
+                    if (stderr == "")
+                        stderr = "Doing echo...";
+
+                    logger.info('[SYSTEM] - Echo result: ' + stderr);
+                    response.message = stderr;
+                    response.result = "WARNING";
+                    d.resolve(response);
+                }
+                else{
+                    logger.info('[SYSTEM] - Echo result: ' + stdout);
+                    response.message = stdout;
+                    response.result = "SUCCESS";
+                    d.resolve(response);
+                }
+
+
+            });
+            break;
+
         default:
             
             response.message = "Board operation '" + action + "' not supported!";
@@ -415,8 +431,8 @@ exports.exportManagementCommands = function (session) {
 
     //Register all the module functions as WAMP RPCs
     logger.info('[WAMP-EXPORTS] Management commands exported to the cloud!');
-    session.register(boardCode + '.command.setBoardPosition', exports.setBoardPosition);
-    session.register(boardCode + '.command.checkRegistrationStatus', exports.checkRegistrationStatus);
-    session.register(boardCode + '.command.execAction', exports.execAction);
+    session.register('s4t.' + boardCode + '.board.setBoardPosition', exports.setBoardPosition);
+    session.register('s4t.' + boardCode + '.board.checkRegistrationStatus', exports.checkRegistrationStatus);
+    session.register('s4t.' + boardCode + '.board.execAction', exports.execAction);
     
 };
