@@ -657,7 +657,7 @@ exports.run = function (args){
       	// Here the plugin does not exist
 
 		response.result = "ERROR";
-		response.message = "Plugin \"" + plugin_name + "\" does not exist on this board!";
+		response.message = "Plugin '" + plugin_name + "' does not exist on this board!";
 		logger.warn('[PLUGIN] - '+plugin_name + ' - '+response.message);
 		d.resolve(response);
 
@@ -734,7 +734,12 @@ exports.kill = function (args){
 				d.resolve(response);
 	  		}
 	      
-  		}
+  		}else{
+			response.result = "ERROR";
+			response.message = "Plugin '" + plugin_name + "' is not injected on this board!";
+			logger.error('[PLUGIN] - stop plugin '+plugin_name + ': '+response.message);
+			d.resolve(response);
+		}
     
 
     }
@@ -835,13 +840,11 @@ exports.injectPlugin = function(args){
 	} else{
 
 		response.result = "ERROR";
-		response.message = "ERROR: "+plugin_name+" plugin's files already injected! - Remove the previous plugin installation!";
+		response.message = "ERROR: "+plugin_name+" plugin's files already injected! - Remove the previous plugin's data!";
 		logger.warn('[PLUGIN] --> ' + response.message);
 		d.resolve(response);
 
 	}
-
-
     
     return d.promise;
     
@@ -1035,11 +1038,11 @@ exports.removePlugin = function(args){
 exports.exportPluginCommands = function (session){
 	
     //Register all the module functions as WAMP RPCs
-    session.register('s4t'+ boardCode+'.plugin.run', exports.run);
-    session.register('s4t'+ boardCode+'.plugin.kill', exports.kill);
-    session.register('s4t'+ boardCode+'.plugin.inject', exports.injectPlugin);
-    session.register('s4t'+ boardCode+'.plugin.call', exports.call);
-    session.register('s4t'+ boardCode+'.plugin.remove', exports.removePlugin);
+    session.register('s4t.'+ boardCode+'.plugin.run', exports.run);
+    session.register('s4t.'+ boardCode+'.plugin.kill', exports.kill);
+    session.register('s4t.'+ boardCode+'.plugin.inject', exports.injectPlugin);
+    session.register('s4t.'+ boardCode+'.plugin.call', exports.call);
+    session.register('s4t.'+ boardCode+'.plugin.remove', exports.removePlugin);
     
     logger.info('[WAMP-EXPORTS] Plugin commands exported to the cloud!');
     
