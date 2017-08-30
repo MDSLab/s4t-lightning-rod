@@ -43,7 +43,7 @@ exports.enableService = function(args){
 
         if(restore == "true"){
 
-            logger.info('[SERVICE] - Restoring tunnel for '+ serviceName + 'service...');
+            logger.info("[SERVICE] - Restoring tunnel for '"+ serviceName + "' service...");
 
             //Killing the process
             logger.debug('[SERVICE] --> killing '+serviceName+' process [ PID ' + servicesProcess[i].process.pid + " ]");
