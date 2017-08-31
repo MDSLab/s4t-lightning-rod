@@ -65,9 +65,11 @@ npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0
 ##### Install the Lightning-rod
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
+mkdir plugins && mkdir drivers
+
+cd /usr/lib/node_modules/
 git clone git://github.com/MDSLab/s4t-lightning-rod.git
 mv s4t-lightning-rod iotronic-lightning-rod
-mkdir plugins && mkdir drivers
 
 cp /var/lib/iotronic/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
 sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/var\/lib\/iotronic\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
