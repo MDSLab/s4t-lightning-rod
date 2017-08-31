@@ -78,8 +78,8 @@ systemctl daemon-reload
 
 touch /var/log/iotronic/lightning-rod.log
 
-echo "IOTRONIC_HOME=/usr/lib/node_modules/iotronic-lightning-rod" | tee -a /etc/environment
-echo "LIGHTNINGROD_HOME=$IOTRONIC_HOME/lightning-rod" | tee -a /etc/environment
+echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
+echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/iotronic-lightning-rod" | tee -a /etc/environment
 source /etc/environment > /dev/null
 
 ```
