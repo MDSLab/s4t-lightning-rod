@@ -103,11 +103,11 @@ function setMode(args) {
 exports.exportPins = function (session) {
 
     //Register all the module functions as WAMP RPCs
-    session.register('s4t'+ boardCode + '.gpio.setmode', setMode);
-    session.register('s4t'+ boardCode + '.gpio.read.digital', readDigital);
-    session.register('s4t'+ boardCode + '.gpio.write.digital', writeDigital);
-    session.register('s4t'+ boardCode + '.gpio.read.analog', readAnalog);
-    session.register('s4t'+ boardCode + '.gpio.write.analog', writeAnalog);
+    session.register('s4t.'+ boardCode + '.gpio.setmode', setMode);
+    session.register('s4t.'+ boardCode + '.gpio.read.digital', readDigital);
+    session.register('s4t.'+ boardCode + '.gpio.write.digital', writeDigital);
+    session.register('s4t.'+ boardCode + '.gpio.read.analog', readAnalog);
+    session.register('s4t.'+ boardCode + '.gpio.write.analog', writeAnalog);
 
     logger.info('[WAMP-EXPORTS] Pins exported to the cloud!');
 

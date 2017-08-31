@@ -13,11 +13,68 @@ var logger = log4js.getLogger('board-management');
 
 var fs = require("fs");
 
+var board_session = null;
 
 var spawn = require('child_process').spawn;
 
 var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
 
+var exec = require('child_process').exec;
+var Q = require("q");
+
+
+//This function contains the logic that has to be performed if I'm connected to the WAMP server
+function manage_WAMP_connection(session) {
+
+    logger.info('[CONFIGURATION] - Board configuration starting...');
+
+    //EXPORTING NETWORK COMMANDS
+    var manageNetworks = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
+    manageNetworks.exportNetworkCommands(session);
+
+
+    //Topic on which the board can send a message to be registered
+    var connectionTopic = 'board.connection';
+    session.subscribe(connectionTopic, onTopicConnection);
+    //Registering the board to the Cloud by sending a message to the connection topic
+    logger.info("[WAMP] - Sending board ID '" + boardCode + "' to topic " + connectionTopic + " to register the board");
+    session.publish(connectionTopic, [boardCode, 'connection', session._id]);
+
+}
+
+function onTopicConnection(args) {
+    var message = args[0];
+    if (message == 'IoTronic-connected')
+        logger.info("Message on board.connection: " + args[0])
+
+
+}
+
+// This function loads the Lightning-rod modules
+function moduleLoader (session) {
+    // MODULES LOADING--------------------------------------------------------------------------------------------------
+    var managePins = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-pins');
+    managePins.exportPins(session);
+
+    var managePlugins = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
+    managePlugins.exportPluginCommands(session);
+
+    var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
+    driversManager.exportDriverCommands(session);
+    driversManager.restartDrivers();
+
+    var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
+    fsManager.exportFSCommands(session);
+    var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
+    fsLibsManager.exportFSLibs(session);
+
+    var manageServices = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
+    manageServices.exportServiceCommands(session);
+    //------------------------------------------------------------------------------------------------------------------
+}
+
+
+/*
 exports.execute = function (command, label) {
     cmd = command.split(' ');
     logger.debug(label + ' COMMAND: ' + command);
@@ -37,7 +94,7 @@ exports.execute = function (command, label) {
     return result;
 
 };
-
+*/
 
 // Init() LR function in order to control the correct LR configuration:
 // - logging setup
@@ -126,6 +183,7 @@ exports.Init_Ligthning_Rod = function (callback) {
     }
 
 };
+
 
 // This function checks the settings correctness
 exports.checkSettings = function (callback) {
@@ -239,55 +297,6 @@ exports.checkSettings = function (callback) {
 };
 
 
-function onTopicConnection(args) {
-    var message = args[0];
-    if (message == 'Iotronic-connected')
-        logger.info("Message on board.connection: " + args[0])
-    
-
-}
-
-//This function contains the logic that has to be performed if I'm connected to the WAMP server
-exports.manage_WAMP_connection = function (session, details) {
-
-    logger.info('[CONFIGURATION] - Registered board configuration starting...');
-    
-    //EXPORTING NETWORK COMMANDS 
-    var manageNetworks = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
-    manageNetworks.exportNetworkCommands(session);
-
-    
-    //Topic on which the board can send a message to be registered 
-    var connectionTopic = 'board.connection';
-    session.subscribe(connectionTopic, onTopicConnection);
-    //Registering the board to the Cloud by sending a message to the connection topic
-    logger.info('[WAMP] - Sending board ID ' + boardCode + ' to topic ' + connectionTopic + ' to register the board');
-    session.publish(connectionTopic, [boardCode, 'connection', session._id]);
-    
-    
-    // MODULES LOADING--------------------------------------------------------------------------------------------------
-    var managePins = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-pins');
-    managePins.exportPins(session);
-
-    var managePlugins = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
-    managePlugins.exportPluginCommands(session);
-
-    var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
-    driversManager.exportDriverCommands(session);
-    driversManager.restartDrivers();
-
-    var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
-    fsManager.exportFSCommands(session);
-    var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
-    fsLibsManager.exportFSLibs(session);
-
-    var manageServices = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
-    manageServices.exportServiceCommands(session);
-    //------------------------------------------------------------------------------------------------------------------
-
-
-};
-
 // This function sets the coordinates of the device: called by Iotronic via RPC
 exports.setBoardPosition = function (args) {
 
@@ -315,24 +324,107 @@ exports.setBoardPosition = function (args) {
 
 };
 
-// This function manages the wrong/unregistered status of the board
+
+// This function manages the registration status of the board
 exports.checkRegistrationStatus = function(args){
 
     var response = args[0];
-    
-    logger.error("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
-    logger.info("[SYSTEM] - Bye");
 
-    process.exit();
+    if(response.result == "SUCCESS"){
+
+        logger.info("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
+
+
+
+
+
+        // CONNECTION TO IoTronic after access granted.
+        var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+        var board_config = configFile.config["board"];
+
+        logger.info("[CONFIGURATION] - Board configuration parameters: " + JSON.stringify(board_config));
+
+        //PROVISIONING: Iotronic sends coordinates to this device when its status is "new"
+        if(reg_status === "new"){
+
+            logger.info('[CONFIGURATION] - NEW BOARD CONFIGURATION STARTED... ');
+
+            board_session.call("s4t.board.provisioning", [boardCode]).then(
+
+                function(result){
+
+                    logger.info("\n\nPROVISIONING "+boardCode+" RECEIVED: " + JSON.stringify(result) + "\n\n");
+
+                    board_position = result.message[0];
+                    board_config["position"]=result.message[0];
+                    board_config["status"]="registered";
+
+                    logger.info("\n[CONFIGURATION] - BOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]));
+
+                    //Updates the settings.json file
+                    fs.writeFile(SETTINGS, JSON.stringify(configFile, null, 4), function(err) {
+                        if(err) {
+                            logger.error('Error writing settings.json file: ' + err);
+
+                        } else {
+                            logger.info("settings.json configuration file saved to " + SETTINGS);
+                            //Calling the manage_WAMP_connection function that contains the logic that has to be performed if the device is connected to the WAMP server
+                            //exports.manage_WAMP_connection(board_session, details);
+                            moduleLoader(board_session);
+                        }
+                    });
+
+                    //Create a backup file of settings.json
+                    fs.writeFile(SETTINGS + ".BKP", JSON.stringify(configFile, null, 4), function(err) {
+                        if(err) {
+                            logger.error('Error writing settings.json.BKP file: ' + err);
+
+                        } else {
+                            logger.info("settings.json.BKP configuration file saved to " + SETTINGS + ".BKP");
+                        }
+                    });
+
+
+                }, board_session.log);
+
+
+        } else if(reg_status === "registered"){
+
+            //Calling the manage_WAMP_connection function that contains the logic that has to be performed if the device is connected to the WAMP server
+            //exports.manage_WAMP_connection(board_session, details);
+            moduleLoader(board_session);
+
+        } else{
+
+            logger.error('[CONFIGURATION] - WRONG BOARD STATUS: status allowed "new" or "registerd"!');
+            process.exit();
+
+        }
+
+
+
+
+
+
+
+
+
+
+    }else {
+        // IF access to IoTronic was rejected
+        logger.error("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
+        logger.info("[SYSTEM] - Bye");
+
+        process.exit();
+    }
+    
+
     
 
 };
 
 
-var exec = require('child_process').exec;
-var Q = require("q");
-
-// Reboot LR
+// To execute pre-defined commands in the board shell
 exports.execAction = function(args){
 
     var d = Q.defer();
@@ -429,10 +521,15 @@ exports.execAction = function(args){
 
 exports.exportManagementCommands = function (session) {
 
+    board_session = session;
+
     //Register all the module functions as WAMP RPCs
     logger.info('[WAMP-EXPORTS] Management commands exported to the cloud!');
     session.register('s4t.' + boardCode + '.board.setBoardPosition', exports.setBoardPosition);
     session.register('s4t.' + boardCode + '.board.checkRegistrationStatus', exports.checkRegistrationStatus);
     session.register('s4t.' + boardCode + '.board.execAction', exports.execAction);
+
+    manage_WAMP_connection(session)
     
 };
+
