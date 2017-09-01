@@ -23,7 +23,7 @@ var exec = require('child_process').exec;
 var Q = require("q");
 
 
-//This function contains the logic that has to be performed if I'm connected to the WAMP server
+// This function contains the logic that has to be performed if I'm connected to the WAMP server
 function manage_WAMP_connection(session) {
 
     logger.info('[CONFIGURATION] - Board configuration starting...');
@@ -42,6 +42,7 @@ function manage_WAMP_connection(session) {
 
 }
 
+// This function manages the messages published in "board.connection" topic
 function onTopicConnection(args) {
     var message = args[0];
     if (message == 'IoTronic-connected')
@@ -73,28 +74,6 @@ function moduleLoader (session) {
     //------------------------------------------------------------------------------------------------------------------
 }
 
-
-/*
-exports.execute = function (command, label) {
-    cmd = command.split(' ');
-    logger.debug(label + ' COMMAND: ' + command);
-    var result = spawn(cmd[0], cmd.slice(1));
-
-    result.stdout.on('data', function (data) {
-        logger.debug(label + ' stdout: ' + data);
-    });
-
-    result.stderr.on('data', function (data) {
-        if (command.indexOf('socat') > -1)
-            logger.info(label + ' stderr: ' + data);
-        else
-            logger.error(label + ' stderr: ' + data);
-    });
-
-    return result;
-
-};
-*/
 
 // Init() LR function in order to control the correct LR configuration:
 // - logging setup
