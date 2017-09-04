@@ -303,6 +303,37 @@ exports.setBoardPosition = function (args) {
 
 };
 
+/*
+// This function sets the coordinates of the device: called by IoTronic via RPC
+exports.updateConf = function (args) {
+
+    var remote_conf = args[0];
+    var board_position = args[1];
+    logger.info("[SYSTEM] - Set board configuration: " + JSON.stringify(args));
+
+    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+    var board_config = configFile.config["board"];
+    
+    logger.info("[SYSTEM] --> BOARD CONFIGURATION " + JSON.stringify(board_config));
+
+    board_config["remote_conf"] = remote_conf;
+    board_config["position"] = board_position;
+    logger.info("[SYSTEM] --> BOARD CONF UPDATED: " + JSON.stringify(board_config));
+
+    //Updates the settings.json file
+    fs.writeFile(SETTINGS, JSON.stringify(configFile, null, 4), function (err) {
+        if (err) {
+            logger.error('[SYSTEM] --> Error writing settings.json file: ' + err);
+        } else {
+            logger.debug("[SYSTEM] --> settings.json configuration file saved to " + SETTINGS);
+        }
+    });
+
+    return "Board configuration file updated!";
+
+
+};
+*/
 
 // This function manages the registration status of the board
 exports.checkRegistrationStatus = function(args){
@@ -498,6 +529,7 @@ exports.execAction = function(args){
 };
 
 
+
 exports.exportManagementCommands = function (session) {
 
     board_session = session;
@@ -507,6 +539,7 @@ exports.exportManagementCommands = function (session) {
     session.register('s4t.' + boardCode + '.board.setBoardPosition', exports.setBoardPosition);
     session.register('s4t.' + boardCode + '.board.checkRegistrationStatus', exports.checkRegistrationStatus);
     session.register('s4t.' + boardCode + '.board.execAction', exports.execAction);
+    //session.register('s4t.' + boardCode + '.board.updateConf', exports.updateConf);
 
     manage_WAMP_connection(session)
     
