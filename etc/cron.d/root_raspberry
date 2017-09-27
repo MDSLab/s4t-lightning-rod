@@ -1,2 +1,1 @@
-* * * * * root /etc/init.d/s4t-lightning-rod start
-
+*/10 * * * *  ntpdate 0.pool.ntp.org

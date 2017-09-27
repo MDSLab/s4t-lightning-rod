@@ -72,6 +72,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		
 		logger.info("[SYSTEM] - Iotronic server IP: "+wampIP);
 
+		/*
 		var connectionTester = require('connection-tester');
 
 		connectionTester.test(wampIP, 8888, 1000, function (err, output) {
@@ -91,6 +92,8 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 				process.exit();
 
 			} else {
+
+				*/
 
 				logger.info('[SYSTEM] - DEVICE: ' + device);
 
@@ -453,14 +456,14 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 				}
 
 
-
+/*
 			}
 
 
 		});
 
 
-
+*/
 
 
 

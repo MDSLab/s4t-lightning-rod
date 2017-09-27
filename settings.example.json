@@ -12,7 +12,6 @@
 			"port_wamp": "8181",
 			"realm": "s4t"
 		},
-
 		"reverse":
 		{
 			"server":{
@@ -24,14 +23,12 @@
 			},
 			"pid":""
 		},
-
 		"socat":{
 			"client":{
 				"port":"20000"
 			},
 			"pid":""
 		},
-
 		"board":
 		{
 			"code":"",
@@ -43,6 +40,7 @@
 				
 			}
 		}
+
 
 	}
 }
