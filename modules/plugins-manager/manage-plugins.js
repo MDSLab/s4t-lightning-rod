@@ -497,7 +497,7 @@ exports.run = function (args){
 		result: ''
 	};
     
-    logger.info('[PLUGIN] - Run plugin RPC called for plugin '+ plugin_name +' plugin...');
+    logger.info('[PLUGIN] - Run plugin RPC called for plugin "'+ plugin_name +'" plugin...');
     logger.info("[PLUGIN] --> Input parameters:\n"+ plugin_json);
     
     try{
@@ -507,7 +507,7 @@ exports.run = function (args){
     catch(err){
 		response.result = "ERROR";
 		response.message = 'Error parsing plugins.json!';
-        logger.error('[PLUGIN] - '+plugin_name + ' plugin execution error: '+response.message);
+        logger.error('[PLUGIN] - "' + plugin_name + '" plugin execution error: '+response.message);
 		d.resolve(response);
     }
     
@@ -520,7 +520,7 @@ exports.run = function (args){
         var status = pluginsConf.plugins[plugin_name].status;
         
         if (status == "off" || status == "injected"){
-            
+
             logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin starting...');
             
             //Create a new process that has plugin-wrapper as code
@@ -717,18 +717,20 @@ exports.kill = function (args){
 		      		} else {
 			  			logger.debug("[PLUGIN] --> " + PLUGINS_SETTING + " updated!");
 			  			clearPluginTimer(plugin_name);
+						response.result = "SUCCESS";
+						response.message = 'Plugin killed!';
+						logger.info('[PLUGIN] - stop plugin '+plugin_name + ': '+response.message);
+						d.resolve(response);
 		      		}
 
 		  		});
 
-				response.result = "SUCCESS";
-				response.message = 'Plugin killed!';
-				logger.info('[PLUGIN] - stop plugin '+plugin_name + ': '+response.message);
-				d.resolve(response);
+
 		  
 	  		}
 	      	else{
 				response.result = "ERROR";
+				response.code = "NO-RUN";
 				response.message = 'Plugin is not running on this board!';
 				logger.error('[PLUGIN] - stop plugin '+plugin_name + ': '+response.message);
 				d.resolve(response);
@@ -737,7 +739,7 @@ exports.kill = function (args){
   		}else{
 			response.result = "ERROR";
 			response.message = "Plugin '" + plugin_name + "' is not injected on this board!";
-			logger.error('[PLUGIN] - stop plugin '+plugin_name + ': '+response.message);
+			logger.error('[PLUGIN] - stop plugin ' + plugin_name + ': '+response.message);
 			d.resolve(response);
 		}
     
@@ -1030,7 +1032,94 @@ exports.removePlugin = function(args){
 
 
 
+exports.restartPlugin = function(args){
 
+	var plugin_name = String(args[0]);
+
+	logger.info('[PLUGIN] - Restart plugin RPC called for plugin "'+ plugin_name +'" plugin...');
+
+	var d = Q.defer();
+
+	var response = {
+		message: '',
+		result: ''
+	};
+
+
+	// Get the plugin's configuration.
+	try{
+		
+		//Reading the plugins.json configuration file
+		var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
+
+		//If the plugin exists
+		if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
+
+			exports.kill([plugin_name]).then(
+
+				function (response) {
+
+					if(response.result == "SUCCESS" || response.code == "NO-RUN"){
+
+						var plugin_json_name = PLUGINS_STORE + plugin_name + "/" + plugin_name + '.json';
+						var plugin_json_schema = JSON.parse(fs.readFileSync(plugin_json_name, 'utf8'));
+
+						exports.run([plugin_name, JSON.stringify(plugin_json_schema)]).then(
+
+							function (response) {
+
+								if(response.result == "SUCCESS"){
+
+									response.result = "SUCCESS";
+									response.message = "Plugin '"+plugin_name+"' successfully restarted";
+									logger.info("[PLUGIN] - " + response.message);
+									d.resolve(response);
+
+								}else{
+
+									response.result = "ERROR";
+									response.message = "Error restarting plugin '"+plugin_name+"' during starting procedure!";
+									logger.error("[PLUGIN] - " + response.message);
+									d.resolve(response);
+
+								}
+
+							}
+						);
+
+
+					}else {
+
+						response.result = "ERROR";
+						response.message = "Error restarting plugin '" + plugin_name + "' during killing procedure!";
+						logger.error("[PLUGIN] - " + response.message);
+						d.resolve(response);
+
+					}
+
+				}
+			);
+
+
+		}else{
+			// the plugin does not exist
+			response.result = "ERROR";
+			response.message = "Call \"" + plugin_name + "\" does not exist on this board!";
+			logger.error("[PLUGIN] - " + response.message);
+			d.resolve(response);
+		}
+
+
+	}
+	catch(err){
+		logger.error('[PLUGIN] --> Error parsing JSON file plugins.json');
+	}
+
+
+	return d.promise;
+
+
+};
 
 
 
@@ -1042,7 +1131,8 @@ exports.exportPluginCommands = function (session){
     session.register('s4t.'+ boardCode+'.plugin.kill', exports.kill);
     session.register('s4t.'+ boardCode+'.plugin.inject', exports.injectPlugin);
     session.register('s4t.'+ boardCode+'.plugin.call', exports.call);
-    session.register('s4t.'+ boardCode+'.plugin.remove', exports.removePlugin);
+	session.register('s4t.'+ boardCode+'.plugin.remove', exports.removePlugin);
+	session.register('s4t.'+ boardCode+'.plugin.restart', exports.restartPlugin);
     
     logger.info('[WAMP-EXPORTS] Plugin commands exported to the cloud!');
     
