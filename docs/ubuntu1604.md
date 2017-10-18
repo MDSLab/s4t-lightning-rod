@@ -2,12 +2,17 @@
 
 We tested this procedure on a Ubuntu 16.04 (also within a LXD container). Everything needs to be run as root.
 
+[![npm version](https://badge.fury.io/js/iotronic-lightning-rod.svg)](https://badge.fury.io/js/iotronic-lightning-rod)
+
+[![NPM](https://nodei.co/npm/iotronic-lightning-rod.png)](https://nodei.co/npm/iotronic-lightning-rod/)
+
+[![NPM](https://nodei.co/npm-dl/iotronic-lightning-rod.png)](https://nodei.co/npm/iotronic-lightning-rod/)
 
 ## Install requirements
 
 ##### Install dependencies via apt-get
 ```
-apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python
+apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate
 ```
 ##### Install latest NodeJS release
 ```
@@ -76,6 +81,7 @@ sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/u
 chmod +x /etc/systemd/system/lightning-rod.service
 systemctl daemon-reload
 
+mkdir /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
 
 echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment

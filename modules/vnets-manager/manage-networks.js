@@ -174,7 +174,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
         "socatBoard_ip": socatBoard_ip,
         "basePort": basePort,
         "socatServer_ip": socatServer_ip,
-        "net_backend": net_backend,
+        "net_backend": net_backend
         //"socatServer_port":socatServer_port, //TO RESTORE
         //"boardCode": boardCode //TO RESTORE
     };
