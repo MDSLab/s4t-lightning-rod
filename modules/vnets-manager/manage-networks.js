@@ -1,11 +1,22 @@
-/*
- *				                  Apache License
- *                           Version 2.0, January 2004
- *                        http://www.apache.org/licenses/
- *
- *      Copyright (c) 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Arthur Warnier, Fabio Verboso, Nicola Peditto
- *
- */
+//############################################################################################
+//##
+//# Copyright (C) 2014-2017 Dario Bruneo, Francesco Longo, Giovanni Merlino,
+//# Nicola Peditto, Fabio Verboso
+//##
+//# Licensed under the Apache License, Version 2.0 (the "License");
+//# you may not use this file except in compliance with the License.
+//# You may obtain a copy of the License at
+//##
+//# http://www.apache.org/licenses/LICENSE-2.0
+//##
+//# Unless required by applicable law or agreed to in writing, software
+//# distributed under the License is distributed on an "AS IS" BASIS,
+//# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//# See the License for the specific language governing permissions and
+//# limitations under the License.
+//##
+//############################################################################################
+
 
 
 //service logging configuration: "manageNetworks"   
@@ -45,7 +56,7 @@ function update_net_conf(configFile, section) {
 // This function starts the creation of the SOCAT tunnel
 exports.setSocatOnBoard = function (args) {
 
-    logger.info("[VNET] - Network manager loaded!");
+    logger.info("[VNET] - Network Manager loaded!");
 
 
     if(args[5] != undefined){
@@ -70,8 +81,8 @@ exports.setSocatOnBoard = function (args) {
     response.result = "SUCCESS";
     response.message = boardCode + " ("+socatRes+")";
 
-    logger.info("[VNET] - Socat parameters received: " + socatRes);
-    logger.info("[VNET] - Network backend used: " + net_backend);
+    logger.info("[VNET] --> Socat parameters received: " + socatRes);
+    logger.info("[VNET] --> Network backend used: " + net_backend);
 
     exports.initNetwork(socatServer_ip, socatServer_port, socatBoard_ip, net_backend);
 
@@ -88,7 +99,7 @@ exports.setSocatOnBoard = function (args) {
 // 3. On tunnels completion it will advise Iotronic; later Iotronic will add this device to its VLANs.
 exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip, net_backend) {
 
-    logger.info("[VNET] - Network initialization...");
+    //logger.info("[VNET] --> Network initialization...");
 
     var spawn = require('child_process').spawn;
 
@@ -101,10 +112,10 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
     var wstt_config = configFile.config["reverse"];
 
 
-    logger.info("[VNET] - Boot status:");
+    logger.info("[VNET] --> Network Boot status:");
 
     // Kill Socat and WSTT processes to clean network status after a network failure
-    logger.info("[VNET] --> Boot Socat PID: " + socat_pid);
+    logger.info("[VNET] ----> Boot Socat PID: " + socat_pid);
 
     if (socat_pid != null) {
 
@@ -136,7 +147,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
         }
     }
 
-    logger.info("[VNET] --> Boot WSTT PID: " + wstt_pid);
+    logger.info("[VNET] ----> Boot WSTT PID: " + wstt_pid);
 
     if (wstt_pid != null) {
 
@@ -192,7 +203,6 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 
                 logger.debug("[VNET] - WSTT - " + rtpath + ' -r ' + socatServer_port + ':localhost:' + basePort, reverseS_url);
                 var wstt_proc = spawn(rtpath, ['-r ' + socatServer_port + ':localhost:' + basePort, reverseS_url]);
-                //logger.debug("[VNET] - WSTT - " + rtpath + ' -r '+ socatServer_port +':localhost:'+basePort,reverseS_url);
 
                 // Save WSTT PID to clean network status after a network failure
                 wstt_pid = wstt_proc.pid;
@@ -219,12 +229,18 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
                 socat_config["pid"] = socat_pid;
                 update_net_conf(configFile, "Socat");
 
-                session_wamp.call('s4t.iotronic.vnet.result_network_board', [msg.logmsg, boardCode]).then(
-                    function (response) {
-                        logger.info('[VNET] --> response from IOTRONIC: \n' + response.message);
-                        logger.info('[VNET] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
-                    }
-                );
+                try{
+                    session_wamp.call('s4t.iotronic.vnet.result_network_board', [msg.logmsg, boardCode]).then(
+                        function (response) {
+                            logger.info('[VNET] --> response from IOTRONIC: \n' + response.message);
+                            logger.info('[VNET] - TUNNELS CONFIGURATION BOARD SIDE COMPLETED!');
+                        }
+                    );
+                }catch (e) {
+
+                    logger.error('[VNET] --> Error calling IoTronic (RPC: s4t.iotronic.vnet.result_network_board): ', e);
+
+                }
 
             }
 

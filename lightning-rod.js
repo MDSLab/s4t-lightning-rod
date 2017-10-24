@@ -1,12 +1,21 @@
-/*
-*				                  Apache License
-*                           Version 2.0, January 2004
-*                        http://www.apache.org/licenses/
-*
-*      Copyright (c) 2014 2015 2016 Dario Bruneo, Francesco Longo, Giovanni Merlino, Andrea Rocco Lotronto, Arthur Warnier, Nicola Peditto
-* 
-*/
-
+//############################################################################################
+//##
+//# Copyright (C) 2014-2017 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto, 
+//# Giovanni Merlino, Arthur Warnier, Nicola Peditto
+//##
+//# Licensed under the Apache License, Version 2.0 (the "License");
+//# you may not use this file except in compliance with the License.
+//# You may obtain a copy of the License at
+//##
+//# http://www.apache.org/licenses/LICENSE-2.0
+//##
+//# Unless required by applicable law or agreed to in writing, software
+//# distributed under the License is distributed on an "AS IS" BASIS,
+//# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//# See the License for the specific language governing permissions and
+//# limitations under the License.
+//##
+//############################################################################################
 
 
 // LIBRARIES
@@ -290,26 +299,26 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 																		logger.error('[WAMP-RECOVERY] ... tcpkill killing error: ', e);
 
 																	}
-																	/*
-																	 tcpkill.kill('SIGINT');
+
+																	tcpkill.kill('SIGINT');
 
 
-																	 //double check: It will test after a while if the tcpkill process has been killed
-																	 setTimeout(function(){
+																	//double check: It will test after a while if the tcpkill process has been killed
+																	setTimeout(function(){
 
-																	 if ( running(tcpkill_pid) || tcpkill_pid == null){
+																		if ( running(tcpkill_pid) || tcpkill_pid == null){
 
-																	 tcpkill_kill_count = tcpkill_kill_count + 1;
+																			tcpkill_kill_count = tcpkill_kill_count + 1;
 
-																	 logger.warn("[WAMP-RECOVERY] ... tcpkill still running!!! PID ["+tcpkill_pid+"]");
-																	 logger.debug('[WAMP-RECOVERY] ... tcpkill killing retry_count '+ tcpkill_kill_count);
+																			logger.warn("[WAMP-RECOVERY] ... tcpkill still running!!! PID ["+tcpkill_pid+"]");
+																			logger.debug('[WAMP-RECOVERY] ... tcpkill killing retry_count '+ tcpkill_kill_count);
 
-																	 tcpkill.kill('SIGINT');
+																			tcpkill.kill('SIGINT');
 
-																	 }
+																		}
 
-																	 }, 3000);
-																	 */
+																	}, 3000);
+
 
 																}
 
