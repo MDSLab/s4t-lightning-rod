@@ -2,11 +2,6 @@
 
 We tested this procedure on a Ubuntu 16.04 (also within a LXD container). Everything needs to be run as root.
 
-[![npm version](https://badge.fury.io/js/iotronic-lightning-rod.svg)](https://badge.fury.io/js/iotronic-lightning-rod)
-
-[![NPM](https://nodei.co/npm/iotronic-lightning-rod.png)](https://nodei.co/npm/iotronic-lightning-rod/)
-
-[![NPM](https://nodei.co/npm-dl/iotronic-lightning-rod.png)](https://nodei.co/npm/iotronic-lightning-rod/)
 
 ## Install requirements
 
@@ -63,7 +58,7 @@ source /etc/environment > /dev/null
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g --unsafe gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js@1.1.1 q secure-keys fs-access mknod
+npm install -g --unsafe gyp autobahn jsonfile nconf @mdslab/wstun tty.js fuse-bindings requestify is-running connection-tester log4js@1.1.1 q secure-keys fs-access mknod
 npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 
@@ -99,7 +94,7 @@ cp /usr/lib/node_modules/iotronic-lightning-rod/modules/drivers-manager/drivers.
 
 sed -i "s/\"device\":.*\"\"/\"device\": \"server\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_UUID>\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<WAMP_IP>\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<WS_IP>\"/g" /var/lib/iotronic/settings.json
 ```
