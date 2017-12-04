@@ -11,7 +11,7 @@ apt -y install nodejs npm nodejs-legacy unzip socat dsniff fuse libfuse-dev pkg-
 ##### Install required NodeJS modules via npm
 ```
 npm install -g npm
-npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys
+npm install -g gyp autobahn jsonfile nconf @mdslab/wstun tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod optimist
 ```
 
 ##### Configure npm NODE_PATH variable
@@ -77,7 +77,7 @@ cp /var/lib/iotronic/iotronic-lightning-rod/drivers.example.json /var/lib/iotron
 
 sed -i "s/\"device\":.*\"\"/\"device\": \"laptop\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_UUID>\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/local\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/local\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<WAMP_IP>\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<WS_IP>\"/g" /var/lib/iotronic/settings.json
 ```

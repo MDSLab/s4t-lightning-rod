@@ -4,13 +4,11 @@
 
 ## Install requirements
 
-#### Install dependencies via apt-get
+##### Install dependencies via apt-get
 ```
-apt-get install python unzip socat dsniff fuse libfuse-dev pkg-config 
-
+apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate
 ```
-
-#### Install NodeJS 7.x
+##### Install latest NodeJS release
 ```
 curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 apt-get install -y nodejs
@@ -19,13 +17,9 @@ node -v
 npm install -g npm
 npm config set python `which python2.7`
 npm -v
-```
 
-#### Configure npm NODE_PATH variable
-
-```
-echo "export NODE_PATH=/usr/lib/node_modules" | tee -a /etc/profile
-source /etc/profile > /dev/null
+echo "NODE_PATH=/usr/lib/node_modules" | tee -a /etc/environment
+source /etc/environment > /dev/null
 echo $NODE_PATH
 ```
 
@@ -50,55 +44,62 @@ This script asks the following information:
 
 * WAMP server IP
 ```
+Add ENV variables
+```
+echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
+echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/iotronic-lightning-rod" | tee -a /etc/environment
 
+source /etc/environment > /dev/null
+```
 
 
 ## Install from source-code
 
-##### Install required NodeJS modules via npm
+##### Install required NodeJS modules via npm:
 ```
-npm install -g npm
-npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod util path
-
-# Install statvfs node module compliant with NodeJS 7.x:
-npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+npm install -g --unsafe gyp autobahn jsonfile nconf @mdslab/wstun tty.js fuse-bindings requestify is-running connection-tester log4js@1.1.1 q secure-keys fs-access mknod optimist
+npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 
-##### Install Lightning-rod
+##### Install the Lightning-rod
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
+mkdir plugins && mkdir drivers
+mkdir drivers/mountpoints/
+
+cd /usr/lib/node_modules/
 git clone git://github.com/MDSLab/s4t-lightning-rod.git
 mv s4t-lightning-rod iotronic-lightning-rod
-mkdir plugins && mkdir drivers
 
-cp /var/lib/iotronic/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
-sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/var\/lib\/iotronic\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
+cp /usr/lib/node_modules/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
 chmod +x /etc/systemd/system/lightning-rod.service
 systemctl daemon-reload
 
+mkdir /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
 
-echo "export IOTRONIC_HOME=/var/lib/iotronic >> /etc/profile
-echo "export LIGHTNINGROD_HOME=/var/lib/iotronic/iotronic-lightning-rod >> /etc/profile
-source /etc/profile
-```
-
-##### Configure and start the Lightning-rod
-Note that you need the <NODE_ID> that is the code returned by the IoTronic service after node registration:
+echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
+echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/iotronic-lightning-rod" | tee -a /etc/environment
+source /etc/environment > /dev/null
 
 ```
-cp /var/lib/iotronic/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/iotronic-lightning-rod/settings.json
-cp /var/lib/iotronic/iotronic-lightning-rod/plugins.example.json /var/lib/iotronic/iotronic-lightning-rod/plugins/plugins.json
-cp /var/lib/iotronic/iotronic-lightning-rod/drivers.example.json /var/lib/iotronic/iotronic-lightning-rod/drivers/drivers.json
 
-sed -i "s/\"device\":.*\"\"/\"device\": \"raspberry_pi\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
-sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
-sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
-sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/iotronic-lightning-rod/settings.json
+##### Configure Lightning-rod
+Note that you will need the IP address of a working instance of a WAMP router (<WAMP_IP>), the IP address of a working instance of a Websocket reverse tunnel server (<WS_IP>), and the UUID of the node that you need to have previously registered on the IoTronic (<NODE_UUID>). Also, note that if while installing the IoTronic service, you configured a custom port and realm name for the WAMP router or a custom port for the Websocket reverse tunnel server, you will need to manually change the setting.json, accordingly.
+```
+cp /usr/lib/node_modules/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+cp /usr/lib/node_modules/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+cp /usr/lib/node_modules/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+
+sed -i "s/\"device\":.*\"\"/\"device\": \"server\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_UUID>\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<WAMP_IP>\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<WS_IP>\"/g" /var/lib/iotronic/settings.json
 ```
 
-##### Configure logrotate
+## Configure logrotate
 nano /etc/logrotate.d/lightning-rod.log
 ```
 /var/log/iotronic/lightning-rod.log {
@@ -109,6 +110,7 @@ nano /etc/logrotate.d/lightning-rod.log
     maxsize 5M
 }
 ```
+
 
 ## Start Lightning-rod
 ```

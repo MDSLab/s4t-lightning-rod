@@ -32,7 +32,7 @@ var session_wamp;
 var utility = require('./../../board-management');
 
 var socat_pid = null;
-var wstt_pid = null;
+var wstun_pid = null;
 
 
 var spawn = require('child_process').spawn;
@@ -95,7 +95,7 @@ exports.setSocatOnBoard = function (args) {
 
 // This function:
 // 1. creates the SOCAT tunnel using the parameter received from Iotronic.
-// 2. On SOCAT tunnel completion it will create the WSTT tunnel.
+// 2. On SOCAT tunnel completion it will create the WSTUN tunnel.
 // 3. On tunnels completion it will advise Iotronic; later Iotronic will add this device to its VLANs.
 exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip, net_backend) {
 
@@ -109,12 +109,12 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 
     var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
     var socat_config = configFile.config["socat"];
-    var wstt_config = configFile.config["reverse"];
+    var wstun_config = configFile.config["reverse"];
 
 
     logger.info("[VNET] --> Network Boot status:");
 
-    // Kill Socat and WSTT processes to clean network status after a network failure
+    // Kill Socat and WSTUN processes to clean network status after a network failure
     logger.info("[VNET] ----> Boot Socat PID: " + socat_pid);
 
     if (socat_pid != null) {
@@ -147,31 +147,31 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
         }
     }
 
-    logger.info("[VNET] ----> Boot WSTT PID: " + wstt_pid);
+    logger.info("[VNET] ----> Boot WSTUN PID: " + wstun_pid);
 
-    if (wstt_pid != null) {
+    if (wstun_pid != null) {
 
-        logger.warn("[VNET] ... WSTT cleaning PID [" + wstt_pid + "]");
+        logger.warn("[VNET] ... WSTUN cleaning PID [" + wstun_pid + "]");
         try{
 
-            process.kill(wstt_pid)
+            process.kill(wstun_pid)
 
         }catch (e) {
 
-            logger.error('[VNET] ... WSTT cleaning error: ', e);
+            logger.error('[VNET] ... WSTUN cleaning error: ', e);
 
         }
 
     } else {
-        var wstt_pid_conf = nconf.get('config:reverse:pid');
+        var wstun_pid_conf = nconf.get('config:reverse:pid');
 
-        if (wstt_pid_conf != "") {
+        if (wstun_pid_conf != "") {
 
-            if (running(wstt_pid_conf)) {
-                logger.warn("[VNET] ... WSTT first cleaning PID [" + wstt_pid_conf + "]");
-                process.kill(wstt_pid_conf)
+            if (running(wstun_pid_conf)) {
+                logger.warn("[VNET] ... WSTUN first cleaning PID [" + wstun_pid_conf + "]");
+                process.kill(wstun_pid_conf)
             }else{
-                logger.debug("[VNET] ... WSTT no cleaning needed!");
+                logger.debug("[VNET] ... WSTUN no cleaning needed!");
             }
 
         }
@@ -198,31 +198,31 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 
             if (msg.status === "alive") {
 
-                // START WSTT ------------------------------------------------------------------------------------------------
-                logger.info("[VNET] - WSTT activating...");
+                // START WSTUN ------------------------------------------------------------------------------------------------
+                logger.info("[VNET] - WSTUN activating...");
 
-                logger.debug("[VNET] - WSTT - " + rtpath + ' -r ' + socatServer_port + ':localhost:' + basePort, reverseS_url);
-                var wstt_proc = spawn(rtpath, ['-r ' + socatServer_port + ':localhost:' + basePort, reverseS_url]);
+                logger.debug("[VNET] - WSTUN - " + rtpath + ' -r ' + socatServer_port + ':localhost:' + basePort, reverseS_url);
+                var wstun_proc = spawn(rtpath, ['-r ' + socatServer_port + ':localhost:' + basePort, reverseS_url]);
 
-                // Save WSTT PID to clean network status after a network failure
-                wstt_pid = wstt_proc.pid;
-                wstt_config["pid"] = wstt_pid;
-                update_net_conf(configFile, "WSTT");
+                // Save WSTUN PID to clean network status after a network failure
+                wstun_pid = wstun_proc.pid;
+                wstun_config["pid"] = wstun_pid;
+                update_net_conf(configFile, "WSTUN");
 
-                wstt_proc.stdout.on('data', function (data) {
-                    logger.debug('[VNET] - WSTT - stdout: ' + data);
+                wstun_proc.stdout.on('data', function (data) {
+                    logger.debug('[VNET] - WSTUN - stdout: ' + data);
                 });
-                wstt_proc.stderr.on('data', function (data) {
-                    logger.debug('[VNET] - WSTT - stderr: ' + data);
+                wstun_proc.stderr.on('data', function (data) {
+                    logger.debug('[VNET] - WSTUN - stderr: ' + data);
                 });
-                wstt_proc.on('close', function (code) {
-                    logger.warn('[VNET] - WSTT - process exited with code ' + code);
+                wstun_proc.on('close', function (code) {
+                    logger.warn('[VNET] - WSTUN - process exited with code ' + code);
                 });
                 //------------------------------------------------------------------------------------------------------------
 
             } else if (msg.status === "complete") {
 
-                logger.info('[VNET] - Sending notification to IOTRONIC: ' + msg.status + ' - ' + msg.logmsg + ' - PID: ' + msg.pid + ' - wstt pid: ' + wstt_pid);
+                logger.info('[VNET] - Sending notification to IOTRONIC: ' + msg.status + ' - ' + msg.logmsg + ' - PID: ' + msg.pid + ' - wstun pid: ' + wstun_pid);
 
                 // Save Socat PID to clean network status after a network failure
                 socat_pid = msg.pid;
@@ -397,9 +397,8 @@ exports.removeFromNetwork = function (args) {
 
         var add_vlan_iface = utility.execute('ip link del ' + iface, ' --> NETWORK');
 
-        add_vlan_iface.on('close', function (code) {
+        add_vlan_iface.on('close', function () {
             logger.info('--> DELETED ' + iface);
-
         });
 
     }    

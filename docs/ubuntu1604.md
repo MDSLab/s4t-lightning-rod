@@ -66,6 +66,7 @@ npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
 mkdir plugins && mkdir drivers
+mkdir drivers/mountpoints/
 
 cd /usr/lib/node_modules/
 git clone git://github.com/MDSLab/s4t-lightning-rod.git
@@ -94,7 +95,7 @@ cp /usr/lib/node_modules/iotronic-lightning-rod/modules/drivers-manager/drivers.
 
 sed -i "s/\"device\":.*\"\"/\"device\": \"server\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_UUID>\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<WAMP_IP>\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<WS_IP>\"/g" /var/lib/iotronic/settings.json
 ```

@@ -201,14 +201,14 @@ exports.checkSettings = function (callback) {
         //REVERSE CONF
         url_reverse = nconf.get('config:reverse:server:url_reverse');
         port_reverse = nconf.get('config:reverse:server:port_reverse');
-        wstt_lib = nconf.get('config:reverse:lib:bin');
+        wstun_lib = nconf.get('config:reverse:lib:bin');
 
-        if ((url_reverse == undefined || url_reverse == "") || (port_reverse == undefined || port_reverse == "") || (wstt_lib == undefined || wstt_lib == "")) {
+        if ((url_reverse == undefined || url_reverse == "") || (port_reverse == undefined || port_reverse == "") || (wstun_lib == undefined || wstun_lib == "")) {
 
-            logger.warn('[SYSTEM] - WSTT configuration is wrong or not specified!');
+            logger.warn('[SYSTEM] - WSTUN configuration is wrong or not specified!');
             logger.debug(' - url_reverse value: ' + url_reverse);
             logger.debug(' - port_reverse value: ' + port_reverse);
-            logger.debug(' - wstt_lib value: ' + wstt_lib);
+            logger.debug(' - wstun_lib value: ' + wstun_lib);
 
             process.exit();
 
@@ -352,10 +352,6 @@ exports.checkRegistrationStatus = function(args){
     if(response.result == "SUCCESS"){
 
         logger.info("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
-
-
-
-
 
         // CONNECTION TO IoTronic after access granted.
         var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));

@@ -225,7 +225,7 @@ function createTunnel(serviceName, localPort, publicPort, callback) {
 
     logger.info('[SERVICE] --> exposing local port ' + localPort + ' on public port ' + publicPort + ' contacting remote server ' + reverseTunnellingServer);
 
-    //Getting the path of the wstt.js module from the configuration file
+    //Getting the path of the wstun.js module from the configuration file
     var reverseTunnellingClient = nconf.get('config:reverse:lib:bin');
 
     //I spawn a process executing the reverse tunnel client with appropriate parameters

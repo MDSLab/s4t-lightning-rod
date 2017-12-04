@@ -107,7 +107,7 @@ process.once('message', function (message) {
 
         if (textdata.indexOf("starting data transfer loop") > -1) {
 
-            logger.debug('[VNET] --> WSTT configuration completed!');
+            logger.debug('[VNET] --> WSTUN configuration completed!');
 
             //ip link set $TUNNAME up
             spawn('ifconfig', ['socat0', 'up']);

@@ -1164,7 +1164,7 @@ exports.unmountDriver = function (args){
 
 	}
 	catch(err){
-		rest_response.message = "ERROR during '"+driver_name+"' (fuse) unmounting: " +err;
+		rest_response.message = "Generic error during '"+driver_name+"' (fuse) unmounting: " +err;
 		rest_response.result = "ERROR";
 		logger.error("[DRIVER] - "+driver_name+" --> "+ rest_response.message);
 		d.reject(err);

@@ -14,7 +14,7 @@ echo $NODE_PATH
 
 ```
 opkg update
-opkg install logrotate nano git unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-reverse-wstunnel node-tty.js node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs
+opkg install logrotate ntpdate nano git unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf @mdslab/wstun node-tty.js node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs
 ```
 
 ## Install from NPM
@@ -45,27 +45,28 @@ This script asks the following information:
 
 ##### Install required NodeJS modules via npm
 ```
-npm install -g requestify is-running connection-tester log4js q fs-access util
+npm install -g requestify is-running connection-tester log4js@1.1.1 q fs-access util
 ```
 
 ##### Install the Lightning-rod
 ```
 mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
+mkdir plugins && mkdir drivers
+cd /usr/lib/node_modules/
 git clone git://github.com/MDSLab/s4t-lightning-rod.git
 mv s4t-lightning-rod iotronic-lightning-rod
-mkdir plugins && mkdir drivers
 
-cp /var/lib/iotronic/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
-sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/var\/lib\/iotronic\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
+cp /usr/lib/node_modules/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
+sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
 chmod +x /etc/init.d/lightning-rod
 
-cp /var/lib/iotronic/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+cp /usr/lib/node_modules/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 mkdir /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
 
 echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/profile
-echo "export LIGHTNINGROD_HOME=/var/lib/iotronic/iotronic-lightning-rod" >> /etc/profile
+echo "export LIGHTNINGROD_HOME=/usr/lib/node_modules/iotronic-lightning-rod" >> /etc/profile
 source /etc/profile
 ```
 
@@ -73,13 +74,13 @@ source /etc/profile
 Note that you need the NODE_ID that is the code returned by the IoTronic service after node registration.
 
 ```
-cp /var/lib/iotronic/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
-cp /var/lib/iotronic/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
-cp /var/lib/iotronic/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+cp /usr/lib/node_modules/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+cp /usr/lib/node_modules/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+cp /usr/lib/node_modules/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
 
 sed -i "s/\"device\":.*\"\"/\"device\": \"arduino_yun\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
 ```
@@ -87,7 +88,7 @@ sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\
 ##### Configure cron to launch the Lightning-rod if not yet running
 ```
 /etc/init.d/cron stop
-cp /var/lib/iotronic/iotronic-lightning-rod/etc/cron.d/root_yun /etc/crontabs/root
+cp /usr/lib/node_modules/iotronic-lightning-rod/etc/cron.d/root_yun /etc/crontabs/root
 /etc/init.d/cron start
 ```
 

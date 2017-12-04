@@ -16,7 +16,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "node-reverse-wstunnel": ">=0.1.2",
+    "wstun": ">=1.0.0",
     "autobahn": ">=0.9.9",
     "nconf": ">=0.8.4",
     "requestify": ">=0.1.17",
