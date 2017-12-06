@@ -27,7 +27,9 @@ echo $NODE_PATH
 
 ## Install from NPM
 ```
-npm install -g --unsafe iotronic-lightning-rod
+npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+npm install -g --unsafe @mdslab/iotronic-lightning-rod
+npm install -g --unsafe @mdslab/wstun
 ```
 
 ##### Configure Lightning-rod
@@ -58,7 +60,7 @@ source /etc/environment > /dev/null
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g --unsafe gyp autobahn jsonfile nconf @mdslab/wstun tty.js fuse-bindings requestify is-running connection-tester log4js@1.1.1 q secure-keys fs-access mknod optimist
+npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod
 npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 

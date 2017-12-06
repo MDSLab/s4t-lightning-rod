@@ -9,7 +9,7 @@ sed -i "s/\"device\":.*\"\"/\"device\": \"$DEVICE\"/g" /var/lib/iotronic/setting
 
 if [ "$DEVICE" = "arduino_yun" ]; then
 
-    cp /usr/lib/node_modules/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
+    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
     chmod +x /etc/init.d/lightning-rod
 
 fi
@@ -22,21 +22,21 @@ if [ "$DEVICE" = "server" ]; then
 
     if [ "$DISTRO" = "14.04" ]; then
 
-        chmod +x /usr/local/lib/node_modules/iotronic-lightning-rod/lr-server.js
+        chmod +x /usr/local/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
         /usr/bin/npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 
-        cp /usr/local/lib/node_modules/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/lightning-rod
+        cp /usr/local/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/lightning-rod
         chmod +x /etc/init.d/lightning-rod
-        chmod +x /usr/local/lib/node_modules/iotronic-lightning-rod/lr-server.js
+        chmod +x /usr/local/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
 
     elif [ "$DISTRO" = "16.04" ]; then
 
-        chmod +x /usr/lib/node_modules/iotronic-lightning-rod/lr-server.js
+        chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
 
         /usr/bin/npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 
-        cp /usr/lib/node_modules/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
-        sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
+        cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+        sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
         chmod +x /etc/systemd/system/lightning-rod.service
         systemctl daemon-reload
 
@@ -46,8 +46,8 @@ fi
 
 
 if [ "$DEVICE" = "raspberry_pi" ]; then
-    cp /usr/lib/node_modules/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
-    sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
+    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+    sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
     chmod +x /etc/systemd/system/lightning-rod.service
     systemctl daemon-reload
 fi
@@ -58,12 +58,7 @@ read BOARD_ID
 echo "-->" $BOARD_ID
 sed -i "s/\"code\":.*\"\"/\"code\": \"$BOARD_ID\"/g" /var/lib/iotronic/settings.json
 
-#WSTT=
-#echo -n "Enter WSTT path: "
-#read WSTT
-#echo "-->" $WSTT
-#sed -i "s/\"bin\":.*\"\"/\"bin\": \"$WSTTn\"/g" /opt/stack4things/lightning-rod/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /var/lib/iotronic/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
 
 
 WAMP_IP=
@@ -77,7 +72,6 @@ echo -n "Do you want confirm the same IP for the reverse tunnel ($WAMP_IP)? (yes
 read same_ip
 
 if [ "$same_ip" = "yes" ]; then
-	#echo "--> same IP confirmed..."
 	sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/$WAMP_IP\"/g" /var/lib/iotronic/settings.json
 else
 

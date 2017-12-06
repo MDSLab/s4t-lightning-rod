@@ -363,7 +363,7 @@ exports.checkRegistrationStatus = function(args){
         if(reg_status === "new"){
 
             logger.info('[CONFIGURATION] - NEW BOARD CONFIGURATION STARTED... ');
-
+            
             board_session.call("s4t.board.provisioning", [boardCode]).then(
 
                 function(result){
@@ -400,7 +400,12 @@ exports.checkRegistrationStatus = function(args){
                     });
 
 
-                }, board_session.log);
+                },
+                function (error){
+                    logger.error('[WAMP] - Error board provisioning: ' + JSON.stringify(error));
+                }
+                
+            );
 
 
         } else if(reg_status === "registered"){

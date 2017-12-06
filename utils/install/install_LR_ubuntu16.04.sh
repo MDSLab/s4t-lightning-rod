@@ -24,7 +24,7 @@ echo Python found at `which python2.7`
 npm config set python `which python2.7`
 npm -v
 
-npm install -g gyp autobahn jsonfile nconf node-reverse-wstunnel tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod
+npm install -g gyp autobahn jsonfile nconf wstun tty.js fuse-bindings requestify is-running connection-tester log4js q secure-keys fs-access mknod
 npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 
 echo "NODE_PATH=/usr/lib/node_modules" | sudo tee -a /etc/environment
@@ -47,7 +47,7 @@ touch /var/log/s4t-lightning-rod.log
 
 sed -i "s/\"device\":.*\"\"/\"device\": \"laptop\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"code\":.*\"\"/\"code\": \""$2"\"/g" /opt/stack4things/lightning-rod/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/node-reverse-wstunnel\/bin\/wstt.js\"/g" /opt/stack4things/lightning-rod/settings.json
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/wstun\/bin\/wstun.js\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/"$3"\"/g" /opt/stack4things/lightning-rod/settings.json
 sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/"$4"\"/g" /opt/stack4things/lightning-rod/settings.json
 systemctl start s4t-lightning-rod

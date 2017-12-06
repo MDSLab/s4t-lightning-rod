@@ -20,7 +20,7 @@ WSURL="ws://212.189.207.205:8080"
 echo $REMOTEPORT $IPTUN
 
 socat -d -d TCP-L:$LOCALPORT,bind=localhost,reuseaddr,forever,interval=10 TUN:$IPTUN,tun-name=$TUNNAME,iff-up &
-/opt/usr/lib/node_modules/node-reverse-wstunnel/bin/wstt.js -r $REMOTEPORT:localhost:$LOCALPORT $WSURL &
+/opt/usr/lib/node_modules/wstun/bin/wstun.js -r $REMOTEPORT:localhost:$LOCALPORT $WSURL &
 
 ifconfig $TUNNAME
 while [ $? -ne 0 ];
