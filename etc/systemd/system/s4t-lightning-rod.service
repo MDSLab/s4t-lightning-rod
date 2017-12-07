@@ -9,7 +9,7 @@ Group=root
 StandardInput=null
 StandardOutput=journal
 StandardError=journal
-WorkingDirectory=/usr/lib/node_modules/iotronic-lightning-rod
+WorkingDirectory=${LIGHTNINGROD_HOME}
 Environment="NODE_PATH=/usr/lib/node_modules"
 Environment="IOTRONIC_HOME=/var/lib/iotronic"
 Environment="LIGHTNINGROD_HOME="
