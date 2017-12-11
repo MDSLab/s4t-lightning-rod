@@ -38,19 +38,19 @@ then
 else
     # if not found
     echo "Setting IOTRONIC_HOME env var."
-    echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/environment
+    echo "IOTRONIC_HOME=/var/lib/iotronic" >> /etc/environment
     . /etc/environment
 fi
 
-if grep -Fq "LIGHTNINGROD_HOME" /etc/profile
+if grep -Fq "LIGHTNINGROD_HOME" /etc/environment
 then
     # if found
     echo "LIGHTNINGROD_HOME env var already set."
 else
     # if not found
     echo "Setting LIGHTNINGROD_HOME env var."
-    echo "export LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" >> /etc/profile
-    . /etc/profile
+    echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" >> /etc/environment
+    . /etc/environment
 fi
 
 

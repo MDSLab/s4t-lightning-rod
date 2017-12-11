@@ -461,6 +461,11 @@ exports.execAction = function(args){
 
         case 'reboot':
 
+            logger.info('[SYSTEM] - Rebooting...');
+            response.message = "Rebooting";
+            response.result = "SUCCESS";
+            d.resolve(response);
+
             exec('reboot', function(error, stdout, stderr){
 
                 if(error) {
@@ -487,6 +492,7 @@ exports.execAction = function(args){
 
 
             });
+
             break;
 
         case 'hostname':
