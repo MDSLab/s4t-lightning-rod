@@ -969,34 +969,62 @@ exports.removePlugin = function(args){
     
     logger.info("[PLUGIN] - Removing plugin RPC called for " + plugin_name +" plugin...");
 
+	var d = Q.defer();
+
+	var response = {
+		message: '',
+		result: ''
+	};
+
 	var plugin_folder = PLUGINS_STORE + plugin_name;
-    
-    var d = Q.defer();
 
-	if ( fs.existsSync(plugin_folder) === true ){
+	//Reading the plugins.json configuration file
+	var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
+	var pid = pluginsConf.plugins[plugin_name].pid;
 
-		cleanPluginData(plugin_name).then(
+	// if the plugin is not running the pid is NULL or "", in this condition "is-running" module return "true" that is a WRONG result!
+	if (running(pid) == false || pid == null){
 
-			function (clean_res) {
+		if ( fs.existsSync(plugin_folder) === true ){
 
-				if (clean_res.result == "SUCCESS"){
-					clean_res.message = "Plugin '" + plugin_name + "' successfully removed!";
-					logger.info("[PLUGIN] --> " + clean_res.message);
-					d.resolve(clean_res.message);
-				}else{
-					logger.error("[PLUGIN] --> " + clean_res.message);
-					d.resolve(clean_res.message);
+			cleanPluginData(plugin_name).then(
+
+				function (clean_res) {
+
+					if (clean_res.result == "SUCCESS"){
+
+						response.message = "Plugin '" + plugin_name + "' successfully removed!";
+						response.result = clean_res.result;
+						logger.info("[PLUGIN] --> " + response.message);
+						d.resolve(response);
+
+					}else{
+
+						logger.error("[PLUGIN] --> " + clean_res.message);
+						d.resolve(clean_res);
+
+					}
+
 				}
 
-			}
+			);
 
-		);
+		}else{
+
+			response.message = "Plugin folder ("+plugin_folder+") not found!";
+			response.result = "WARNING";
+			logger.warn("[PLUGIN] --> " + response.message);
+			d.resolve(response);
+
+		}
+
 
 	}else{
 
-		folder_res = "Plugin folder ("+plugin_folder+") not found!";
-		logger.warn("[PLUGIN] --> " + folder_res);
-		d.resolve(folder_res);
+		response.message = "Plugin '" + plugin_name + "' is still running! Please stop it before remove it from the board.";
+		response.result = "WARNING";
+		logger.warn("[PLUGIN] --> " + response.message);
+		d.resolve(response);
 
 	}
 
@@ -1010,6 +1038,8 @@ exports.restartPlugin = function(args){
 
 	var plugin_name = String(args[0]);
 
+
+
 	logger.info('[PLUGIN] - Restart plugin RPC called for plugin "'+ plugin_name +'" plugin...');
 
 	var d = Q.defer();
@@ -1018,7 +1048,6 @@ exports.restartPlugin = function(args){
 		message: '',
 		result: ''
 	};
-
 
 	// Get the plugin's configuration.
 	try{

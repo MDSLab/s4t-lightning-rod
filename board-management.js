@@ -515,12 +515,12 @@ exports.execAction = function(args){
                     d.resolve(response);
                 }
                 else{
+                    stdout = stdout.replace(/\n$/, '');
                     logger.info('[SYSTEM] - Echo result: ' + stdout);
                     response.message = stdout;
                     response.result = "SUCCESS";
                     d.resolve(response);
                 }
-
 
             });
             break;
