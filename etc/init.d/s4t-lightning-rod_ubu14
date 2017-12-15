@@ -1,9 +1,9 @@
 #!/bin/bash
 
-export NODE_PATH=/usr/local/lib/node_modules:$NODE_PATH
+export NODE_PATH=/usr/lib/node_modules:$NODE_PATH
 
 NAME=lightning-rod
-FOLDER=/usr/local/lib/node_modules/iotronic-lightning-rod
+FOLDER=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod
 DAEMON=$FOLDER/lr-server.js
 DESC=lightning-rod
 LOGFILE="/var/log/iotronic/lightning-rod.log"
@@ -60,7 +60,7 @@ case "$1" in
 		fi
                 sleep 2
                 #start-stop-daemon --start -d $FOLDER --quiet --make-pidfile --pidfile $PIDFILE --exec $DAEMON >> ${LOGFILE} 2>&1   || true &
-		start-stop-daemon --start -d $FOLDER --quiet --make-pidfile --pidfile $PIDFILE --exec $DAEMON >> /dev/null & #  ${LOGFILE} &
+		        start-stop-daemon --start -d $FOLDER --quiet --make-pidfile --pidfile $PIDFILE --exec $DAEMON >> /dev/null & #  ${LOGFILE} &
 
 		;;
 

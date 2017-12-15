@@ -9,7 +9,8 @@ We tested this procedure on a Ubuntu 16.04 (also within a LXD container). Everyt
 ```
 apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate
 ```
-##### Install latest NodeJS release
+
+##### Install latest NodeJS 7.x release
 ```
 curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 apt-get install -y nodejs
@@ -27,7 +28,6 @@ echo $NODE_PATH
 
 ## Install from NPM
 ```
-npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 npm install -g --unsafe @mdslab/iotronic-lightning-rod
 npm install -g --unsafe @mdslab/wstun
 ```
@@ -60,7 +60,7 @@ source /etc/environment > /dev/null
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod
+npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile
 npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 

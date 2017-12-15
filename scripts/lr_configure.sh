@@ -22,12 +22,13 @@ if [ "$DEVICE" = "server" ]; then
 
     if [ "$DISTRO" = "14.04" ]; then
 
-        chmod +x /usr/local/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
-        /usr/bin/npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+        chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
 
-        cp /usr/local/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/lightning-rod
+        /usr/bin/npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+
+        cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/lightning-rod
         chmod +x /etc/init.d/lightning-rod
-        chmod +x /usr/local/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
+        chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
 
     elif [ "$DISTRO" = "16.04" ]; then
 
