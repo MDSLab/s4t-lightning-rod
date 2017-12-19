@@ -440,7 +440,7 @@ exports.mountDriver = function (args){
 				rest_response.message = "Error during driver folder creation: " + err;
 				rest_response.result = "ERROR";
 				logger.error("[DRIVER] - "+driver_name+" --> "+rest_response.message);
-				d.reject(rest_response);
+				d.resolve(rest_response);
 				
 			}
 
@@ -451,7 +451,7 @@ exports.mountDriver = function (args){
 		rest_response.message = "Error during driver folder creation: " + err;
 		rest_response.result = "ERROR";
 		logger.error("[DRIVER] - "+driver_name+" --> "+rest_response.message);
-		d.reject(rest_response);
+		d.resolve(rest_response);
     }
 	
   
@@ -535,7 +535,7 @@ exports.unmountDriver = function (args){
 							rest_response.message = "ERROR during '"+driver_name+"' (fuse) unmounting: " +err;
 							rest_response.result = "ERROR";
 							logger.error("[DRIVER] - "+driver_name+" --> "+JSON.stringify(rest_response.message));
-							d.reject(err);
+							d.resolve(rest_response);
 
 						}
 
@@ -557,7 +557,7 @@ exports.unmountDriver = function (args){
 			}
 			catch(err){
 				logger.error("[DRIVER] - "+driver_name+" --> Error during driver configuration loading: "+err);
-				d.reject(err);
+				d.resolve(err);
 			}
 
 		});
@@ -567,7 +567,7 @@ exports.unmountDriver = function (args){
 		rest_response.message = "Generic error during '"+driver_name+"' (fuse) unmounting: " +err;
 		rest_response.result = "ERROR";
 		logger.error("[DRIVER] - "+driver_name+" --> "+ rest_response.message);
-		d.reject(err);
+		d.resolve(err);
 	}
 
 	return d.promise;
@@ -1241,7 +1241,7 @@ function LoadDriver(driver_name, mountpoint, remote, mirror_board){
 						rest_response.message = "ERROR during "+driver_name+" initialization -> " +init_response.message;
 						rest_response.result = "ERROR";
 
-						d.reject(rest_response);
+						d.resolve(rest_response);
 
 					}
 
@@ -1255,7 +1255,7 @@ function LoadDriver(driver_name, mountpoint, remote, mirror_board){
 
 				logger.warn("[DRIVER] - "+driver_name+" --> " + rest_response.message);
 
-				d.reject(rest_response);
+				d.resolve(rest_response);
 
 			}
 
@@ -1279,7 +1279,7 @@ function LoadDriver(driver_name, mountpoint, remote, mirror_board){
 	catch(err){
 		rest_response.message = err;
 		rest_response.result = "ERROR";
-		d.reject(rest_response);
+		d.resolve(rest_response);
 	}
 
 	return d.promise;
@@ -1322,7 +1322,7 @@ function AttachMountpoint(driver_name, mountpoint, remote, mirror_board, d) {
 		function (error) {
 
 			logger.warn("[DRIVER] - "+driver_name+" --> Error in LoadDriver function: "+ JSON.stringify(error));
-			d.reject(error);
+			d.resolve(error);
 		}
 	);
 
