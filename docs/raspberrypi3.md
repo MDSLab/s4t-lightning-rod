@@ -15,7 +15,8 @@ sudo dd bs=4M if=ubuntu-16.04-preinstalled-server-armhf+raspi3.img of=/dev/sdb
 ```
 apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate
 ```
-##### Install latest NodeJS release
+
+##### Install latest NodeJS 7.x release
 ```
 curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 apt-get install -y nodejs
@@ -33,7 +34,8 @@ echo $NODE_PATH
 
 ## Install from NPM
 ```
-npm install -g --unsafe iotronic-lightning-rod
+npm install -g --unsafe @mdslab/iotronic-lightning-rod
+npm install -g --unsafe @mdslab/wstun
 ```
 
 ##### Configure Lightning-rod
@@ -54,7 +56,7 @@ This script asks the following information:
 Add ENV variables
 ```
 echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
-echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/iotronic-lightning-rod" | tee -a /etc/environment
+echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" | tee -a /etc/environment
 
 source /etc/environment > /dev/null
 ```
@@ -64,7 +66,7 @@ source /etc/environment > /dev/null
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g --unsafe gyp autobahn jsonfile nconf @mdslab/wstun tty.js fuse-bindings requestify is-running connection-tester log4js@1.1.1 q secure-keys fs-access mknod optimist
+npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile
 npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 
@@ -78,8 +80,8 @@ cd /usr/lib/node_modules/
 git clone git://github.com/MDSLab/s4t-lightning-rod.git
 mv s4t-lightning-rod iotronic-lightning-rod
 
-cp /usr/lib/node_modules/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
-sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
+cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
 chmod +x /etc/systemd/system/lightning-rod.service
 systemctl daemon-reload
 
@@ -87,7 +89,7 @@ mkdir /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
 
 echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
-echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/iotronic-lightning-rod" | tee -a /etc/environment
+echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" | tee -a /etc/environment
 source /etc/environment > /dev/null
 
 ```
@@ -95,9 +97,9 @@ source /etc/environment > /dev/null
 ##### Configure Lightning-rod
 Note that you will need the IP address of a working instance of a WAMP router (<WAMP_IP>), the IP address of a working instance of a Websocket reverse tunnel server (<WS_IP>), and the UUID of the node that you need to have previously registered on the IoTronic (<NODE_UUID>). Also, note that if while installing the IoTronic service, you configured a custom port and realm name for the WAMP router or a custom port for the Websocket reverse tunnel server, you will need to manually change the setting.json, accordingly.
 ```
-cp /usr/lib/node_modules/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
-cp /usr/lib/node_modules/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
-cp /usr/lib/node_modules/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
 
 sed -i "s/\"device\":.*\"\"/\"device\": \"server\"/g" /var/lib/iotronic/settings.json
 sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_UUID>\"/g" /var/lib/iotronic/settings.json
