@@ -44,7 +44,7 @@ exports.enableService = function(args){
     var d = Q.defer();
 
 
-    logger.debug("[SERVICE] - RPC enableService called: " + args)
+    logger.debug("[SERVICE] - RPC enableService called: " + args);
 
     //Looking for the process in the array
     var i = findValue(servicesProcess, serviceName, 'key');
