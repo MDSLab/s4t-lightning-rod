@@ -983,7 +983,7 @@ exports.removePlugin = function(args){
 	var pid = pluginsConf.plugins[plugin_name].pid;
 
 	// if the plugin is not running the pid is NULL or "", in this condition "is-running" module return "true" that is a WRONG result!
-	if (running(pid) == false || pid == null){
+	if (running(pid) == false || pid == null || pid == ""){
 
 		if ( fs.existsSync(plugin_folder) === true ){
 
