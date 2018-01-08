@@ -61,10 +61,10 @@ function onTopicConnection(args) {
 }
 
 // This function loads the Lightning-rod modules
-function moduleLoader (session) {
+function moduleLoader (session, device) {
     // MODULES LOADING--------------------------------------------------------------------------------------------------
-    var managePins = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-pins');
-    managePins.exportPins(session);
+    var manageGpio = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
+    manageGpio.exportPins(session, lyt_device);
 
     var managePlugins = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
     managePlugins.exportPluginCommands(session);
@@ -218,6 +218,7 @@ exports.checkSettings = function (callback) {
 
         // BOARD CONF
         device = nconf.get('config:device');
+        
         if (device == undefined || device == "") {
             logger.warn('[SYSTEM] - Device "' + device + '" not supported!');
             logger.warn(' - Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
@@ -348,7 +349,7 @@ exports.updateConf = function (args) {
 exports.checkRegistrationStatus = function(args){
 
     var response = args[0];
-
+    
     if(response.result == "SUCCESS"){
 
         logger.info("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
@@ -385,7 +386,7 @@ exports.checkRegistrationStatus = function(args){
                             logger.info("settings.json configuration file saved to " + SETTINGS);
                             //Calling the manage_WAMP_connection function that contains the logic that has to be performed if the device is connected to the WAMP server
                             //exports.manage_WAMP_connection(board_session, details);
-                            moduleLoader(board_session);
+                            moduleLoader(board_session, lyt_device);
                         }
                     });
 
@@ -409,10 +410,8 @@ exports.checkRegistrationStatus = function(args){
 
 
         } else if(reg_status === "registered"){
-
-            //Calling the manage_WAMP_connection function that contains the logic that has to be performed if the device is connected to the WAMP server
-            //exports.manage_WAMP_connection(board_session, details);
-            moduleLoader(board_session);
+            
+            moduleLoader(board_session, lyt_device);
 
         } else{
 

@@ -38,6 +38,7 @@ boardCode = null;		//valued in checkSettings
 board_position = null;	//valued by Iotronic RPC funcion (provisioning)
 reg_status = null;		//valued in checkSettings
 device = null;			//valued in checkSettings
+lyt_device = null;		//valued here in main
 
 
 // To test the connection status
@@ -389,27 +390,31 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		switch(device){
 
 			case 'arduino_yun':
-				logger.info("[SYSTEM] - Lightning-rod Arduino Yun starting...");
-				var yun = require('./device/arduino_yun');
-				yun.Main(wampConnection, logger);
+				var YunDevice = require('./device/lyt_arduino_yun');
+				lyt_device = new YunDevice(device);
+				logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
+				lyt_device.Main(wampConnection, logger);
 				break;
 
 			case 'server':
-				logger.info("[SYSTEM] - Lightning-rod server starting...");
-				var server = require('./device/server');
-				server.Main(wampConnection, logger);
+				var ServerDevice = require('./device/lyt_server');
+				lyt_device = new ServerDevice(device);
+				logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
+				lyt_device.Main(wampConnection, logger);
 				break;
 
 			case 'raspberry_pi':
-				logger.info("[SYSTEM] - Lightning-rod Raspberry Pi starting...");
-				var raspberry_pi = require('./device/raspberry_pi');
-				raspberry_pi.Main(wampConnection, logger);
+				var RaspDevice = require('./device/lyt_raspberry_pi');
+				lyt_device = new RaspDevice(device);
+				logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
+				lyt_device.Main(wampConnection, logger);
 				break;
 
 			case 'android':
-				logger.info("[SYSTEM] - L-R Android starting...");
-				var yun = require('./device/android');
-				yun.Main(wampConnection, logger);
+				var AndroidDevice = require('./device/lyt_android');
+				lyt_device = new AndroidDevice(device);
+				logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
+				lyt_device.Main(wampConnection, logger);
 				break;
 
 			default:
