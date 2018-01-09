@@ -249,7 +249,7 @@ exports.checkSettings = function (callback) {
 
         var board_position = nconf.get('config:board:position');
 
-        if (board_position == undefined || Object.keys(board_position).length === 0) {
+        if ( (board_position == undefined || Object.keys(board_position).length === 0 ) && (reg_status == "registered") ) {
             logger.warn('[SYSTEM] - Wrong board coordinates! Set status to "new" to retrive these information.');
             logger.debug('- Coordinates: ' + JSON.stringify(board_position));
             process.exit();
