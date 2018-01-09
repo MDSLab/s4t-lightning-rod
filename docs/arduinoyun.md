@@ -11,7 +11,6 @@ echo $NODE_PATH
 ```
 
 ##### Install dependencies via opkg
-
 ```
 opkg update
 opkg install logrotate ntpdate nano git unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs wstun
@@ -22,23 +21,7 @@ opkg install kmod-gre kmod-ip6-tunnel kmod-iptunnel4 kmod-iptunnel6 kmod-ipv6 km
 ```
 npm install -g --unsafe @mdslab/iotronic-lightning-rod
 ```
-If you get some problems during npm dependencies installation phase we suggest you to follow the "Install from source-code" procedure.
-
-##### Configure Lightning-rod
-At the end of the installation process we have to execute the LR configuration script:
-```
-$NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh
-```
-This script asks the following information:
-```
-* device type: [ "arduino_yun" | "server" | "raspberry_pi"]
-
-* Board ID: UUID released by the registration process managed by IoTronic.
-
-* IoTronic server IP
-
-* WAMP server IP
-```
+If you have some problems during npm dependencies installation phase we suggest you to follow the "Install from source-code" procedure.
 
 
 
@@ -46,7 +29,7 @@ This script asks the following information:
 
 ##### Install required NodeJS modules via npm
 ```
-npm install -g requestify is-running connection-tester log4js@1.1.1 q fs-access util
+npm install -g requestify is-running connection-tester@0.1.2 log4js@1.1.1 q fs-access util
 ```
 
 ##### Install the Lightning-rod
@@ -71,21 +54,26 @@ touch /var/log/iotronic/lightning-rod.log
 echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/profile
 echo "export LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" >> /etc/profile
 source /etc/profile
-```
 
-##### Configure Lightning-rod
-Note that you need the NODE_ID that is the code returned by the IoTronic service after node registration.
-
-```
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+```
 
-sed -i "s/\"device\":.*\"\"/\"device\": \"arduino_yun\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"code\":.*\"\"/\"code\": \"<NODE_ID>\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/<IOTRONIC-SERVER-IP>\"/g" /var/lib/iotronic/settings.json
+## Configure Lightning-rod
+At the end of the installation process we have to execute the LR configuration script:
+```
+$NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh
+```
+This script asks the following information:
+```
+* device type: "arduino_yun"
+
+* Board ID: UUID released by the registration process managed by IoTronic.
+
+* IoTronic server IP
+
+* WAMP server URL
 ```
 
 ##### Configure cron to launch the Lightning-rod if not yet running
