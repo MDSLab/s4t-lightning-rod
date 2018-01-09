@@ -3,30 +3,38 @@
 echo "Installing..."
 
 #/usr/bin/npm install -g https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
+IOTRONIC_HOME="/var/lib/iotronic"
 
-rm_check=
-echo -n "Do you want to keep IoTronic home (/var/lib/iotronic) ? (yes/no) "
-read rm_check
+if [ -d "$IOTRONIC_HOME" ]; then
 
-if [ "$rm_check" = "no" ]; then
+    rm_check=
+    echo -n "Do you want to keep IoTronic home (/var/lib/iotronic) ? (yes/no) "
+    read rm_check
 
-    mkdir /var/lib/iotronic/
-	cd /var/lib/iotronic/ && mkdir plugins && mkdir drivers
+    if [ "$rm_check" = "yes" ]; then
 
-	cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
-	cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
-	cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+        echo "--> IoTronic home is save!"
 
-	chmod +x /usr/local/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
-
-	mkdir /var/log/iotronic/
-	touch /var/log/iotronic/lightning-rod.log
-
-else
-
-    echo "--> IoTronic home is save!"
+    fi
 
 fi
+
+if [ "$rm_check" = "no" ] || [ ! -d "$IOTRONIC_HOME" ]; then
+
+    mkdir /var/lib/iotronic/
+    cd /var/lib/iotronic/ && mkdir plugins && mkdir drivers
+
+    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+
+    chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
+
+    mkdir /var/log/iotronic/
+    touch /var/log/iotronic/lightning-rod.log
+
+fi
+
 
 echo "Configuring..."
 

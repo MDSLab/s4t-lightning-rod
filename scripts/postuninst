@@ -1,14 +1,24 @@
 #!/bin/sh
 
 echo "Uninstalling..."
-rm_check=
-echo -n "Do you want to keep IoTronic home (/var/lib/iotronic) ? (yes/no) "
-read rm_check
 
-if [ "$rm_check" = "no" ]; then
 
-    rm -rf /var/lib/iotronic/
+IOTRONIC_HOME="/var/lib/iotronic"
 
-else
-	echo "--> IoTronic home is save!"
+if [ -d "$IOTRONIC_HOME" ]; then
+
+    rm_check=
+    echo -n "Do you want to keep IoTronic home (/var/lib/iotronic) ? (yes/no) "
+    read rm_check
+
+    if [ "$rm_check" = "no" ]; then
+
+        rm -rf /var/lib/iotronic/
+
+    else
+        echo "--> IoTronic home is save!"
+    fi
+
 fi
+
+

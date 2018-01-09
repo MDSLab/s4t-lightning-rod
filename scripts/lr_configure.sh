@@ -2,7 +2,7 @@
 
 # Configure LR ---------------------------------------------------------------------------------------------------------------------------------------------------
 DEVICE=
-echo -n "Enter device model: "
+echo -n "Enter device model ['server', 'arduino_yun', 'raspberry_pi']: "
 read DEVICE
 echo "-->" $DEVICE
 sed -i "s/\"device\":.*\"\"/\"device\": \"$DEVICE\"/g" /var/lib/iotronic/settings.json
@@ -62,24 +62,24 @@ sed -i "s/\"code\":.*\"\"/\"code\": \"$BOARD_ID\"/g" /var/lib/iotronic/settings.
 sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
 
 
-WAMP_IP=
-echo -n "Enter WAMP SERVER IP: "
-read WAMP_IP
-echo "-->" $WAMP_IP
-sed -i "s/\"url_wamp\":.*\"\"/\"url_wamp\": \"ws:\/\/$WAMP_IP\"/g" /var/lib/iotronic/settings.json
+WAMP_URL=
+echo -n "Enter WAMP SERVER URL (e.g. ws://IP or wss://IP): "
+read WAMP_URL
+echo "-->" $WAMP_URL
+sed -i "s,\"url_wamp\":.*,\"url_wamp\": \"$WAMP_URL\"\,,g" /var/lib/iotronic/settings.json
 
-same_ip=
-echo -n "Do you want confirm the same IP for the reverse tunnel ($WAMP_IP)? (yes/no) "
-read same_ip
+same_url=
+echo -n "Do you want confirm the same URL for the reverse tunnel ($WAMP_URL)? (yes/no) "
+read same_url
 
-if [ "$same_ip" = "yes" ]; then
-	sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/$WAMP_IP\"/g" /var/lib/iotronic/settings.json
+if [ "$same_url" = "yes" ]; then
+	sed -i "s,\"url_reverse\":.*,\"url_reverse\": \"$WAMP_URL\"\,,g" /var/lib/iotronic/settings.json
 else
 
-	REVERSE_IP=
-	echo -n "Enter REVERSE TUNNEL IP: "
-	read REVERSE_IP
-	echo "-->" $REVERSE_IP
-	sed -i "s/\"url_reverse\":.*\"\"/\"url_reverse\": \"ws:\/\/$REVERSE_IP\"/g" /var/lib/iotronic/settings.json
+	REVERSE_URL=
+	echo -n "Enter REVERSE TUNNEL URL (e.g. ws://IP or wss://IP): "
+	read REVERSE_URL
+	echo "-->" $REVERSE_URL
+	sed -i "s,\"url_reverse\":.*,\"url_reverse\": \"$REVERSE_URL\"\,,g" /var/lib/iotronic/settings.json
 
 fi
