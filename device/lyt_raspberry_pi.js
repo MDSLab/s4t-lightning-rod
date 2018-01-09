@@ -17,8 +17,6 @@
 //############################################################################################
 
 
-//"use strict";
-
 var util = require('util');
 
 var Device = require('./Device');
@@ -28,7 +26,6 @@ function RaspberryPiDevice(name) {
     Device.call(this);
 
     this.name = name;
-    //console.log("loading device: " + this.name);
 
 }
 

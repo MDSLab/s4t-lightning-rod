@@ -10,6 +10,7 @@ sed -i "s/\"device\":.*\"\"/\"device\": \"$DEVICE\"/g" /var/lib/iotronic/setting
 if [ "$DEVICE" = "arduino_yun" ]; then
 
     cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
+    sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
     chmod +x /etc/init.d/lightning-rod
 
 fi

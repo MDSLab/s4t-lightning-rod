@@ -64,7 +64,7 @@ exports.restartDrivers = function (){
 
 		if(driver_num > 0){
 			
-			logger.info('[DRIVER] - Restarting enabled drivers on board: ');
+			logger.info('[DRIVER] - Restarting enabled drivers on board...');
 
 			for(var i = 0; i < driver_num; i++) {
 
@@ -225,7 +225,7 @@ exports.restartDrivers = function (){
 								}
 
 							}else{
-								logger.info("[DRIVER] - "+driver_name+" --> Status -> "+status+": this plugin does not have to be started!");
+								logger.info("[DRIVER] - " + driver_name + ": this driver does not have to be started!");
 							}
 						}
 

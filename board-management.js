@@ -371,9 +371,9 @@ exports.checkRegistrationStatus = function(args){
 
                     logger.info("\n\nPROVISIONING "+boardCode+" RECEIVED: " + JSON.stringify(result) + "\n\n");
 
-                    board_position = result.message[0];
-                    board_config["position"]=result.message[0];
-                    board_config["status"]="registered";
+                    board_position = result.message.info.coordinates;
+                    board_config["position"] = board_position;
+                    board_config["status"] = "registered";
 
                     logger.info("\n[CONFIGURATION] - BOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]));
 
@@ -404,6 +404,8 @@ exports.checkRegistrationStatus = function(args){
                 },
                 function (error){
                     logger.error('[WAMP] - Error board provisioning: ' + JSON.stringify(error));
+                    logger.info("Bye!");
+                    process.exit(1);
                 }
                 
             );

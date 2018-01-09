@@ -16,7 +16,6 @@
 //##
 //############################################################################################
 
-//"use strict";
 
 var util = require('util');
 
@@ -27,8 +26,26 @@ function ArduinoYunDevice(name) {
     Device.call(this);
 
     this.name = name;
-    //console.log("loading device: " + this.name)
-    
+
+    /*
+    Digital PIN mapping on lininoIO
+
+        -------------------------
+        GPIO n.     PIN
+        104	        D8
+        105	        D9
+        106	        D10
+        107	        D11
+        114	        D5
+        115	        D13
+        116	        D3
+        117	        D2
+        120	        D4
+        122	        D12
+        123	        D6
+        
+    */
+
 }
 
 util.inherits(ArduinoYunDevice, Device);
