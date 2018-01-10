@@ -1,4 +1,5 @@
 # Stack4Things Lightning-rod (standalone version)
+[![npm version](https://badge.fury.io/js/%40mdslab%2Fiotronic-lightning-rod.svg)](https://badge.fury.io/js/%40mdslab%2Fiotronic-lightning-rod)
 
 Stack4Things is an Internet of Things framework developed by the Mobile and Distributed Systems Lab (MDSLab) at the University of Messina, Italy. Stack4Things is an open source project that helps you in managing IoT device fleets without caring about their physical location, their network configuration, their underlying technology. It is a Cloud-oriented horizontal solution (integrated with OpenStack) providing IoT object virtualization, customization, and orchestration. Stack4Things provides you with an out-of-the-box experience on several of the most popular embedded and mobile systems.
 
@@ -35,7 +36,6 @@ and on Raspberry Pi 3 with ubuntu-16.04-preinstalled-server OS:
 
 * [Installation guide for Ubuntu 16.04](docs/ubuntu1604.md)
 * [Installation guide for Ubuntu 14.04](docs/ubuntu1404.md)
-
 <!--* [Installation guide for Ubuntu 14.04](docs/ubuntu1404.md)-->
 
 If you want to install Lightning-rod within an LXD container, you can follow the first part of the IoTronic installation guide you can find [here](https://github.com/MDSLab/s4t-iotronic-standalone/blob/master/docs/installation_lxd.md).
