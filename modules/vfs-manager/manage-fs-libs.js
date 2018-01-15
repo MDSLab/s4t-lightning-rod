@@ -287,6 +287,8 @@ exports.open_function = function(args){
 
 exports.read_function = function(args){
 
+	//console.time("REST");
+	
 	var d = Q.defer();
 	
 	//Parsing the input arguments
@@ -317,8 +319,6 @@ exports.read_function = function(args){
 						d.reject(err);
 					}
 					else {
-					
-						//buffer.copy(int_buffer);
 						
 						fs.close(int_fd, function (err) {
 							if (err) {
@@ -326,7 +326,13 @@ exports.read_function = function(args){
 								d.reject(err);
 							}
 							else {
-								d.resolve([int_buffer.toString(), bytesRead]);
+
+								//console.log(int_buffer.toString('base64'));
+
+								//console.timeEnd("REST");
+
+								d.resolve([int_buffer.toString('base64'), bytesRead]);
+								
 							}
 
 						});

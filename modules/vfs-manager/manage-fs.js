@@ -780,13 +780,21 @@ function wrap_read_function(mirrored_board, path_org, fs_function){
 
 		//logger.debug('[FS] - CALLED RPC: '+'s4t.'+mirrored_board+'.fs.'+fs_function  +" call file --> " + path + " in "+path_org);
 
+		//console.time("CALL");
 		session_fs.call('s4t.'+mirrored_board+'.fs.'+fs_function, [path_org, path, fd, length, position] ).then(
 
 			function (result) {
 
+				//console.timeEnd("CALL");
+
 				//logger.warn("[FS] - Response "+fs_function+" from "+mirrored_board+": "+ path);//+JSON.stringify(result[0].toString()));
 				
-				buffer.write(result[0]);
+				mybuff = new Buffer(result[0], 'base64');
+				//console.log(mybuff.toString('base64'));
+				mybuff.copy(buffer);
+
+
+
 				cb(result[1]);
 
 			},
