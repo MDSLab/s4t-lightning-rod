@@ -13,6 +13,9 @@ if [ "$DEVICE" = "arduino_yun" ]; then
     sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
     chmod +x /etc/init.d/lightning-rod
 
+    # Configure logrotate
+    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+
 fi
 
 if [ "$DEVICE" = "server" ]; then
@@ -25,22 +28,24 @@ if [ "$DEVICE" = "server" ]; then
 
         chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
 
-        /usr/bin/npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
-
         cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/lightning-rod
         chmod +x /etc/init.d/lightning-rod
         chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
+
+        # Configure logrotate
+        cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
     elif [ "$DISTRO" = "16.04" ]; then
 
         chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
 
-        /usr/bin/npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
-
         cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
         sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
         chmod +x /etc/systemd/system/lightning-rod.service
         systemctl daemon-reload
+
+        # Configure logrotate
+        cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
     fi
 
@@ -48,10 +53,15 @@ fi
 
 
 if [ "$DEVICE" = "raspberry_pi" ]; then
+
     cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
     sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
     chmod +x /etc/systemd/system/lightning-rod.service
     systemctl daemon-reload
+
+    # Configure logrotate
+    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+
 fi
 
 BOARD_ID=

@@ -387,44 +387,22 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		//--------------------------------------------------------------
 		// 2. The selected device will connect to Iotronic WAMP server
 		//--------------------------------------------------------------
-		switch(device){
+		try{
 
-			case 'arduino_yun':
-				var YunDevice = require('./device/lyt_arduino_yun');
-				lyt_device = new YunDevice(device);
-				logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
-				lyt_device.Main(wampConnection, logger);
-				break;
+			IoT_Device = require('./device/lyt_'+device);
+			lyt_device = new IoT_Device(device);
+			logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
+			lyt_device.Main(wampConnection, logger);
 
-			case 'server':
-				var ServerDevice = require('./device/lyt_server');
-				lyt_device = new ServerDevice(device);
-				logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
-				lyt_device.Main(wampConnection, logger);
-				break;
+		}catch (e) {
 
-			case 'raspberry_pi':
-				var RaspDevice = require('./device/lyt_raspberry_pi');
-				lyt_device = new RaspDevice(device);
-				logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
-				lyt_device.Main(wampConnection, logger);
-				break;
-
-			case 'android':
-				var AndroidDevice = require('./device/lyt_android');
-				lyt_device = new AndroidDevice(device);
-				logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
-				lyt_device.Main(wampConnection, logger);
-				break;
-
-			default:
-				logger.warn('[SYSTEM] - Device "' + device + '" not supported!');
-				logger.warn('[SYSTEM] - Supported devices are: "server", "arduino_yun", "raspberry_pi".');
-				process.exit();
-				break;
+			logger.error('[SYSTEM] - Loading IoT device failure: ', e);
+			logger.error('[SYSTEM] - Device "' + device + '" not supported!');
+			logger.error('[SYSTEM] - Supported devices are: "server", "arduino_yun", "raspberry_pi".');
+			logger.info("Bye!");
+			process.exit(1);
 
 		}
-		
 
 
 	}
