@@ -1,0 +1,2 @@
+* * * * * /etc/init.d/lightning-rod start
+*/10 * * * *  ntpdate 0.pool.ntp.org
