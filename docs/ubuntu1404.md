@@ -8,9 +8,9 @@ We tested this procedure on a Ubuntu 14.04 (also within a LXD container). Everyt
 apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate
 ```
 
-##### Install latest NodeJS 7.x release
+##### Install latest NodeJS 8.x release
 ```
-curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 apt-get install -y nodejs
 node -v
 
@@ -52,7 +52,9 @@ sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/var\/lib\/iotronic\/iot
 chmod +x /etc/init.d/lightning-rod
 chmod +x /var/lib/iotronic/iotronic-lightning-rod/lr-server.js
 
+mkdir /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
+cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 echo "IOTRONIC_HOME=/var/lib/iotronic/iotronic-lightning-rod" | tee -a /etc/environment
 echo "LIGHTNINGROD_HOME=$IOTRONIC_HOME/lightning-rod" | tee -a /etc/environment

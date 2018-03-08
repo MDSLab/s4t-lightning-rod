@@ -9,11 +9,7 @@
   "scripts": {
     "test": "node lightning-rod.js",
     "postinstall": "./scripts/postinst",
-    "uninstall": "./scripts/postuninst",
-    "copy:package.dist.json": "cp package.dist.json dist/package.json",
-    "build:index.js": "noderify -f nconf -f log4js -f fuse-bindings -f ideino-linino-lib lightning-rod.js > dist/index.js",
-    "build": "npm run clean && mkdir -p dist && npm run build:index.js && npm run copy:package.dist.json",
-    "clean": "rimraf dist"
+    "uninstall": "./scripts/postuninst"
   },
   "dependencies": {
     "autobahn": ">=0.9.9",
@@ -26,10 +22,6 @@
     "nconf": ">=0.8.4",
     "q": ">=0.9.7",
     "requestify": ">=0.1.17"
-  },
-  "devDependencies": {
-    "noderify": "^2.0.0",
-    "rimraf": "^2.6.1"
   },
   "repository": {
     "type": "git",

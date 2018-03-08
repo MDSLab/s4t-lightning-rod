@@ -1,13 +1,6 @@
 # Raspberry Pi 3 installation guide
-We tested this procedure on a ubuntu-16.04-preinstalled-server. Everything needs to be run as root.
+We tested this procedure on "Raspbian" and "ubuntu-16.04-preinstalled-server". Everything needs to be run as root.
 
-
-## Install OS distribution "ubuntu-16.04-preinstalled-server"
-```
-wget http://www.finnie.org/software/raspberrypi/ubuntu-rpi3/ubuntu-16.04-preinstalled-server-armhf+raspi3.img.xz
-sudo unxz ubuntu-16.04-preinstalled-server-armhf+raspi3.img.xz
-sudo dd bs=4M if=ubuntu-16.04-preinstalled-server-armhf+raspi3.img of=/dev/sdb
-```
 
 ## Install requirements
 
@@ -16,9 +9,9 @@ sudo dd bs=4M if=ubuntu-16.04-preinstalled-server-armhf+raspi3.img of=/dev/sdb
 apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate
 ```
 
-##### Install latest NodeJS 7.x release
+##### Install latest NodeJS 8.x release
 ```
-curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 apt-get install -y nodejs
 node -v
 
@@ -34,8 +27,8 @@ echo $NODE_PATH
 
 ## Install from NPM
 ```
-npm install -g --unsafe @mdslab/iotronic-lightning-rod
 npm install -g --unsafe @mdslab/wstun
+npm install -g --unsafe @mdslab/iotronic-lightning-rod
 ```
 
 
@@ -65,6 +58,7 @@ systemctl daemon-reload
 
 mkdir /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
+cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
 echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" | tee -a /etc/environment
@@ -91,25 +85,12 @@ This script asks the following information:
 
 * WAMP server URL
 ```
-Add ENV variables
+Check ENV variables
 ```
-echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
-echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" | tee -a /etc/environment
-
-source /etc/environment > /dev/null
+IOTRONIC_HOME=/var/lib/iotronic
+LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod
 ```
-
-## Configure logrotate
-nano /etc/logrotate.d/lightning-rod.log
-```
-/var/log/iotronic/lightning-rod.log {
-    weekly
-    rotate = 3
-    compress
-    su root root
-    maxsize 5M
-}
-```
+otherwise add them in /etc/environment
 
 
 ## Start Lightning-rod

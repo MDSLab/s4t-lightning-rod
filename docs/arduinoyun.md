@@ -13,12 +13,13 @@ echo $NODE_PATH
 ##### Install dependencies via opkg
 ```
 opkg update
-opkg install logrotate ntpdate nano git unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs wstun
+opkg install logrotate ntpdate nano git unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs
 opkg install kmod-gre kmod-ip6-tunnel kmod-iptunnel4 kmod-iptunnel6 kmod-ipv6 kmod-tun
 ```
 
 ## Install from NPM
 ```
+npm install -g --unsafe @mdslab/wstun
 npm install -g --unsafe @mdslab/iotronic-lightning-rod
 ```
 If you have some problems during npm dependencies installation phase we suggest you to follow the "Install from source-code" procedure.
@@ -46,10 +47,9 @@ cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning
 sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
 chmod +x /etc/init.d/lightning-rod
 
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
-
 mkdir /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
+cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/profile
 echo "export LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" >> /etc/profile
@@ -75,6 +75,14 @@ This script asks the following information:
 
 * WAMP server URL
 ```
+
+Check ENV variables
+```
+IOTRONIC_HOME=/var/lib/iotronic
+LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod
+```
+otherwise add them in /etc/environment
+
 
 ##### Configure cron to launch the Lightning-rod if not yet running
 ```
