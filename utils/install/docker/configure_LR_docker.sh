@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/sh
 
 if [ "$#" -ne 3 ]; then
         echo "Usage: ./configure_LR_arancino.sh <BOARD_ID> <WAMP_URL> </CONFIG/PATH/>"

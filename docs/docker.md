@@ -7,7 +7,6 @@ MDSLAB Docker Hub [webpage](https://hub.docker.com/r/mdslab/)
 ## Requirements
 
 * Docker! Follow the official [guides](https://docs.docker.com/install/)
-to install Docker Community Edition (CE) for your OS.
 
 ## Get container
 
@@ -27,7 +26,7 @@ sudo wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/sett
 ```
 cd /tmp/
 
-wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/install/docker/configure_LR_docker.sh -0 lr_configure.sh
+wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/install/docker/configure_LR_docker.sh -O lr_configure.sh
 
 /tmp/lr_configure.sh <BOARD_ID> <WAMP_URL> </CONFIG/PATH/>
 ```
@@ -38,9 +37,9 @@ This script asks the following information:
 * WAMP_URL: ws://<IP> or wss://<IP>
 ```
 
-* Edit the following commands so that </CONFIG/PATH/>
-points at the folder that you created in the first step (e.g: /etc/iotronic/) and run it:
+* Create container editing the following commands so that </CONFIG/PATH/>
+points at the folder that you created in the first step (e.g: /etc/iotronic/):
 
 ```
-docker run -d --volume lr_data:/var/lib/iotronic -v </CONFIG/PATH/>/settings.json:/var/lib/iotronic/settings.json --name=lightning-rod mdslab/iotronic-lightning-rod
+docker run -d -v lr_data:/var/lib/iotronic -v </CONFIG/PATH/>/settings.json:/var/lib/iotronic/settings.json --name=lightning-rod mdslab/iotronic-lightning-rod
 ```
