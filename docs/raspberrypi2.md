@@ -19,7 +19,7 @@ npm install -g npm
 npm config set python `which python2.7`
 npm -v
 
-echo "NODE_PATH=/usr/lib/node_modules" | tee -a /etc/environment
+echo "NODE_PATH=$NODE_PATH" | tee -a /etc/environment
 source /etc/environment > /dev/null
 echo $NODE_PATH
 ```
@@ -43,30 +43,28 @@ npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0
 
 ##### Install the Lightning-rod
 ```
-mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
-mkdir plugins && mkdir drivers
-mkdir drivers/mountpoints/
+mkdir -p /var/lib/iotronic/plugins
+mkdir -p /var/lib/iotronic/drivers/mountpoints/
+mkdir -p $NODE_PATH/@mdslab/
 
-cd /usr/lib/node_modules/
-git clone git://github.com/MDSLab/s4t-lightning-rod.git
-mv s4t-lightning-rod iotronic-lightning-rod
+git clone --depth=1 git://github.com/MDSLab/s4t-lightning-rod.git $NODE_PATH/@mdslab/iotronic-lightning-rod
 
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
 sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
 chmod +x /etc/systemd/system/lightning-rod.service
 systemctl daemon-reload
 
-mkdir /var/log/iotronic/
+mkdir -p /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
-echo "LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" | tee -a /etc/environment
+echo "LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod" | tee -a /etc/environment
 source /etc/environment > /dev/null
 
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
 ```
 
 
@@ -88,7 +86,7 @@ This script asks the following information:
 Check ENV variables
 ```
 IOTRONIC_HOME=/var/lib/iotronic
-LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod
+LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod
 ```
 otherwise add them in /etc/environment
 

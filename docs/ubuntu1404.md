@@ -18,7 +18,7 @@ npm install -g npm
 npm config set python `which python2.7`
 npm -v
 
-echo "NODE_PATH=/usr/lib/node_modules" | tee -a /etc/environment
+echo "NODE_PATH=$NODE_PATH" | tee -a /etc/environment
 source /etc/environment > /dev/null
 echo $NODE_PATH
 ```
@@ -42,19 +42,20 @@ npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0
 
 ##### Install Lightning-rod
 ```
-mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
-git clone git://github.com/MDSLab/s4t-lightning-rod.git
-mv s4t-lightning-rod iotronic-lightning-rod
-mkdir plugins && mkdir drivers
+mkdir -p /var/lib/iotronic/plugins
+mkdir -p /var/lib/iotronic/drivers/mountpoints/
+mkdir -p $NODE_PATH/@mdslab/
+
+git clone --depth=1 git://github.com/MDSLab/s4t-lightning-rod.git $NODE_PATH/@mdslab/iotronic-lightning-rod
 
 cp /var/lib/iotronic/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
 sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/var\/lib\/iotronic\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
 chmod +x /etc/init.d/lightning-rod
 chmod +x /var/lib/iotronic/iotronic-lightning-rod/lr-server.js
 
-mkdir /var/log/iotronic/
+mkdir -p /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 echo "IOTRONIC_HOME=/var/lib/iotronic/iotronic-lightning-rod" | tee -a /etc/environment
 echo "LIGHTNINGROD_HOME=$IOTRONIC_HOME/lightning-rod" | tee -a /etc/environment

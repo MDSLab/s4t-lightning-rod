@@ -5,7 +5,7 @@
 
 #### Configure npm NODE_PATH variable
 ```
-echo "export NODE_PATH=/usr/lib/node_modules" >> /etc/profile
+echo "export NODE_PATH=$NODE_PATH" >> /etc/profile
 source /etc/profile > /dev/null
 echo $NODE_PATH
 ```
@@ -35,29 +35,27 @@ npm install -g requestify is-running connection-tester@0.1.2 log4js@1.1.1 q fs-a
 
 ##### Install the Lightning-rod
 ```
-mkdir /var/lib/iotronic/ && cd /var/lib/iotronic/
-mkdir plugins && mkdir drivers
+mkdir -p /var/lib/iotronic/plugins
+mkdir -p /var/lib/iotronic/drivers/mountpoints/
+mkdir -p $NODE_PATH/@mdslab/
 
-cd /usr/lib/node_modules/@mdslab/
-mkdir /usr/lib/node_modules/@mdslab/
-git clone git://github.com/MDSLab/s4t-lightning-rod.git
-mv s4t-lightning-rod iotronic-lightning-rod
+git clone --depth=1 git://github.com/MDSLab/s4t-lightning-rod.git $NODE_PATH/@mdslab/iotronic-lightning-rod
 
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
 sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
 chmod +x /etc/init.d/lightning-rod
 
 mkdir /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/profile
-echo "export LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" >> /etc/profile
+echo "export LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod" >> /etc/profile
 source /etc/profile
 
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
 ```
 
 ## Configure Lightning-rod
@@ -79,7 +77,7 @@ This script asks the following information:
 Check ENV variables
 ```
 IOTRONIC_HOME=/var/lib/iotronic
-LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod
+LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod
 ```
 otherwise add them in /etc/environment
 
@@ -87,7 +85,7 @@ otherwise add them in /etc/environment
 ##### Configure cron to launch the Lightning-rod if not yet running
 ```
 /etc/init.d/cron stop
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/cron.d/root_yun /etc/crontabs/root
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/cron.d/root_yun /etc/crontabs/root
 /etc/init.d/cron start
 ```
 
