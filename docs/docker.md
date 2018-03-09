@@ -28,7 +28,9 @@ cd /tmp/
 
 wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/install/docker/configure_LR_docker.sh -O lr_configure.sh
 
-/tmp/lr_configure.sh <BOARD_ID> <WAMP_URL> </CONFIG/PATH/>
+chmod +x lr_configure.sh
+
+lr_configure.sh <BOARD_ID> <WAMP_URL> </CONFIG/PATH/>
 ```
 This script asks the following information:
 ```
