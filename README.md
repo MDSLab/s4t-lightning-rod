@@ -12,10 +12,25 @@ Lightning-rod (in its standalone version) has been tested to work on:
 
 * Raspberry Pi 2 and 3
 * Arduino YUN / Linino ONE
-* Ubuntu 16.04 
-* Ubuntu 14.04 
+* Ubuntu 16.04 / 14.04
+* Docker containers
+* LXD containers
+
 
 ## Installation guides
+
+### Docker
+
+* [Installation on Docker](docs/docker.md)
+
+### Raspberry Pi
+
+We tested this procedure on Raspberry Pi 3 with Raspbian OS and "ubuntu-16.04-preinstalled-server" image:
+* [Installation guide for Raspberry Pi 3](docs/raspberrypi3.md)
+
+and on a Raspberry Pi 2 with Raspbian OS:
+
+* [Installation guide for Raspberry Pi 2](docs/raspberrypi2.md)
 
 ### Arduino YUN/Linino ONE
 
@@ -23,19 +38,10 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 
 * [Installation guide for Arduino YUN/Linino ONE](docs/arduinoyun.md)
 
-### Raspberry Pi
-
-We tested this procedure on a Raspberry Pi 2 with Raspbian Jessie Lite installed. Everything needs to be run as root.
-
-* [Installation guide for Raspberry Pi 2](docs/raspberrypi2.md)
-
-and on Raspberry Pi 3 with ubuntu-16.04-preinstalled-server OS:
-* [Installation guide for Raspberry Pi 3](docs/raspberrypi3.md)
-
-### Standard PC 
+### Generic machine
 
 * [Installation guide for Ubuntu 16.04](docs/ubuntu1604.md)
 * [Installation guide for Ubuntu 14.04](docs/ubuntu1404.md)
-<!--* [Installation guide for Ubuntu 14.04](docs/ubuntu1404.md)-->
+<!-- * [Installation guide for Ubuntu 14.04](docs/ubuntu1404.md) -->
 
-If you want to install Lightning-rod within an LXD container, you can follow the first part of the IoTronic installation guide you can find [here](https://github.com/MDSLab/s4t-iotronic-standalone/blob/master/docs/installation_lxd.md).
+If you want to install Lightning-rod within an LXD container, you can follow the first part of the IoTronic installation guide you can find [here](https://github.com/MDSLab/s4t-iotronic-standalone/blob/mast
