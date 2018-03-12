@@ -1,7 +1,7 @@
 FROM node:carbon-slim
 
 RUN  apt-get update && apt-get install -y \
- socat dsniff fuse libfuse-dev git ntpdate python build-essential \ 
+ socat dsniff fuse libfuse-dev git ntpdate python pkg-config build-essential \ 
  && rm -rf /var/lib/apt/lists/*
 
 
