@@ -19,7 +19,7 @@
 				"port_reverse": "8080"
 			},
 			"lib":{
-				"bin":""
+				"bin":"wstun"
 			},
 			"pid":""
 		},

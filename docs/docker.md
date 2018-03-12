@@ -1,6 +1,9 @@
 # Installation on Docker
 
-Lightning-rod repository [webpage](https://hub.docker.com/r/mdslab/iotronic-lightning-rod/)
+Lightning-rod repositories:
+ * [x86_64](https://hub.docker.com/r/mdslab/iotronic-lightning-rod/)
+ * [Raspberry Pi 3 (ARMv7l)](https://hub.docker.com/r/mdslab/rpi-iotronic-lightning-rod/)
+
 
 MDSLAB Docker Hub [webpage](https://hub.docker.com/r/mdslab/)
 
@@ -8,7 +11,7 @@ MDSLAB Docker Hub [webpage](https://hub.docker.com/r/mdslab/)
 
 * Docker! Follow the official [guides](https://docs.docker.com/install/)
 
-## Get container
+## Configure Lightning-rod environment
 
 * Create a folder in your system to store Lightning-rod settings, </CONFIG/PATH/> (e.g. /etc/iotronic/):
 ```
@@ -39,9 +42,18 @@ This script asks the following information:
 * WAMP_URL: ws://<IP> or wss://<IP>
 ```
 
-* Create container editing the following commands so that </CONFIG/PATH/>
+## Get container
+
+Create container editing the following commands so that </CONFIG/PATH/>
 points at the folder that you created in the first step (e.g: /etc/iotronic/):
 
+* for "x86_64":
 ```
-docker run -d -v lr_data:/var/lib/iotronic -v </CONFIG/PATH/>/settings.json:/var/lib/iotronic/settings.json --name=lightning-rod mdslab/iotronic-lightning-rod
+docker run -d -v lr_data:/var/lib/iotronic -v </CONFIG/PATH/>/settings.json:/var/lib/iotronic/settings.json -net=host --name=lightning-rod mdslab/iotronic-lightning-rod
+```
+
+
+* for "ARMv7l" on Raspberry Pi 3:
+```
+docker run -d -v lr_data:/var/lib/iotronic -v </CONFIG/PATH/>/settings.json:/var/lib/iotronic/settings.json -net=host --name=lightning-rod mdslab/rpi-iotronic-lightning-rod
 ```

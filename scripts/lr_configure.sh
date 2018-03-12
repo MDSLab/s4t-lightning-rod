@@ -16,6 +16,9 @@ if [ "$DEVICE" = "arduino_yun" ]; then
     # Configure logrotate
     cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
+    # Set WSTUN PATH
+    sed -i "s|\"bin\":.*\"wstun\"|\"bin\": \"$NODE_PATH/@mdslab/wstun/bin/wstun.js\"|g" /var/lib/iotronic/settings.json
+
 fi
 
 if [ "$DEVICE" = "server" ]; then
@@ -34,6 +37,9 @@ if [ "$DEVICE" = "server" ]; then
 
         # Configure logrotate
         cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+
+        # Set WSTUN PATH
+        sed -i "s|\"bin\":.*\"wstun\"|\"bin\": \"$NODE_PATH/@mdslab/wstun/bin/wstun.js\"|g" /var/lib/iotronic/settings.json
 
     elif [ "$DISTRO" = "16.04" ]; then
 
@@ -69,8 +75,6 @@ echo -n "Enter s4t board ID: "
 read BOARD_ID
 echo "-->" $BOARD_ID
 sed -i "s/\"code\":.*\"\"/\"code\": \"$BOARD_ID\"/g" /var/lib/iotronic/settings.json
-
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
 
 
 WAMP_URL=

@@ -20,6 +20,7 @@ Lightning-rod (in its standalone version) has been tested to work on:
 ## Installation guides
 
 ### Docker
+Lightning-rod was also delivered via Docker container both "x86_64" and "ARMv7" architectures (Debian-like). In particular we tested this container on Ubuntu 16.04 and on Raspberry Pi 3 (Raspbian OS).
 
 * [Installation on Docker](https://github.com/MDSLab/s4t-lightning-rod/blob/master/docs/docker.md)
 
