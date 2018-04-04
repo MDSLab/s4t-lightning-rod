@@ -38,9 +38,8 @@ function manage_WAMP_connection(session) {
     logger.info('[CONFIGURATION] - Board configuration starting...');
 
     //EXPORTING NETWORK COMMANDS
-    var manageNetworks = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
-    manageNetworks.exportNetworkCommands(session);
-
+    var networksManager = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
+    networksManager.exportCommands(session);
 
     //Topic on which the board can send a message to be registered
     var connectionTopic = 'board.connection';
@@ -63,23 +62,23 @@ function onTopicConnection(args) {
 // This function loads the Lightning-rod modules
 function moduleLoader (session, device) {
     // MODULES LOADING--------------------------------------------------------------------------------------------------
-    var manageGpio = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
-    manageGpio.exportPins(session, lyt_device);
+    var gpioManager = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
+    gpioManager.exportCommands(session, lyt_device);
 
-    var managePlugins = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
-    managePlugins.exportPluginCommands(session);
+    var pluginsManager = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
+    pluginsManager.exportCommands(session);
 
     var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
-    driversManager.exportDriverCommands(session);
+    driversManager.exportCommands(session);
     driversManager.restartDrivers();
 
     var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
-    fsManager.exportFSCommands(session);
+    fsManager.exportCommands(session);
     var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
     fsLibsManager.exportFSLibs(session);
 
-    var manageServices = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
-    manageServices.exportServiceCommands(session);
+    var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
+    servicesManager.exportCommands(session);
     //------------------------------------------------------------------------------------------------------------------
 }
 

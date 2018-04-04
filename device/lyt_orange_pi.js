@@ -21,15 +21,15 @@ var util = require('util');
 
 var Device = require('./Device');
 
-function ServerDevice(name) {
-    
+function OrangePiDevice(name) {
+
     Device.call(this);
 
     this.name = name;
-    
+
 }
 
-util.inherits(ServerDevice, Device);
+util.inherits(OrangePiDevice, Device);
 
 
 var response = {
@@ -37,7 +37,7 @@ var response = {
     result: ''
 };
 
-ServerDevice.prototype.Main = function (wampConnection, logger) {
+OrangePiDevice.prototype.Main = function (wampConnection, logger) {
 
     // CONNECTION TO WAMP SERVER --------------------------------------------------------------------------
     logger.info('[WAMP] - Opening connection to WAMP server...');
@@ -51,6 +51,7 @@ ServerDevice.prototype.Main = function (wampConnection, logger) {
     pluginsManager.pluginsLoader();
     //-----------------------------------------------------------------------------------------------------
     */
+    
 };
 
 
@@ -58,7 +59,7 @@ ServerDevice.prototype.Main = function (wampConnection, logger) {
 
 
 
-ServerDevice.prototype.readDigital = function(args, callback) {
+OrangePiDevice.prototype.readDigital = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - readDigital: " + response.message);
@@ -67,7 +68,7 @@ ServerDevice.prototype.readDigital = function(args, callback) {
 };
 
 
-ServerDevice.prototype.readAnalog = function(args, callback) {
+OrangePiDevice.prototype.readAnalog = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - readAnalog: " + response.message);
@@ -76,7 +77,7 @@ ServerDevice.prototype.readAnalog = function(args, callback) {
 };
 
 
-ServerDevice.prototype.writeAnalog = function(args, callback) {
+OrangePiDevice.prototype.writeAnalog = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - writeAnalog: " + response.message);
@@ -85,7 +86,7 @@ ServerDevice.prototype.writeAnalog = function(args, callback) {
 };
 
 
-ServerDevice.prototype.writeDigital = function(args, callback) {
+OrangePiDevice.prototype.writeDigital = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - writeDigital: " + response.message);
@@ -94,7 +95,7 @@ ServerDevice.prototype.writeDigital = function(args, callback) {
 };
 
 
-ServerDevice.prototype.setMode = function(args, callback) {
+OrangePiDevice.prototype.setMode = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - setMode: " + response.message);
@@ -103,4 +104,4 @@ ServerDevice.prototype.setMode = function(args, callback) {
 };
 
 
-module.exports = ServerDevice;
+module.exports = OrangePiDevice;

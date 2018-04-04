@@ -41,9 +41,9 @@ process.once('message', function(message) {
       
         plugin.main(plugin_json, function(err, result){
 	
-	    process.send({ name: plugin_name, status: "finish", logmsg: result});
-	
-      });
+            process.send({ name: plugin_name, status: "finish", logmsg: result});
+
+        });
 
     }
     else{

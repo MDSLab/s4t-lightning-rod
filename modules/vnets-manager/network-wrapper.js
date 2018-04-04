@@ -166,7 +166,7 @@ process.once('message', function (message) {
         logger.info('[VNET] --> SOCAT - process exited with code ' + code);
 
         //logger.warn(boardCode+" needs to be restored!");
-        //manageNetworks.setSocatOnBoard([socatServer_ip, socatServer_port, socatBoard_ip, net_backend, boardCode, true] );  //TO RESTORE
+        //networksManager.setSocatOnBoard([socatServer_ip, socatServer_port, socatBoard_ip, net_backend, boardCode, true] );  //TO RESTORE
 
     });
 

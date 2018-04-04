@@ -18,7 +18,7 @@
 
 
 //service logging configuration: "manageCommands"   
-var logger = log4js.getLogger('manageServices');
+var logger = log4js.getLogger('servicesManager');
 logger.setLevel(loglevel);
 
 //Services list: it is used to store the services process data that are started in the current LR session
@@ -272,7 +272,7 @@ function findValue(myArray, value, property) {
 
 
 //This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportServiceCommands = function (session){
+exports.exportCommands = function (session){
 
     //Register all the module functions as WAMP RPCs
     session.register('s4t.'+boardCode+'.service.enable', exports.enableService);

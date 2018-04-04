@@ -388,7 +388,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		// 2. The selected device will connect to Iotronic WAMP server
 		//--------------------------------------------------------------
 		try{
-
+			
 			IoT_Device = require('./device/lyt_'+device);
 			lyt_device = new IoT_Device(device);
 			logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");

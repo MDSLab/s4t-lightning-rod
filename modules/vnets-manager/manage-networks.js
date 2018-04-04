@@ -19,8 +19,8 @@
 
 
 
-//service logging configuration: "manageNetworks"   
-var logger = log4js.getLogger('manageNetworks');
+//service logging configuration: "networksManager"   
+var logger = log4js.getLogger('networksManager');
 logger.setLevel(loglevel);
 
 var Q = require("q");
@@ -408,7 +408,7 @@ exports.removeFromNetwork = function (args) {
 
 
 // This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportNetworkCommands = function (session) {
+exports.exportCommands = function (session) {
 
     session_wamp = session;
     

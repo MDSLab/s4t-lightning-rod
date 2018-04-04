@@ -44,12 +44,13 @@ RaspberryPiDevice.prototype.Main = function (wampConnection, logger) {
     wampConnection.open();
     //-----------------------------------------------------------------------------------------------------
 
+    /*
     // PLUGINS RESTART ALL --------------------------------------------------------------------------------
     //This procedure restarts all plugins in "ON" status
-    var managePlugins = require('../modules/plugins-manager/manage-plugins');
-    managePlugins.pluginsLoader();
+    var pluginsManager = require('../modules/plugins-manager/manage-plugins');
+    pluginsManager.pluginsLoader();
     //-----------------------------------------------------------------------------------------------------
-
+    */
 };
 
 

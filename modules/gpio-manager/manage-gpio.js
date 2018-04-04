@@ -17,8 +17,8 @@
 //##
 //############################################################################################
 
-//service logging configuration: "manageGpio"
-var logger = log4js.getLogger('manageGpio');
+//service logging configuration: "gpioManager"
+var logger = log4js.getLogger('gpioManager');
 logger.setLevel(loglevel);
 
 var lyt_device = null;
@@ -93,7 +93,7 @@ function setMode(args) {
 }
 
 //This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportPins = function (session, device) {
+exports.exportCommands = function (session, device) {
     
     lyt_device = device;
 
