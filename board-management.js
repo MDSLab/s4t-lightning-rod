@@ -80,6 +80,19 @@ function moduleLoader (session, device) {
     var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
     servicesManager.exportCommands(session);
     //------------------------------------------------------------------------------------------------------------------
+
+
+    logger.debug("[SYSTEM] - Listener on process 'exit' event activated:");
+    logger.debug("[SYSTEM] --> Lightning-rod PID: " + process.pid);
+    process.on("exit", function () {
+        require("child_process").spawn(process.argv.shift(), process.argv, {
+            cwd: process.cwd(),
+            detached : true,
+            stdio: "inherit"
+        });
+    });
+
+
 }
 
 
@@ -312,37 +325,49 @@ exports.setBoardPosition = function (args) {
 
 };
 
-/*
+
 // This function sets the coordinates of the device: called by IoTronic via RPC
 exports.updateConf = function (args) {
 
-    var remote_conf = args[0];
-    var board_position = args[1];
-    logger.info("[SYSTEM] - Set board configuration: " + JSON.stringify(args));
+    var d = Q.defer();
 
-    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
-    var board_config = configFile.config["board"];
-    
-    logger.info("[SYSTEM] --> BOARD CONFIGURATION " + JSON.stringify(board_config));
+    var response = {
+        message: '',
+        result: ''
+    };
 
-    board_config["remote_conf"] = remote_conf;
-    board_config["position"] = board_position;
-    logger.info("[SYSTEM] --> BOARD CONF UPDATED: " + JSON.stringify(board_config));
+    var remote_conf = args[0].message;
+    logger.info("[SYSTEM] - Board configuration injected: " + JSON.stringify(remote_conf, null, "\t"));
+
+    logger.info("[SYSTEM] --> BOARD CONF UPDATED: " + JSON.stringify(remote_conf));
 
     //Updates the settings.json file
-    fs.writeFile(SETTINGS, JSON.stringify(configFile, null, 4), function (err) {
+    fs.writeFile(SETTINGS, JSON.stringify(remote_conf, null, "\t"), function (err) {
         if (err) {
-            logger.error('[SYSTEM] --> Error writing settings.json file: ' + err);
+            response.message = 'Error writing settings.json file: ' + err;
+            response.result = "ERROR";
+            logger.error('[SYSTEM] --> ' +response.message);
+            d.resolve(response);
+
         } else {
             logger.debug("[SYSTEM] --> settings.json configuration file saved to " + SETTINGS);
+            response.message = "Board '"+boardCode+"' configuration updated!";
+            response.result = "SUCCESS";
+            d.resolve(response);
+
+
+            //Restarting LR
+            setTimeout(function () {
+                process.exit();
+            }, 1000)
+
         }
     });
 
-    return "Board configuration file updated!";
-
+    return d.promise;
 
 };
-*/
+
 
 // This function manages the registration status of the board
 exports.checkRegistrationStatus = function(args){
@@ -546,6 +571,10 @@ exports.execAction = function(args){
 
 
 
+
+
+
+
 exports.exportManagementCommands = function (session) {
 
     board_session = session;
@@ -555,7 +584,7 @@ exports.exportManagementCommands = function (session) {
     session.register('s4t.' + boardCode + '.board.setBoardPosition', exports.setBoardPosition);
     session.register('s4t.' + boardCode + '.board.checkRegistrationStatus', exports.checkRegistrationStatus);
     session.register('s4t.' + boardCode + '.board.execAction', exports.execAction);
-    //session.register('s4t.' + boardCode + '.board.updateConf', exports.updateConf);
+    session.register('s4t.' + boardCode + '.board.updateConf', exports.updateConf);
 
     manage_WAMP_connection(session)
     

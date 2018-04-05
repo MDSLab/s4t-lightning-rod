@@ -106,7 +106,7 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 				if(checksum === plugin_checksum){
 
 					// the plugin is not alive: we are in the state after a reboot of the device/LR or after a crash of the plugin process
-					logger.warn( '[PLUGIN] - PluginChecker - '+ plugin_name + ' - No such process found with PID '+plugins[plugin_name].pid+'!'+ ' - alive: '+ plugins[plugin_name].alive +' - Restarting...');
+					logger.warn( '[PLUGIN] - PluginChecker - '+ plugin_name + ' - No such process found with PID '+plugins[plugin_name].pid+'!'+ ' - alive: '+ plugins[plugin_name].alive +' - Checksum accepted ('+checksum+') - Restarting...');
 
 					// If the schema json file exists the board will create a child_process to restart the plugin and update the status and the PID value
 					if (fs.existsSync(plugin_json_name) === true){
@@ -562,7 +562,7 @@ exports.pluginKeepAlive = function (plugin_name, plugin_checksum){
 		    
 		      		pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checksum);
 
-		  		}, 10000); //300000
+		  		}, 300000);  //every 5 minutes LR checks if the plugin is alive
 
 		  		plugins[plugin_name]={
 					child: "",
@@ -985,7 +985,8 @@ exports.injectPlugin = function(args){
     
     // Parsing the input arguments
     var plugin_bundle = JSON.parse(args[0]);
-	var autostart = String(args[1]); // The autostart parameter is used to set the boot execution configuration of the plugin.
+	var autostart = String(args[1]); 	// The autostart parameter is used to set the boot execution configuration of the plugin.
+	var force = String(args[2]); 		// If specified -> overwrite the plugin previously injected
 
 	var response = {
 		message: '',
@@ -999,9 +1000,8 @@ exports.injectPlugin = function(args){
 
 
     logger.info("[PLUGIN] - Injecting plugin RPC called for '"+plugin_name+"' plugin...");
-    logger.debug("[PLUGIN] --> Parameters injected: { plugin_name : " + plugin_name + ", autostart : " + autostart + " }");
+    logger.debug("[PLUGIN] --> Parameters injected: { plugin_name : " + plugin_name + ", autostart : " + autostart + ", force : " + force + " }");
     logger.debug("[PLUGIN] --> plugin code:\n\n" + plugin_code + "\n\n");
-
 
 
 	var plugin_folder = PLUGINS_STORE + plugin_name;

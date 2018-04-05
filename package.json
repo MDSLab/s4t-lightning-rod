@@ -21,7 +21,8 @@
     "mknod": ">=1.1.0",
     "nconf": ">=0.8.4",
     "q": ">=0.9.7",
-    "requestify": ">=0.1.17"
+    "requestify": ">=0.1.17",
+    "md5":"<=2.2.1"
   },
   "repository": {
     "type": "git",
