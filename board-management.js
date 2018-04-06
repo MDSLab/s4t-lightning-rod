@@ -82,6 +82,7 @@ function moduleLoader (session, device) {
     //------------------------------------------------------------------------------------------------------------------
 
 
+    /*
     logger.debug("[SYSTEM] - Listener on process 'exit' event activated:");
     logger.debug("[SYSTEM] --> Lightning-rod PID: " + process.pid);
     process.on("exit", function () {
@@ -91,6 +92,7 @@ function moduleLoader (session, device) {
             stdio: "inherit"
         });
     });
+    */
 
 
 }
