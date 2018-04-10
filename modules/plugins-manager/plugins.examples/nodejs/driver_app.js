@@ -5,7 +5,7 @@ exports.main = function (arguments){
   
     var fs = require('fs');
     
-    var api = require('../plugin-apis');
+    var api = require('../../plugin-apis');
     var logger = api.getLogger();
     logger.info("DRIVER-APP - Plugin driver application starting...");
     

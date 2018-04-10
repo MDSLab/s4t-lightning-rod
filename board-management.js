@@ -82,17 +82,6 @@ function moduleLoader (session, device) {
     //------------------------------------------------------------------------------------------------------------------
 
 
-    /*
-    logger.debug("[SYSTEM] - Listener on process 'exit' event activated:");
-    logger.debug("[SYSTEM] --> Lightning-rod PID: " + process.pid);
-    process.on("exit", function () {
-        require("child_process").spawn(process.argv.shift(), process.argv, {
-            cwd: process.cwd(),
-            detached : true,
-            stdio: "inherit"
-        });
-    });
-    */
 
 
 }
@@ -338,6 +327,19 @@ exports.updateConf = function (args) {
         result: ''
     };
 
+
+    // activate listener on-exit event after LR exit on-update-conf
+    logger.debug("[SYSTEM] - Listener on process 'exit' event activated:");
+    logger.debug("[SYSTEM] --> Lightning-rod PID: " + process.pid);
+    process.on("exit", function () {
+        require("child_process").spawn(process.argv.shift(), process.argv, {
+            cwd: process.cwd(),
+            detached : true,
+            stdio: "inherit"
+        });
+    });
+
+
     var remote_conf = args[0].message;
     logger.info("[SYSTEM] - Board configuration injected: " + JSON.stringify(remote_conf, null, "\t"));
 
@@ -346,12 +348,14 @@ exports.updateConf = function (args) {
     //Updates the settings.json file
     fs.writeFile(SETTINGS, JSON.stringify(remote_conf, null, "\t"), function (err) {
         if (err) {
+
             response.message = 'Error writing settings.json file: ' + err;
             response.result = "ERROR";
             logger.error('[SYSTEM] --> ' +response.message);
             d.resolve(response);
 
         } else {
+
             logger.debug("[SYSTEM] --> settings.json configuration file saved to " + SETTINGS);
             response.message = "Board '"+boardCode+"' configuration updated!";
             response.result = "SUCCESS";
@@ -437,7 +441,8 @@ exports.checkRegistrationStatus = function(args){
             );
 
 
-        } else if(reg_status === "registered"){
+        }
+        else if(reg_status === "registered"){
             
             moduleLoader(board_session, lyt_device);
 
@@ -457,7 +462,8 @@ exports.checkRegistrationStatus = function(args){
 
 
 
-    }else {
+    }
+    else {
         // IF access to IoTronic was rejected
         logger.error("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
         logger.info("[SYSTEM] - Bye");

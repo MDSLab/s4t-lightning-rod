@@ -23,7 +23,7 @@ logger.setLevel(loglevel);
 
 var fs = require("fs");
 var Q = require("q");
-var cp = require('child_process');  	//In order to create a plugin-wrapper process for each active plugin.
+var cp = require('child_process');  	//In order to create a wrapper process for each active plugin.
 var running = require('is-running');  	//In order to verify if a plugin is alive or not.
 var md5 = require('md5');
 
@@ -39,203 +39,7 @@ var PLUGINS_STORE = process.env.IOTRONIC_HOME + '/plugins/';
 var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
 
 
-function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 
-	var d = Q.defer();
-
-	var response = {
-		message: '',
-		result: ''
-	};
-
-	var PY_PID = null;
-	var s_server = null;
-	var socketPath = '/tmp/plugin-'+plugin_name;
-
-	// Callback for socket
-	var handler = function(socket){
-
-		// Listen for data from client
-		socket.on('data', (bytes) => {
-
-			response.result = "SUCCESS";
-			response.message = bytes.toString(); // Decode byte strin
-			logger.info('[PLUGIN] - '+plugin_name + ' - '+response.message);
-			d.resolve(response);
-
-		});
-
-		// On client close
-		socket.on('end', function() {
-			console.log('[SOCKET] - Socket disconnected');
-			//fs.unlinkSync(socketPath);
-			//console.log('[SOCKET] - Socket unlinked');
-			s_server.close(function(){
-				console.log('[SOCKET] - Server socket closed');
-			});
-
-		});
-
-
-
-	};
-
-	// Remove an existing socket
-	fs.unlink(socketPath, function(){
-			// Create the server, give it our callback handler and listen at the path
-
-			s_server = net.createServer(handler).listen(socketPath, function(){
-				console.log('[SOCKET] - Socket in listening...');
-				console.log('[SOCKET] --> socket: '+socketPath);
-			})
-
-		}
-	);
-
-	var options = {
-		mode: 'text',
-		//pythonPath: '/usr/bin/python2.7',
-		pythonOptions: ['-u'],
-		scriptPath: __dirname,
-		args: [plugin_name, plugin_json]
-	};
-
-	var pyshell = new PythonShell('./python/async-wrapper.py', options);
-	PY_PID = pyshell.childProcess.pid;
-	console.log("[SHELL] - PID wrapper: "+ PY_PID);
-
-	//Creating the plugin json schema
-	var plugin_folder = PLUGINS_STORE + plugin_name;
-	var schema_outputFilename = plugin_folder + "/" + plugin_name + '.json';
-
-	// Reading the plugins.json configuration file
-	try{
-
-		var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
-		var pluginsSchemaConf = JSON.parse(fs.readFileSync(schema_outputFilename, 'utf8'));
-
-		//Get the autostart parameter from the schema just uploaded
-		plugin_autostart = pluginsSchemaConf.autostart;
-
-
-	}
-	catch(err){
-
-		response.result = "ERROR";
-		response.message = 'Error parsing plugins.json configuration file: ' + err;
-		logger.error('[PLUGIN] - '+plugin_name + ' - '+response.message);
-
-		d.resolve(response);
-
-	}
-
-
-	if(action == "start") {
-
-		fs.writeFile(schema_outputFilename, plugin_json, function(err) {
-
-			if(err) {
-				response.result = "ERROR";
-				response.message = 'Error opening '+plugin_name+'.json file: ' + err;
-				logger.error('[PLUGIN] - "'+plugin_name + '" - '+response.message);
-				d.resolve(response);
-
-			} else {
-
-				logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin JSON schema saved to ' + schema_outputFilename);
-
-
-
-				// Updating the plugins.json file:
-				// - check if the user changed the autostart parameter at this stage
-				if(plugin_autostart != undefined){
-
-					pluginsConf.plugins[plugin_name].autostart = plugin_autostart;
-					logger.info('[PLUGIN] - '+ plugin_name + ' - Autostart parameter set by user to ' + plugin_autostart);
-
-				} else {
-
-					logger.info('[PLUGIN] - '+ plugin_name + ' - Autostart parameter not changed!');
-
-				}
-
-				// - change the plugin status from "off" to "on" and update the PID value
-				pluginsConf.plugins[plugin_name].status = "on";
-				pluginsConf.plugins[plugin_name].pid = PY_PID;
-
-				fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
-
-					if(err) {
-						logger.error('[PLUGIN] - '+ plugin_name + ' - Error opening '+plugin_name+'.json file: ' + err);
-					} else {
-						logger.info('[PLUGIN] - '+ plugin_name + ' - plugins.json updated -> autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
-
-						// Start a timer to check every X minutes if the plugin is still alive!
-						exports.pluginKeepAlive(plugin_name, plugin_checksum);
-
-					}
-
-				});
-
-			}
-
-		});
-
-	}
-	else if(action == "restart"){
-
-
-		// - change the plugin status from "off" to "on" and update the PID value
-		pluginsConf.plugins[plugin_name].status = "on";
-		pluginsConf.plugins[plugin_name].pid = PY_PID;
-
-		fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
-
-			if(err) {
-				logger.error('[PLUGIN] - '+ plugin_name + ' - Error opening '+plugin_name+'.json file: ' + err);
-			} else {
-				logger.info('[PLUGIN] - '+ plugin_name + ' - plugins.json updated -> autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
-
-			}
-
-		});
-
-
-	}
-
-
-
-
-
-
-
-
-
-	pyshell.on('message', function (message) {
-		// received a message sent from the Python script (a simple "print" statement)
-		console.log("[WRAPPER] - PYTHON: "+message);
-	});
-
-	// end the input stream and allow the process to exit
-	pyshell.end(function (err, code, signal) {
-
-		if (err){
-			response.result = "ERROR";
-			response.message = err;
-			d.resolve(response);
-		}else{
-			logger.debug('[SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
-
-		}
-
-
-
-	});
-
-
-	return d.promise;
-
-}
 
 
 
@@ -327,10 +131,10 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 
 							case 'nodejs':
 
-								//Create a new process that has plugin-wrapper as code
+								//Create a new process that has wrapper that manages the plugin execution
 								try{
 
-									plugins[plugin_name].child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/plugin-wrapper');
+									plugins[plugin_name].child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/async-wrapper');
 
 									var plugin_json_schema = JSON.parse(fs.readFileSync(plugin_json_name));
 									var input_message = {
@@ -596,6 +400,366 @@ function cleanPluginData(plugin_name){
 }
 
 
+function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
+
+	var d = Q.defer();
+
+	var response = {
+		message: '',
+		result: ''
+	};
+
+	var PY_PID = null;
+	var s_server = null;
+	var socketPath = '/tmp/plugin-'+plugin_name;
+
+	// Callback for socket
+	var handler = function(socket){
+
+		// Listen for data from client
+		socket.on('data',function(bytes){
+
+			response.result = "SUCCESS";
+			response.message = bytes.toString(); // Decode byte strin
+			logger.info('[PLUGIN] - '+plugin_name + ' - '+response.message);
+			d.resolve(response);
+
+		});
+
+		// On client close
+		socket.on('end', function() {
+			console.log('[SOCKET] - Socket disconnected');
+			//fs.unlinkSync(socketPath);
+			//console.log('[SOCKET] - Socket unlinked');
+			s_server.close(function(){
+				console.log('[SOCKET] - Server socket closed');
+			});
+
+		});
+
+
+
+	};
+
+	// Remove an existing socket
+	fs.unlink(socketPath, function(){
+			// Create the server, give it our callback handler and listen at the path
+
+			s_server = net.createServer(handler).listen(socketPath, function(){
+				console.log('[SOCKET] - Socket in listening...');
+				console.log('[SOCKET] --> socket: '+socketPath);
+			})
+
+		}
+	);
+
+	var options = {
+		mode: 'text',
+		//pythonPath: '/usr/bin/python2.7',
+		pythonOptions: ['-u'],
+		scriptPath: __dirname,
+		args: [plugin_name, plugin_json]
+	};
+
+	var pyshell = new PythonShell('./python/async-wrapper.py', options);
+	PY_PID = pyshell.childProcess.pid;
+	console.log("[SHELL] - PID wrapper: "+ PY_PID);
+
+	//Creating the plugin json schema
+	var plugin_folder = PLUGINS_STORE + plugin_name;
+	var schema_outputFilename = plugin_folder + "/" + plugin_name + '.json';
+
+	// Reading the plugins.json configuration file
+	try{
+
+		var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
+		var pluginsSchemaConf = JSON.parse(fs.readFileSync(schema_outputFilename, 'utf8'));
+
+		//Get the autostart parameter from the schema just uploaded
+		plugin_autostart = pluginsSchemaConf.autostart;
+
+
+	}
+	catch(err){
+
+		response.result = "ERROR";
+		response.message = 'Error parsing plugins.json configuration file: ' + err;
+		logger.error('[PLUGIN] - '+plugin_name + ' - '+response.message);
+
+		d.resolve(response);
+
+	}
+
+
+	if(action == "start") {
+
+		fs.writeFile(schema_outputFilename, plugin_json, function(err) {
+
+			if(err) {
+				response.result = "ERROR";
+				response.message = 'Error opening '+plugin_name+'.json file: ' + err;
+				logger.error('[PLUGIN] - "'+plugin_name + '" - '+response.message);
+				d.resolve(response);
+
+			} else {
+
+				logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin JSON schema saved to ' + schema_outputFilename);
+
+
+
+				// Updating the plugins.json file:
+				// - check if the user changed the autostart parameter at this stage
+				if(plugin_autostart != undefined){
+
+					pluginsConf.plugins[plugin_name].autostart = plugin_autostart;
+					logger.info('[PLUGIN] - '+ plugin_name + ' - Autostart parameter set by user to ' + plugin_autostart);
+
+				} else {
+
+					logger.info('[PLUGIN] - '+ plugin_name + ' - Autostart parameter not changed!');
+
+				}
+
+				// - change the plugin status from "off" to "on" and update the PID value
+				pluginsConf.plugins[plugin_name].status = "on";
+				pluginsConf.plugins[plugin_name].pid = PY_PID;
+
+				fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+					if(err) {
+						logger.error('[PLUGIN] - '+ plugin_name + ' - Error opening '+plugin_name+'.json file: ' + err);
+					} else {
+						logger.info('[PLUGIN] - '+ plugin_name + ' - plugins.json updated -> autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+
+						// Start a timer to check every X minutes if the plugin is still alive!
+						exports.pluginKeepAlive(plugin_name, plugin_checksum);
+
+					}
+
+				});
+
+			}
+
+		});
+
+	}
+	else if(action == "restart"){
+
+
+		// - change the plugin status from "off" to "on" and update the PID value
+		pluginsConf.plugins[plugin_name].status = "on";
+		pluginsConf.plugins[plugin_name].pid = PY_PID;
+
+		fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+			if(err) {
+				logger.error('[PLUGIN] - '+ plugin_name + ' - Error opening '+plugin_name+'.json file: ' + err);
+			} else {
+				logger.info('[PLUGIN] - '+ plugin_name + ' - plugins.json updated -> autostart < ' + pluginsConf.plugins[plugin_name].autostart + ' > - status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+
+			}
+
+		});
+
+
+	}
+
+
+
+
+
+
+
+
+
+	pyshell.on('message', function (message) {
+		// received a message sent from the Python script (a simple "print" statement)
+		console.log("[WRAPPER] - PYTHON: "+message);
+	});
+
+	// end the input stream and allow the process to exit
+	pyshell.end(function (err, code, signal) {
+
+		if (err){
+			response.result = "ERROR";
+			response.message = err;
+			d.resolve(response);
+		}else{
+			logger.debug('[SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
+
+		}
+
+
+
+	});
+
+
+	return d.promise;
+
+}
+
+
+function pySyncStarter(plugin_name, plugin_json) {
+
+	var d = Q.defer();
+
+	var response = {
+		message: '',
+		result: ''
+	};
+
+	var s_server = null;
+	var socketPath = '/tmp/plugin-'+plugin_name;
+
+	var pyshell = null;
+
+	// Callback for socket
+	var handler = function(socket){
+
+		// Listen for data from client
+		socket.on('data', function(bytes){
+
+			response.result = "SUCCESS";
+			response.message = bytes.toString(); // Decode byte strin
+			logger.info('[PLUGIN] - '+plugin_name + ' - '+response.message);
+			d.resolve(response);
+
+		});
+
+		// On client close
+		socket.on('end', function() {
+
+			console.log('[SOCKET] - Socket disconnected');
+
+			s_server.close(function(){
+
+				console.log('[SOCKET] - Server socket closed');
+
+				try{
+					//Reading the plugin configuration file
+					var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
+
+					pluginsConf.plugins[plugin_name].status = "off";
+					pluginsConf.plugins[plugin_name].pid = "";
+
+					//updates the JSON file
+					fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+						if(err) {
+							logger.error('[PLUGIN] --> Error writing plugins.json file: ' + err);
+						} else {
+							logger.debug("[PLUGIN] --> JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+						}
+
+					});
+
+				}
+				catch(err){
+					logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
+				}
+
+
+			});
+
+		});
+
+	};
+
+	// Remove an existing plugin socket
+	fs.unlink(socketPath, function(){
+
+
+			//Creating the plugin json schema
+			var plugin_folder = PLUGINS_STORE + plugin_name;
+			var schema_outputFilename = plugin_folder + "/" + plugin_name + '.json';
+
+
+			//update parameters and plugins.json conf file
+			fs.writeFile(schema_outputFilename, plugin_json, function(err) {
+
+				if(err) {
+
+					logger.error('[PLUGIN] --> Error parsing '+plugin_name+'.json file: ' + err);
+
+				} else {
+
+					logger.debug('[PLUGIN] --> Plugin JSON schema saved to ' + schema_outputFilename);
+
+
+					try{
+
+						//Reading the plugin configuration file
+						var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
+
+						// - change the plugin status from "off" to "on" and update the PID value
+						pluginsConf.plugins[plugin_name].status = "on";
+						pluginsConf.plugins[plugin_name].pid = pyshell.childProcess.pid;
+
+						//updates the JSON file
+						fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+							if(err) {
+								logger.error('[PLUGIN] --> Error writing plugins.json file: ' + err);
+							} else {
+								logger.debug("[PLUGIN] --> JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+							}
+
+						});
+
+					}
+					catch(err){
+						logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
+					}
+
+
+
+				}
+
+			});
+
+
+
+
+
+			// Create the server, give it our callback handler and listen at the path
+			s_server = net.createServer(handler).listen(socketPath, function() {
+				console.log('[SOCKET] - Socket in listening...');
+				console.log('[SOCKET] --> socket: '+socketPath);
+			})
+		}
+
+	);
+
+	var options = {
+		mode: 'text',
+		//pythonPath: '/usr/bin/python2.7',
+		pythonOptions: ['-u'],
+		scriptPath: __dirname,
+		args: [plugin_name, plugin_json]
+	};
+
+	pyshell = new PythonShell('./python/sync-wrapper.py', options);
+	// it will create a python instance like this:
+	// python -u /opt/stack4things/lightning-rod/modules/plugins-manager/python/sync-wrapper.py py_sync {"name":"S4T"}
+	console.log("[SHELL] - PID wrapper: "+pyshell.childProcess.pid);
+
+	// end the input stream and allow the process to exit
+	pyshell.end(function (err, code, signal) {
+
+		if (err){
+			response.result = "ERROR";
+			response.message = err;
+			d.resolve(response);
+		}else{
+			logger.debug('[SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
+		}
+
+	});
+
+
+	return d.promise;
+
+}
 
 
 // RPC to execute a syncronous plugin ("call" as the exection of a command that returns a value to the "caller"): it is called by Iotronic via RPC
@@ -668,7 +832,7 @@ exports.call = function (args){
 
 						logger.info("[PLUGIN] --> plugin type: " + plugin_type);
 
-						//Create a new process that has plugin-wrapper as code
+						//Create a new process that has wrapper that manages the plugin execution
 						var child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/sync-wrapper');
 
 						//Prepare the message I will send to the process with name of the plugin to start and json file as argument
@@ -761,155 +925,15 @@ exports.call = function (args){
 
 					case 'python':
 
-						var s_server = null;
-						var socketPath = '/tmp/plugin-'+plugin_name;
-
-						var pyshell = null;
-
-						// Callback for socket
-						var handler = function(socket){
-
-							// Listen for data from client
-							socket.on('data', (bytes) => {
-								
-								msg = bytes.toString(); // Decode byte string
-
-								logger.info("[PLUGIN] - RESULT "+plugin_name+": "+msg);
-
-								// Return plugin message to Iotronic
-								d.resolve(msg);
-
-							});
-
-							// On client close
-							socket.on('end', function() {
-
-								console.log('[SOCKET] - Socket disconnected');
-
-								s_server.close(function(){
-
-									console.log('[SOCKET] - Server socket closed');
-
-									try{
-										//Reading the plugin configuration file
-										var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
-
-										pluginsConf.plugins[plugin_name].status = "off";
-										pluginsConf.plugins[plugin_name].pid = "";
-
-										//updates the JSON file
-										fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
-
-											if(err) {
-												logger.error('[PLUGIN] --> Error writing plugins.json file: ' + err);
-											} else {
-												logger.debug("[PLUGIN] --> JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
-											}
-
-										});
-
-									}
-									catch(err){
-										logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
-									}
 
 
-								});
+						pySyncStarter(plugin_name, plugin_json).then(
 
-							});
-
-						};
-
-						// Remove an existing plugin socket
-						fs.unlink(socketPath, function(){
-
-
-							//Creating the plugin json schema
-							var plugin_folder = PLUGINS_STORE + plugin_name;
-							var schema_outputFilename = plugin_folder + "/" + plugin_name + '.json';
-
-
-							//update parameters and plugins.json conf file
-							fs.writeFile(schema_outputFilename, plugin_json, function(err) {
-
-								if(err) {
-
-									logger.error('[PLUGIN] --> Error parsing '+plugin_name+'.json file: ' + err);
-
-								} else {
-
-									logger.debug('[PLUGIN] --> Plugin JSON schema saved to ' + schema_outputFilename);
-
-
-									try{
-
-										//Reading the plugin configuration file
-										var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
-
-										// - change the plugin status from "off" to "on" and update the PID value
-										pluginsConf.plugins[plugin_name].status = "on";
-										pluginsConf.plugins[plugin_name].pid = pyshell.childProcess.pid;
-
-										//updates the JSON file
-										fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
-
-											if(err) {
-												logger.error('[PLUGIN] --> Error writing plugins.json file: ' + err);
-											} else {
-												logger.debug("[PLUGIN] --> JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
-											}
-
-										});
-
-									}
-									catch(err){
-										logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
-									}
-
-
-
-								}
-
-							});
-
-
-
-
-							
-							// Create the server, give it our callback handler and listen at the path
-							s_server = net.createServer(handler).listen(socketPath, function() {
-									console.log('[SOCKET] - Socket in listening...');
-									console.log('[SOCKET] --> socket: '+socketPath);
-								})
+							function (execRes) {
+								d.resolve(execRes.message);
 							}
-							
+
 						);
-
-						var options = {
-							mode: 'text',
-							//pythonPath: '/usr/bin/python2.7',
-							pythonOptions: ['-u'],
-							scriptPath: __dirname,
-							args: [plugin_name, plugin_json]
-						};
-
-						pyshell = new PythonShell('./python/sync-wrapper.py', options);
-						// it will create a python instance like this:
-						// python -u /opt/stack4things/lightning-rod/modules/plugins-manager/python/sync-wrapper.py py_sync {"name":"S4T"}
-						console.log("[SHELL] - PID wrapper: "+pyshell.childProcess.pid);
-
-						// end the input stream and allow the process to exit
-						pyshell.end(function (err, code, signal) {
-
-							if (err){
-								response.result = "ERROR";
-								response.message = err;
-								d.resolve(response);
-							}else{
-								logger.debug('[SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
-							}
-
-						});
 
 
 						break;
@@ -1240,8 +1264,8 @@ exports.run = function (args){
 
 					case 'nodejs':
 
-						//Create a new process that has plugin-wrapper as code
-						var child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/plugin-wrapper');
+						//Create a new process that has wrapper that manages the plugin execution
+						var child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/async-wrapper');
 
 						//Prepare the message I will send to the process with name of the plugin to start and json file as argument
 						var input_message = {
