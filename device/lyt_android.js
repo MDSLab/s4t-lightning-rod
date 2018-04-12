@@ -43,14 +43,7 @@ AndroidDevice.prototype.Main = function (wampConnection, logger) {
     logger.info('[WAMP] - Opening connection to WAMP server...');
     wampConnection.open();
     //-----------------------------------------------------------------------------------------------------
-
-    /*
-    // PLUGINS RESTART ALL --------------------------------------------------------------------------------
-    //This procedure restarts all plugins in "ON" status
-    var pluginsManager = require('../modules/plugins-manager/manage-plugins');
-    pluginsManager.pluginsLoader();
-    //-----------------------------------------------------------------------------------------------------
-    */
+    
 };
 
 
