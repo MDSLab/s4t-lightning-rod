@@ -61,6 +61,7 @@ function onTopicConnection(args) {
 
 // This function loads the Lightning-rod modules
 function moduleLoader (session, device) {
+
     // MODULES LOADING--------------------------------------------------------------------------------------------------
     var gpioManager = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
     gpioManager.exportCommands(session, lyt_device);
@@ -80,9 +81,6 @@ function moduleLoader (session, device) {
     var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
     servicesManager.exportCommands(session);
     //------------------------------------------------------------------------------------------------------------------
-
-
-
 
 }
 
@@ -237,23 +235,13 @@ exports.checkSettings = function (callback) {
         }
 
         reg_status = nconf.get('config:board:status');
-        if (reg_status == undefined || reg_status == "") {
-            logger.warn('[SYSTEM] - Registration status undefined or not specified!');
-            process.exit();
-
-        } else if (reg_status != "registered" && reg_status != "new") {
-            logger.warn('[SYSTEM] - Wrong registration status: ' + reg_status);
-            logger.warn(' - The registration status can be "registered" or "new".');
-            process.exit();
-
-        } else {
-            check_response = true;
-        }
+        
+        boardLabel = nconf.get('config:board:label');
 
         var board_position = nconf.get('config:board:position');
 
         if ( (board_position == undefined || Object.keys(board_position).length === 0 ) && (reg_status == "registered") ) {
-            logger.warn('[SYSTEM] - Wrong board coordinates! Set status to "new" to retrive these information.');
+            logger.warn('[SYSTEM] - Wrong board coordinates!');
             logger.debug('- Coordinates: ' + JSON.stringify(board_position));
             process.exit();
 
@@ -263,7 +251,7 @@ exports.checkSettings = function (callback) {
         var socat_port = nconf.get('config:socat:client:port');
 
         if (socat_port == undefined || socat_port == "") {
-            logger.warn('[SYSTEM] - socat_port not specified or undefined: if the board is network enabled specify this parameter!');
+            logger.warn("[SYSTEM] - 'socat_port' not specified or 'undefined': if the board is network enabled specify this parameter!");
         }
 
         callback(check_response);
@@ -317,7 +305,7 @@ exports.setBoardPosition = function (args) {
 };
 
 
-// This function sets the coordinates of the device: called by IoTronic via RPC
+// This function create the settings.json file of the board injected by IoTronic
 exports.updateConf = function (args) {
 
     var d = Q.defer();
@@ -326,7 +314,6 @@ exports.updateConf = function (args) {
         message: '',
         result: ''
     };
-
 
     // activate listener on-exit event after LR exit on-update-conf
     logger.debug("[SYSTEM] - Listener on process 'exit' event activated:");
@@ -341,6 +328,7 @@ exports.updateConf = function (args) {
 
 
     var remote_conf = args[0].message;
+
     logger.info("[SYSTEM] - Board configuration injected: " + JSON.stringify(remote_conf, null, "\t"));
 
     logger.info("[SYSTEM] --> BOARD CONF UPDATED: " + JSON.stringify(remote_conf));
@@ -361,11 +349,11 @@ exports.updateConf = function (args) {
             response.result = "SUCCESS";
             d.resolve(response);
 
-
             //Restarting LR
             setTimeout(function () {
                 process.exit();
             }, 1000)
+
 
         }
     });
@@ -375,92 +363,135 @@ exports.updateConf = function (args) {
 };
 
 
-// This function manages the registration status of the board
-exports.checkRegistrationStatus = function(args){
 
-    var response = args[0];
-    
-    if(response.result == "SUCCESS"){
+exports.setConf = function (args) {
 
-        logger.info("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
+    var remote_conf = args[0].message;
 
-        // CONNECTION TO IoTronic after access granted.
-        var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
-        var board_config = configFile.config["board"];
+    logger.info("[SYSTEM] - Board configuration injected: " + JSON.stringify(remote_conf, null, "\t"));
 
-        logger.info("[CONFIGURATION] - Board configuration parameters: " + JSON.stringify(board_config));
+    var d = Q.defer();
 
-        //PROVISIONING: Iotronic sends coordinates to this device when its status is "new"
-        if(reg_status === "new"){
+    var response = {
+        message: '',
+        result: ''
+    };
 
-            logger.info('[CONFIGURATION] - NEW BOARD CONFIGURATION STARTED... ');
-            
-            board_session.call("s4t.board.provisioning", [boardCode]).then(
-
-                function(result){
-
-                    logger.info("\n\nPROVISIONING "+boardCode+" RECEIVED: " + JSON.stringify(result) + "\n\n");
-
-                    board_position = result.message.info.coordinates;
-                    board_config["position"] = board_position;
-                    board_config["status"] = "registered";
-
-                    logger.info("\n[CONFIGURATION] - BOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]));
-
-                    //Updates the settings.json file
-                    fs.writeFile(SETTINGS, JSON.stringify(configFile, null, 4), function(err) {
-                        if(err) {
-                            logger.error('Error writing settings.json file: ' + err);
-
-                        } else {
-                            logger.info("settings.json configuration file saved to " + SETTINGS);
-                            //Calling the manage_WAMP_connection function that contains the logic that has to be performed if the device is connected to the WAMP server
-                            //exports.manage_WAMP_connection(board_session, details);
-                            moduleLoader(board_session, lyt_device);
-                        }
-                    });
-
-                    //Create a backup file of settings.json
-                    fs.writeFile(SETTINGS + ".BKP", JSON.stringify(configFile, null, 4), function(err) {
-                        if(err) {
-                            logger.error('Error writing settings.json.BKP file: ' + err);
-
-                        } else {
-                            logger.info("settings.json.BKP configuration file saved to " + SETTINGS + ".BKP");
-                        }
-                    });
+    // activate listener on-exit event after LR exit on-update-conf
+    logger.debug("[SYSTEM] --> Listener on process 'exit' event activated:");
+    logger.debug("[SYSTEM] --> Lightning-rod PID: " + process.pid);
+    process.on("exit", function () {
+        require("child_process").spawn(process.argv.shift(), process.argv, {
+            cwd: process.cwd(),
+            detached : true,
+            stdio: "inherit"
+        });
+    });
 
 
-                },
-                function (error){
-                    logger.error('[WAMP] - Error board provisioning: ' + JSON.stringify(error));
-                    logger.info("Bye!");
-                    process.exit(1);
-                }
-                
-            );
+    logger.info("[SYSTEM] --> Updating board configuration: " + JSON.stringify(remote_conf));
+
+    //Updates the settings.json file
+    fs.writeFile(SETTINGS, JSON.stringify(remote_conf, null, "\t"), function (err) {
+        if (err) {
+
+            response.message = 'Error writing settings.json file: ' + err;
+            response.result = "ERROR";
+            logger.error('[SYSTEM] --> ' +response.message);
+            d.resolve(response);
+
+        } else {
+
+            logger.debug("[SYSTEM] --> settings.json configuration file saved to " + SETTINGS);
+            response.message = "Board '"+boardCode+"' configuration updated!";
+            response.result = "SUCCESS";
+            d.resolve(response);
+
+
 
 
         }
-        else if(reg_status === "registered"){
-            
+    });
+
+    return d.promise;
+
+};
+
+
+
+
+
+// This function manages the registration status of the board
+
+exports.checkRegistrationStatus = function(args){
+
+    var regStatus = args[0];
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    var d = Q.defer();
+
+    if(regStatus.result == "SUCCESS"){
+
+        logger.info("[SYSTEM] - Connection to Iotronic "+regStatus.result+":\n"+JSON.stringify(regStatus.message, null, "\t"));
+
+        if(regStatus.message['state'] == "new"){
+
+            logger.info('[CONFIGURATION] - NEW BOARD CONFIGURATION STARTED... ');
+
+            var confBundle = {
+                message: ''
+            };
+
+            regStatus.message['conf']['config']['board']['status'] = "registered";
+            confBundle.message = regStatus.message['conf'];
+
+            exports.setConf([confBundle]).then(
+
+                function (msg) {
+
+                    console.log(msg);
+
+                    d.resolve(msg);
+
+
+                    //Restarting LR
+                    setTimeout(function () {
+                        process.exit();
+                    }, 2000)
+
+
+                }
+
+            )
+
+
+
+        }else if(regStatus.message['state'] == "registered"){
+
+            logger.info("[SYSTEM] - Board registered - Start module loading... ");
+
             moduleLoader(board_session, lyt_device);
 
+            response.message = "Board '"+boardCode+"' is loading modules.";
+            response.result = "SUCCESS";
+            d.resolve(response);
+
+
+
         } else{
+
+            d.resolve("Board "+boardCode+" in wrong status!");
 
             logger.error('[CONFIGURATION] - WRONG BOARD STATUS: status allowed "new" or "registerd"!');
             process.exit();
 
         }
 
-
-
-
-
-
-
-
-
+        
 
     }
     else {
@@ -468,14 +499,15 @@ exports.checkRegistrationStatus = function(args){
         logger.error("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
         logger.info("[SYSTEM] - Bye");
 
+        d.resolve("Board "+boardCode+" disconnection...")
+
         process.exit();
     }
-    
 
-    
+
+    return d.promise;
 
 };
-
 
 // To execute pre-defined commands in the board shell
 exports.execAction = function(args){
@@ -484,6 +516,10 @@ exports.execAction = function(args){
 
     var action = args[0];
     var params = args[1];
+
+
+    logger.info("[SYSTEM] - execAction on board RPC called: '" + action + "' action...");
+
 
     var response = {
         message: '',
@@ -556,6 +592,41 @@ exports.execAction = function(args){
                 }
 
             });
+            break;
+
+
+        case 'restart_lr':
+
+            params=JSON.parse(params);
+
+            logger.info("[SYSTEM] --> parameters:\n" + JSON.stringify(params, null, "\t"));
+
+            // activate listener on-exit event after LR exit on-update-conf
+            logger.debug("[SYSTEM] --> Listener on process 'exit' event activated:");
+            logger.debug("[SYSTEM] --> Lightning-rod PID: " + process.pid);
+            process.on("exit", function () {
+
+                require("child_process").spawn(process.argv.shift(), process.argv, {
+                    cwd: process.cwd(),
+                    detached : true,
+                    stdio: "inherit"
+                });
+
+            });
+
+            logger.info('[SYSTEM] - Restarting Lightning-rod');
+            response.message = "Restarting Lightning-rod on board "+ boardCode;
+            response.result = "SUCCESS";
+            d.resolve(response);
+
+            //Restarting LR
+            setTimeout(function () {
+                
+                process.exit();
+                
+            }, params["time"]);
+
+
             break;
 
         default:

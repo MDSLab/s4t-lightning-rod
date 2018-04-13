@@ -23,7 +23,8 @@
     "q": ">=0.9.7",
     "requestify": ">=0.1.17",
     "md5":"<=2.2.1",
-    "python-shell":"0.5.0"
+    "python-shell":"0.5.0",
+    "net":"1.0.2"
   },
   "repository": {
     "type": "git",

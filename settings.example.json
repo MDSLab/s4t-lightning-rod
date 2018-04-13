@@ -32,6 +32,7 @@
 		"board":
 		{
 			"code":"",
+			"label":"",
 			"status": "new",
 			"position":{
 				"altitude":0,

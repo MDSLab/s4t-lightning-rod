@@ -1688,8 +1688,8 @@ exports.removePlugin = function(args){
     
     // Parsing the input arguments
     var plugin_name = String(args[0]);
-    
-    logger.info("[PLUGIN] - Removing plugin RPC called for " + plugin_name +" plugin...");
+
+    logger.info("[PLUGIN] - Removing plugin RPC called for '" + plugin_name + "' plugin...");
 
 	var d = Q.defer();
 
@@ -1887,7 +1887,7 @@ exports.exportCommands = function (session){
 
 	// PLUGINS RESTART ALL --------------------------------------------------------------------------------
 	//This procedure restarts all plugins in "ON" status
-	exports.pluginsLoader()
+	exports.pluginsLoader();
 	//-----------------------------------------------------------------------------------------------------
 
 
