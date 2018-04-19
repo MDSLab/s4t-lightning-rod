@@ -566,12 +566,6 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 
 
 
-
-
-
-
-
-
 	pyshell.on('message', function (message) {
 		// received a message sent from the Python script (a simple "print" statement)
 		console.log("[WRAPPER] - PYTHON: "+message);
@@ -718,14 +712,13 @@ function pySyncStarter(plugin_name, plugin_json) {
 			});
 
 
-
-
-
 			// Create the server, give it our callback handler and listen at the path
 			s_server = net.createServer(handler).listen(socketPath, function() {
 				console.log('[SOCKET] - Socket in listening...');
 				console.log('[SOCKET] --> socket: '+socketPath);
 			})
+
+
 		}
 
 	);
@@ -742,6 +735,12 @@ function pySyncStarter(plugin_name, plugin_json) {
 	// it will create a python instance like this:
 	// python -u /opt/stack4things/lightning-rod/modules/plugins-manager/python/sync-wrapper.py py_sync {"name":"S4T"}
 	console.log("[SHELL] - PID wrapper: "+pyshell.childProcess.pid);
+
+
+	pyshell.on('message', function (message) {
+		// received a message sent from the Python script (a simple "print" statement)
+		console.log("[WRAPPER] - PYTHON: "+message);
+	});
 
 	// end the input stream and allow the process to exit
 	pyshell.end(function (err, code, signal) {
@@ -1870,7 +1869,7 @@ exports.restartPlugin = function(args){
 
 
 //This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportCommands = function (session){
+exports.Init = function (session){
 
 	session_plugins = session;
 

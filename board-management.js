@@ -38,12 +38,28 @@ function manage_WAMP_connection(session) {
     logger.info('[CONFIGURATION] - Board configuration starting...');
 
     //EXPORTING NETWORK COMMANDS
-    var networksManager = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
-    networksManager.exportCommands(session);
+    checkModEnabled("vnets_manager").then(
+        
+        function (enabled) {
 
+            if(enabled){
+                var networksManager = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
+                networksManager.Init(session);
+            }
+
+        }
+
+    );
+
+    /*
+    var networksManager = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
+    networksManager.Init(session);
+    */
+    
     //Topic on which the board can send a message to be registered
     var connectionTopic = 'board.connection';
     session.subscribe(connectionTopic, onTopicConnection);
+    
     //Registering the board to the Cloud by sending a message to the connection topic
     logger.info("[WAMP] - Sending board ID '" + boardCode + "' to topic " + connectionTopic + " to register the board");
     session.publish(connectionTopic, [boardCode, 'connection', session._id]);
@@ -59,28 +75,127 @@ function onTopicConnection(args) {
 
 }
 
+function checkModEnabled(module_name) {
+
+    var d = Q.defer();
+
+    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+
+    var modules = configFile.config["board"]["modules"]; console.log(module_name, modules[module_name]);
+
+    d.resolve(modules[module_name]);
+
+    return d.promise;
+
+}
+
 // This function loads the Lightning-rod modules
 function moduleLoader (session, device) {
 
+    logger.info("[SYSTEM] - Modules loading:");
+
+    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+
+    var modules = configFile.config["board"]["modules"]; //console.log(modules);
+
+    var modules_keys = Object.keys( modules ); //console.log(modules_keys);
+
+    for (var i = 0; i < modules_keys.length; i++) {
+
+        (function (i) {
+
+            var module_name = modules_keys[i];
+            var enabled = modules[module_name]; //console.log(enabled);
+
+
+            if(enabled)
+
+                switch (module_name) {
+
+                    case 'plugins_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var pluginsManager = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
+                        pluginsManager.Init(session);
+                        break;
+
+                    case 'services_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
+                        servicesManager.Init(session);
+
+                        break;
+
+                    case 'nodered_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var nodeRedManager = require(LIGHTNINGROD_HOME + '/modules/nodered-manager/manage-nodered');
+                        nodeRedManager.Init(session);
+                        break;
+
+                    /*
+                    case 'vnets_manager':
+                        break;
+                    */
+
+                    case 'gpio_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var gpioManager = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
+                        gpioManager.Init(session, lyt_device);
+                        break;
+
+                    case 'drivers_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
+                        driversManager.Init(session);
+                        driversManager.restartDrivers();
+                        break;
+
+                    case 'vfs_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
+                        fsManager.Init(session);
+                        var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
+                        fsLibsManager.exportFSLibs(session);
+                        break;
+
+                    default:
+
+                        //logger.error("[SYSTEM] --> Wrong module: " + module_name)
+
+                        break;
+
+
+
+                }
+
+
+        })(i);
+
+    }
+    
+    /*
     // MODULES LOADING--------------------------------------------------------------------------------------------------
     var gpioManager = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
-    gpioManager.exportCommands(session, lyt_device);
+    gpioManager.Init(session, lyt_device);
 
     var pluginsManager = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
-    pluginsManager.exportCommands(session);
+    pluginsManager.Init(session);
 
     var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
-    driversManager.exportCommands(session);
+    driversManager.Init(session);
     driversManager.restartDrivers();
 
     var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
-    fsManager.exportCommands(session);
+    fsManager.Init(session);
     var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
     fsLibsManager.exportFSLibs(session);
 
     var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
-    servicesManager.exportCommands(session);
+    servicesManager.Init(session);
+
+    var nodeRedManager = require(LIGHTNINGROD_HOME + '/modules/nodered-manager/manage-nodered');
+    nodeRedManager.Init(session);
     //------------------------------------------------------------------------------------------------------------------
+    */
 
 }
 
@@ -363,7 +478,7 @@ exports.updateConf = function (args) {
 };
 
 
-
+// This function update the board configuration
 exports.setConf = function (args) {
 
     var remote_conf = args[0].message;
@@ -418,11 +533,7 @@ exports.setConf = function (args) {
 };
 
 
-
-
-
 // This function manages the registration status of the board
-
 exports.checkRegistrationStatus = function(args){
 
     var regStatus = args[0];
@@ -508,6 +619,7 @@ exports.checkRegistrationStatus = function(args){
     return d.promise;
 
 };
+
 
 // To execute pre-defined commands in the board shell
 exports.execAction = function(args){

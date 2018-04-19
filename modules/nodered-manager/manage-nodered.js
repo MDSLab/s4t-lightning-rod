@@ -21,24 +21,164 @@
 var logger = log4js.getLogger('noderedManager');
 logger.setLevel(loglevel);
 
-var RED = require("node-red");
 
 
-// RPC to execute a syncronous plugin ("call" as the exection of a command that returns a value to the "caller"): it is called by Iotronic via RPC
-exports.init = function (args, details){
+RED = require("node-red");
+var Q = require("q");
+var fs = require("fs");
+
+server = null;
+
+var NODE_RED_HOME = process.env.IOTRONIC_HOME + '/.node-red';
+
+
+exports.init = function (settings){
+
+    var d = Q.defer();
+
+    logger.info("[NODE-RED] - Init...");
+
+    if(settings.disableEditor){
+
+        d.resolve( RED.init(false, settings) )
+
+    }
+    else{
+
+        var http = require('http');
+        var express = require("express");
+
+        // Create an Express app
+        var app = express();
+
+        // Add a simple route for static content served from 'public'
+        app.use("/",express.static("public"));
+
+        // Create a server
+        server = http.createServer(app);
+
+        // Initialise the runtime with a server and settings
+        RED.init(server, settings);
+
+        // Serve the editor UI from /red
+        app.use(settings.httpAdminRoot, RED.httpAdmin);
+
+        // Serve the http nodes UI from /api
+        app.use(settings.httpNodeRoot, RED.httpNode);
+
+        d.resolve(server.listen(8000))
+    }
+
+    return d.promise;
 
 
 };
 
 
+exports.start = function (){
 
-//This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportCommands = function (session){
+    logger.info("[NODE-RED] - Starting...");
+
+    var d = Q.defer();
+
+    var response = {
+        message: '',
+        result: ''
+    };
+    
+    // Create the settings object - see default settings.js file for other options
+    var settings = {
+
+        httpAdminRoot: "/red",
+        httpNodeRoot: "/",
+        disableEditor: false,
+        userDir: NODE_RED_HOME,  //"/root/.node-red/",
+        nodesDir: NODE_RED_HOME+"/nodes/", //"/root/.node-red/nodes/",
+        //uiHost:"0.0.0.0",
+        //uiPort:"1880",
+        //functionGlobalContext: { },    // enables global context
+        /**/
+        adminAuth: {
+            type: "credentials",
+            users: [{
+                username: "admin",
+                password: "$2a$08$0tcdIPRESSKHCZqlIEjer.zDl7lJiGxeQmsmkbpcHmmMAg5yx0PEm",
+                permissions: "*"
+            }]
+        }
+
+    };
+
+    exports.init(settings).then(
+        function(){
+
+            logger.info("[NODE-RED] - Init completed.");
+            // Start the runtime
+            RED.start().then(
+
+                function () {
+
+                        logger.info("[NODE-RED] - Started.");
+                        response.message = "Node-RED: init and started!";
+                        response.result = "SUCCESS";
+                        d.resolve(response);
+
+                    }
+                )
+
+
+        }
+    );
+
+
+
+
+
+    return d.promise;
+
+};
+
+
+exports.stop = function (){
+
+    logger.info("[NODE-RED] - Stopping");
+    
+    var d = Q.defer();
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    // Stop the runtime
+    RED.stop().then(
+        function () {
+
+            if(server != null)
+                server.close(); //close the server
+
+            logger.info("[NODE-RED] - Stopped");
+
+            response.message = "Node-RED stopped!";
+            response.result = "SUCCESS";
+            d.resolve(response);
+        }
+
+    );
+
+    return d.promise;
+
+};
+
+
+//This function Inits the Node-RED Manager
+exports.Init = function (session){
 
     //Register all the module functions as WAMP RPCs
-    //session.register('s4t.'+ boardCode+'.nodered.run', exports.init);
-    
-    logger.info('[WAMP-EXPORTS] Plugin commands exported to the cloud!');
+    session.register('s4t.'+ boardCode+'.nodered.start', exports.start);
+    session.register('s4t.'+ boardCode+'.nodered.stop', exports.stop);
+
+    logger.info('[WAMP-EXPORTS] Node-RED methods exported to the cloud!');
 
 };
 

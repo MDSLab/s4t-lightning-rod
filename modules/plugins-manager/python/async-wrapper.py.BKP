@@ -22,49 +22,29 @@ import socket
 from datetime import datetime
 import time
 import os
-import json
-import threading
 
-# Inputs
 plugin_name = sys.argv[1]
 plugin_params = sys.argv[2]
 
-
-# Globals
 socket_path = '/tmp/plugin-'+plugin_name
+
 plugin_path = os.environ.get('IOTRONIC_HOME')+"/plugins/"+plugin_name+"/"+plugin_name+".py"
+
 plugin = imp.load_source("plugin", plugin_path)
 
+worker = plugin.Plugin(
+    plugin_params
+)
+worker.start()
 
-# Thread to run user's plugin logic
-class Plugin(threading.Thread):
-    def __init__(self, params):
-        threading.Thread.__init__(self)
-        # self.setDaemon(1)
-        self.setName(plugin_name)  # Set thread name
-        self.params = json.loads(params)
+"""
+plugin.main(plugin_name)
+"""
 
-    def run(self):
-        print("Plugin Thread starting...")
-        print("--> PARAMS:" + str(self.params))
+msg="Plugin " +plugin_name+" is running!"
 
-        plugin.main(self.params)
-
-
-
-
-# WRAPPER MAIN
-if __name__ == '__main__':
-
-    worker = Plugin(
-        plugin_params
-    )
-    worker.start()
-
-    msg="Plugin " +plugin_name+" is running!"
-
-    # connect to the unix local socket with a stream type
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect(socket_path)
-    client.send(msg)
-    client.close()
+# connect to the unix local socket with a stream type
+client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+client.connect(socket_path)
+client.send(msg)
+client.close()

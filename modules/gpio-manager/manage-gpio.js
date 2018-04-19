@@ -93,7 +93,7 @@ function setMode(args) {
 }
 
 //This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportCommands = function (session, device) {
+exports.Init = function (session, device) {
     
     lyt_device = device;
 
