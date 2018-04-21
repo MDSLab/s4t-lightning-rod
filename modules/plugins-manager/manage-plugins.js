@@ -613,10 +613,27 @@ function pySyncStarter(plugin_name, plugin_json) {
 		// Listen for data from client
 		socket.on('data', function(bytes){
 
-			response.result = "SUCCESS";
-			response.message = bytes.toString(); // Decode byte strin
-			logger.info('[PLUGIN] - '+plugin_name + ' - '+response.message);
-			d.resolve(response);
+			var data = bytes.toString(); 			// Decode byte string
+			var data_parsed = JSON.parse(data); 	// Parse JSON response
+
+			if(data_parsed.result == "ERROR"){
+
+				response.result = "ERROR";
+				response.message = data_parsed.payload;
+				logger.info('[PLUGIN] - Error in '+plugin_name + ':\n'+JSON.stringify(response.message, null, "\t"));
+				d.resolve(response);
+
+			}else{
+
+				response.result = "SUCCESS";
+				response.message = data_parsed.payload;
+				logger.info('[PLUGIN] - '+plugin_name + ':\n'+ JSON.stringify(response.message, null, "\t"));
+				d.resolve(response);
+
+			}
+
+
+
 
 		});
 
@@ -629,30 +646,6 @@ function pySyncStarter(plugin_name, plugin_json) {
 
 				console.log('[SOCKET] - Server socket closed');
 
-				try{
-					//Reading the plugin configuration file
-					var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
-
-					pluginsConf.plugins[plugin_name].status = "off";
-					pluginsConf.plugins[plugin_name].pid = "";
-
-					//updates the JSON file
-					fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
-
-						if(err) {
-							logger.error('[PLUGIN] --> Error writing plugins.json file: ' + err);
-						} else {
-							logger.debug("[PLUGIN] --> JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
-						}
-
-					});
-
-				}
-				catch(err){
-					logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
-				}
-
-
 			});
 
 		});
@@ -662,60 +655,95 @@ function pySyncStarter(plugin_name, plugin_json) {
 	// Remove an existing plugin socket
 	fs.unlink(socketPath, function(){
 
-
-			//Creating the plugin json schema
 			var plugin_folder = PLUGINS_STORE + plugin_name;
 			var schema_outputFilename = plugin_folder + "/" + plugin_name + '.json';
-
-
-			//update parameters and plugins.json conf file
-			fs.writeFile(schema_outputFilename, plugin_json, function(err) {
-
-				if(err) {
-
-					logger.error('[PLUGIN] --> Error parsing '+plugin_name+'.json file: ' + err);
-
-				} else {
-
-					logger.debug('[PLUGIN] --> Plugin JSON schema saved to ' + schema_outputFilename);
-
-
-					try{
-
-						//Reading the plugin configuration file
-						var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
-
-						// - change the plugin status from "off" to "on" and update the PID value
-						pluginsConf.plugins[plugin_name].status = "on";
-						pluginsConf.plugins[plugin_name].pid = pyshell.childProcess.pid;
-
-						//updates the JSON file
-						fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
-
-							if(err) {
-								logger.error('[PLUGIN] --> Error writing plugins.json file: ' + err);
-							} else {
-								logger.debug("[PLUGIN] --> JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
-							}
-
-						});
-
-					}
-					catch(err){
-						logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
-					}
-
-
-
-				}
-
-			});
-
 
 			// Create the server, give it our callback handler and listen at the path
 			s_server = net.createServer(handler).listen(socketPath, function() {
 				console.log('[SOCKET] - Socket in listening...');
 				console.log('[SOCKET] --> socket: '+socketPath);
+
+
+				// after socket creation we will start the plugin wrapper
+				var options = {
+					mode: 'text',
+					//pythonPath: '/usr/bin/python2.7',
+					pythonOptions: ['-u'],
+					scriptPath: __dirname,
+					args: [plugin_name, plugin_json]
+				};
+
+				pyshell = new PythonShell('./python/sync-wrapper.py', options);
+				// it will create a python instance like this:
+				// python -u /opt/stack4things/lightning-rod/modules/plugins-manager/python/sync-wrapper.py py_sync {"name":"S4T"}
+				console.log("[SHELL] - PID wrapper: "+pyshell.childProcess.pid);
+
+				// listener starting
+
+				pyshell.on('message', function (message) {
+					// received a message sent from the Python script (a simple "print" statement)
+					console.log("[WRAPPER] - PYTHON: "+message);
+				});
+
+				// end the input stream and allow the process to exit
+				pyshell.end(function (err, code, signal) {
+
+					if (err){
+
+						response.result = "ERROR";
+						response.message = err;
+						d.resolve(response);
+
+					}else{
+						logger.debug('[SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
+					}
+
+				});
+
+
+				//update parameters and plugins.json conf file
+				fs.writeFile(schema_outputFilename, plugin_json, function(err) {
+
+					if(err) {
+
+						logger.error('[PLUGIN] --> Error parsing '+plugin_name+'.json file: ' + err);
+
+					} else {
+
+						logger.debug('[PLUGIN] --> Plugin JSON schema saved to ' + schema_outputFilename);
+
+						try{
+
+							//Reading the plugin configuration file
+							var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
+
+							// - change the plugin status from "off" to "on" and update the PID value
+							pluginsConf.plugins[plugin_name].status = "on";
+							pluginsConf.plugins[plugin_name].pid = pyshell.childProcess.pid;
+
+							//updates the JSON file
+							fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+								if(err) {
+									logger.error('[PLUGIN] --> Error writing plugins.json file: ' + err);
+								} else {
+									logger.debug("[PLUGIN] --> JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+								}
+
+							});
+
+						}
+						catch(err){
+							logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
+						}
+
+
+
+					}
+
+				});
+
+
 			})
 
 
@@ -723,37 +751,7 @@ function pySyncStarter(plugin_name, plugin_json) {
 
 	);
 
-	var options = {
-		mode: 'text',
-		//pythonPath: '/usr/bin/python2.7',
-		pythonOptions: ['-u'],
-		scriptPath: __dirname,
-		args: [plugin_name, plugin_json]
-	};
 
-	pyshell = new PythonShell('./python/sync-wrapper.py', options);
-	// it will create a python instance like this:
-	// python -u /opt/stack4things/lightning-rod/modules/plugins-manager/python/sync-wrapper.py py_sync {"name":"S4T"}
-	console.log("[SHELL] - PID wrapper: "+pyshell.childProcess.pid);
-
-
-	pyshell.on('message', function (message) {
-		// received a message sent from the Python script (a simple "print" statement)
-		console.log("[WRAPPER] - PYTHON: "+message);
-	});
-
-	// end the input stream and allow the process to exit
-	pyshell.end(function (err, code, signal) {
-
-		if (err){
-			response.result = "ERROR";
-			response.message = err;
-			d.resolve(response);
-		}else{
-			logger.debug('[SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
-		}
-
-	});
 
 
 	return d.promise;
@@ -929,7 +927,75 @@ exports.call = function (args){
 						pySyncStarter(plugin_name, plugin_json).then(
 
 							function (execRes) {
-								d.resolve(execRes.message);
+
+								if(execRes.result == "ERROR"){
+
+									logger.error("[PLUGIN] - '" + plugin_name + "' plugin execution error: "+JSON.stringify(execRes, null, "\t"));
+
+									d.resolve(execRes);
+
+
+								}
+								else if (execRes.result == "SUCCESS")
+									d.resolve(execRes.message);
+
+
+								//update parameters and plugins.json conf file
+								try {
+
+									var plugin_folder = PLUGINS_STORE + plugin_name;
+									var schema_outputFilename = plugin_folder + "/" + plugin_name + '.json';
+									
+									fs.writeFile(schema_outputFilename, plugin_json, function(err) {
+
+										if(err) {
+
+											logger.error('[PLUGIN] --> Error parsing '+plugin_name+'.json file: ' + err);
+
+										} else {
+
+											logger.debug('[PLUGIN] --> Plugin JSON schema saved to ' + schema_outputFilename);
+
+											try{
+
+												//Reading the plugin configuration file
+												var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
+
+												// - change the plugin status from "off" to "on" and update the PID value
+												pluginsConf.plugins[plugin_name].status = "off";
+												pluginsConf.plugins[plugin_name].pid = "";
+
+												//updates the JSON file
+												fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+													if(err) {
+														logger.error('[PLUGIN] --> Error writing plugins.json file: ' + err);
+													} else {
+														logger.debug("[PLUGIN] --> JSON file plugins.json updated -> " + plugin_name + ':  status < '+ pluginsConf.plugins[plugin_name].status + ' > ' + pluginsConf.plugins[plugin_name].pid);
+													}
+
+												});
+
+											}
+											catch(err){
+												logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
+											}
+
+
+
+										}
+
+									});
+
+
+								}
+								catch(err){
+										logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
+								}
+
+
+
+
 							}
 
 						);
@@ -941,7 +1007,7 @@ exports.call = function (args){
 
 						response.result = "ERROR";
 						response.message = 'Wrong plugin type: ' + plugin_type;
-						logger.warn('[PLUGIN] - "' + plugin_name + '" plugin execution error: '+response.message);
+						logger.warn("[PLUGIN] - '" + plugin_name + "' plugin execution error: "+response.message);
 						d.resolve(response);
 
 						break;
@@ -956,7 +1022,7 @@ exports.call = function (args){
 
 			}
 			else{
-				
+
 				response.result = "ERROR";
 				response.message = "Sync plugin '" + plugin_name + "' already started on board '"+boardCode+"'!";
 				logger.warn("[PLUGIN] --> " + response.message);

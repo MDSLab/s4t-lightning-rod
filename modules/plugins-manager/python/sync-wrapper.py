@@ -24,6 +24,8 @@ import time
 import Queue
 import os
 import threading
+import json
+
 
 # Inputs
 plugin_name = sys.argv[1]
@@ -42,14 +44,32 @@ class Plugin(threading.Thread):
 
     def __init__(self, params, q_result):
         threading.Thread.__init__(self)
-        # self.setDaemon(1)
         self.setName(plugin_name)  # Set thread name
         self.params = params
         self.q_result = q_result
 
     def run(self):
-        result = plugin.main(self.params)
-        self.q_result.put(result)
+
+        try:
+
+            result = plugin.main(self.params)
+
+            response = {
+                    "message": str(result),
+                    "result": "SUCCESS"
+            }
+
+            self.q_result.put(json.dumps(response))
+
+
+        except Exception as err:
+
+            response = {
+                    "message": str(err),
+                    "result": "ERROR"
+            }
+
+            self.q_result.put(json.dumps(response))
 
 
 # WRAPPER MAIN
@@ -67,11 +87,18 @@ if __name__ == '__main__':
     while q_result.empty():
         pass
 
-    result = q_result.get()
+    # 3. Get data from plugin queue and parsing
+    data = q_result.get()
+    data_parsed = json.loads(data)
 
-    msg = "Plugin " + plugin_name + " says: " + str(result)
+    # 4. Create package for Plugin Manager
+    msg = json.dumps({
+        "plugin": plugin_name,
+        "payload": str(data_parsed["message"]),
+        "result": str(data_parsed["result"])
+    })
 
-    # connect to the unix local socket with a stream type
+    # 5. Connect to the unix local socket to send the plugin package
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(socket_path)
     client.send(msg)

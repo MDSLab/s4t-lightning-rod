@@ -48,7 +48,11 @@ class Plugin(threading.Thread):
         print("Plugin Thread starting...")
         print("--> PARAMS:" + str(self.params))
 
-        plugin.main(self.params)
+        try:
+            plugin.main(self.params)
+        except Exception as err:
+            print("[PLUGIN-"+plugin_name+"] - Error execution PY plugin: "+str(err))
+
 
 
 
