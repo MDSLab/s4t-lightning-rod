@@ -19,8 +19,8 @@ npm install -g npm
 npm config set python `which python2.7`
 npm -v
 
-echo "NODE_PATH=$NODE_PATH" | tee -a /etc/environment
-source /etc/environment > /dev/null
+echo "NODE_PATH=/usr/lib/node_modules" | tee -a /etc/environment
+. /etc/environment > /dev/null
 echo $NODE_PATH
 ```
 
