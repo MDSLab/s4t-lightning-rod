@@ -24,6 +24,7 @@ import time
 import os
 import json
 import threading
+import Queue
 
 # Inputs
 plugin_name = sys.argv[1]
@@ -34,24 +35,43 @@ plugin_params = sys.argv[2]
 socket_path = '/tmp/plugin-'+plugin_name
 plugin_path = os.environ.get('IOTRONIC_HOME')+"/plugins/"+plugin_name+"/"+plugin_name+".py"
 plugin = imp.load_source("plugin", plugin_path)
+q_result = Queue.Queue()
 
 
 # Thread to run user's plugin logic
 class Plugin(threading.Thread):
-    def __init__(self, params):
+    def __init__(self, params, q_result):
         threading.Thread.__init__(self)
         # self.setDaemon(1)
         self.setName(plugin_name)  # Set thread name
         self.params = json.loads(params)
+        self.q_result = q_result
 
     def run(self):
         print("Plugin Thread starting...")
         print("--> PARAMS:" + str(self.params))
 
+
         try:
+            result = "Plugin " +plugin_name+" is running!"
+
+            response = {
+                    "message": str(result),
+                    "result": "SUCCESS"
+            }
+
+            self.q_result.put(json.dumps(response))
+
             plugin.main(self.params)
+
+
         except Exception as err:
-            print("[PLUGIN-"+plugin_name+"] - Error execution PY plugin: "+str(err))
+            response = {
+                    "message": str(err),
+                    "result": "ERROR"
+            }
+
+            self.q_result.put(json.dumps(response))
 
 
 
@@ -61,11 +81,31 @@ class Plugin(threading.Thread):
 if __name__ == '__main__':
 
     worker = Plugin(
-        plugin_params
+        plugin_params,
+        q_result
     )
+
+    # 1. thread plugin starting
     worker.start()
 
-    msg="Plugin " +plugin_name+" is running!"
+    # 2. waiting for plugin result injected in the queue
+    while q_result.empty():
+        pass
+
+
+    # 3. Get data from plugin queue and parsing
+    data = q_result.get()
+    data_parsed = json.loads(data)
+
+    #msg="Plugin " +plugin_name+" is running!"
+    #msg=q_result.get()
+    msg = json.dumps({
+        "plugin": plugin_name,
+        "payload": str(data_parsed["message"]),
+        "result": str(data_parsed["result"])
+    })
+
+    print(msg)
 
     # connect to the unix local socket with a stream type
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

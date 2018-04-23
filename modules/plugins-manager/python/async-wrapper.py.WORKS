@@ -21,84 +21,53 @@ import imp
 import socket
 from datetime import datetime
 import time
-import Queue
 import os
-import threading
 import json
-
+import threading
 
 # Inputs
 plugin_name = sys.argv[1]
-params = sys.argv[2]
+plugin_params = sys.argv[2]
 
 
 # Globals
 socket_path = '/tmp/plugin-'+plugin_name
 plugin_path = os.environ.get('IOTRONIC_HOME')+"/plugins/"+plugin_name+"/"+plugin_name+".py"
 plugin = imp.load_source("plugin", plugin_path)
-q_result = Queue.Queue()
 
 
 # Thread to run user's plugin logic
 class Plugin(threading.Thread):
-
-    def __init__(self, params, q_result):
+    def __init__(self, params):
         threading.Thread.__init__(self)
-        self.setName(plugin_name)
+        # self.setDaemon(1)
+        self.setName(plugin_name)  # Set thread name
         self.params = json.loads(params)
-        self.q_result = q_result
 
     def run(self):
+        print("Plugin Thread starting...")
+        print("--> PARAMS:" + str(self.params))
 
         try:
-
-            result = plugin.main(self.params)
-
-            response = {
-                    "message": str(result),
-                    "result": "SUCCESS"
-            }
-
-            self.q_result.put(json.dumps(response))
-
-
+            plugin.main(self.params)
         except Exception as err:
+            print("[PLUGIN-"+plugin_name+"] - Error execution PY plugin: "+str(err))
 
-            response = {
-                    "message": str(err),
-                    "result": "ERROR"
-            }
 
-            self.q_result.put(json.dumps(response))
+
 
 
 # WRAPPER MAIN
 if __name__ == '__main__':
 
     worker = Plugin(
-        params,
-        q_result
+        plugin_params
     )
-
-    # 1. thread plugin starting
     worker.start()
 
-    # 2. waiting for plugin result injected in the queue
-    while q_result.empty():
-        pass
+    msg="Plugin " +plugin_name+" is running!"
 
-    # 3. Get data from plugin queue and parsing
-    data = q_result.get()
-    data_parsed = json.loads(data)
-
-    # 4. Create package for Plugin Manager
-    msg = json.dumps({
-        "plugin": plugin_name,
-        "payload": str(data_parsed["message"]),
-        "result": str(data_parsed["result"])
-    })
-
-    # 5. Connect to the unix local socket to send the plugin package
+    # connect to the unix local socket with a stream type
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(socket_path)
     client.send(msg)

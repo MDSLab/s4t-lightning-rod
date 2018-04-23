@@ -1,4 +1,5 @@
 /var/log/iotronic/lightning-rod.log {
+    create
     weekly
     rotate = 3
     compress

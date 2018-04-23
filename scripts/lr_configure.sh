@@ -33,7 +33,6 @@ if [ "$DEVICE" = "server" ]; then
 
         cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/lightning-rod
         chmod +x /etc/init.d/lightning-rod
-        chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
 
         # Configure logrotate
         cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log

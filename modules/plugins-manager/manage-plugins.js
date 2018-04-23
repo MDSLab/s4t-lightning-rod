@@ -418,21 +418,39 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 
 		// Listen for data from client
 		socket.on('data',function(bytes){
+			var data = bytes.toString(); 			// Decode byte string
+			var data_parsed = JSON.parse(data); 	// Parse JSON response
 
+			if(data_parsed.result == "ERROR"){
+
+				response.result = "ERROR";
+				response.message = data_parsed.payload;
+				logger.info('[PLUGIN] - Error in '+plugin_name + ':\n'+JSON.stringify(response.message, null, "\t"));
+				d.resolve(response);
+
+			}else{
+
+				response.result = "SUCCESS";
+				response.message = data_parsed.payload;
+				logger.info('[PLUGIN] - '+plugin_name + ': '+ JSON.stringify(response.message, null, "\t"));
+				d.resolve(response);
+
+			}
+
+			/*
 			response.result = "SUCCESS";
 			response.message = bytes.toString(); // Decode byte strin
 			logger.info('[PLUGIN] - '+plugin_name + ' - '+response.message);
 			d.resolve(response);
+			*/
 
 		});
 
 		// On client close
 		socket.on('end', function() {
-			console.log('[SOCKET] - Socket disconnected');
-			//fs.unlinkSync(socketPath);
-			//console.log('[SOCKET] - Socket unlinked');
+			logger.debug('[PLUGIN-SOCKET] - Socket disconnected');
 			s_server.close(function(){
-				console.log('[SOCKET] - Server socket closed');
+				logger.debug('[PLUGIN-SOCKET] - Server socket closed');
 			});
 
 		});
@@ -446,8 +464,8 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 			// Create the server, give it our callback handler and listen at the path
 
 			s_server = net.createServer(handler).listen(socketPath, function(){
-				console.log('[SOCKET] - Socket in listening...');
-				console.log('[SOCKET] --> socket: '+socketPath);
+				logger.debug('[PLUGIN-SOCKET] - Socket in listening...');
+				logger.debug('[PLUGIN-SOCKET] --> socket: '+socketPath);
 			})
 
 		}
@@ -463,7 +481,7 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 
 	var pyshell = new PythonShell('./python/async-wrapper.py', options);
 	PY_PID = pyshell.childProcess.pid;
-	console.log("[SHELL] - PID wrapper: "+ PY_PID);
+	logger.debug("[PLUGIN-SHELL] - PID wrapper: "+ PY_PID);
 
 	//Creating the plugin json schema
 	var plugin_folder = PLUGINS_STORE + plugin_name;
@@ -565,10 +583,11 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 	}
 
 
-
+	//if(logger.level.levelStr == 'DEBUG')
+	// listening 'print' output
 	pyshell.on('message', function (message) {
 		// received a message sent from the Python script (a simple "print" statement)
-		console.log("[WRAPPER] - PYTHON: "+message);
+		console.log("[PLUGIN-WRAPPER] - PYTHON: "+message);
 	});
 
 	// end the input stream and allow the process to exit
@@ -579,7 +598,38 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 			response.message = err;
 			d.resolve(response);
 		}else{
-			logger.debug('[SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
+			logger.debug('[PLUGIN-SHELL] - Python shell of "'+plugin_name+'" plugin terminated: {signal: '+ signal+', code: '+code+'}');
+
+			if(signal == null && code == 0){
+
+				logger.warn("[PLUGIN-SHELL] --> unexpected '"+plugin_name+"' plugin termination!");
+
+				pluginsConf.plugins[plugin_name].status = "off";
+				pluginsConf.plugins[plugin_name].pid = "";
+
+				// updates the JSON file
+				fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+					if(err) {
+
+						response.result = "ERROR";
+						response.message = 'Error writing plugins.json: '+ err;
+						logger.error('[PLUGIN] - stop plugin '+plugin_name + ' error: '+response.message);
+						d.resolve(response);
+
+					} else {
+						logger.debug("[PLUGIN] --> " + PLUGINS_SETTING + " updated!");
+						clearPluginTimer(plugin_name);
+						response.result = "SUCCESS";
+						response.message = 'Plugin environment cleaned!';
+						logger.info('[PLUGIN] - plugin '+plugin_name + ': '+response.message);
+						d.resolve(response);
+					}
+
+				});
+			}else{
+				logger.debug("[PLUGIN-SHELL] --> Python plugin '"+plugin_name+"' terminated!")
+			}
 
 		}
 
@@ -627,7 +677,7 @@ function pySyncStarter(plugin_name, plugin_json) {
 
 				response.result = "SUCCESS";
 				response.message = data_parsed.payload;
-				logger.info('[PLUGIN] - '+plugin_name + ':\n'+ JSON.stringify(response.message, null, "\t"));
+				logger.info('[PLUGIN] - '+plugin_name + ': '+ JSON.stringify(response.message, null, "\t"));
 				d.resolve(response);
 
 			}
@@ -640,11 +690,11 @@ function pySyncStarter(plugin_name, plugin_json) {
 		// On client close
 		socket.on('end', function() {
 
-			console.log('[SOCKET] - Socket disconnected');
+			logger.debug('[PLUGIN-SOCKET] - Socket disconnected');
 
 			s_server.close(function(){
 
-				console.log('[SOCKET] - Server socket closed');
+				logger.debug('[PLUGIN-SOCKET] - Server socket closed');
 
 			});
 
@@ -660,8 +710,8 @@ function pySyncStarter(plugin_name, plugin_json) {
 
 			// Create the server, give it our callback handler and listen at the path
 			s_server = net.createServer(handler).listen(socketPath, function() {
-				console.log('[SOCKET] - Socket in listening...');
-				console.log('[SOCKET] --> socket: '+socketPath);
+				logger.debug('[PLUGIN-SOCKET] - Socket in listening...');
+				logger.debug('[PLUGIN-SOCKET] --> socket: '+socketPath);
 
 
 				// after socket creation we will start the plugin wrapper
@@ -676,14 +726,16 @@ function pySyncStarter(plugin_name, plugin_json) {
 				pyshell = new PythonShell('./python/sync-wrapper.py', options);
 				// it will create a python instance like this:
 				// python -u /opt/stack4things/lightning-rod/modules/plugins-manager/python/sync-wrapper.py py_sync {"name":"S4T"}
-				console.log("[SHELL] - PID wrapper: "+pyshell.childProcess.pid);
 
-				// listener starting
+				logger.debug("[PLUGIN-SHELL] - PID wrapper: "+pyshell.childProcess.pid);
 
-				pyshell.on('message', function (message) {
-					// received a message sent from the Python script (a simple "print" statement)
-					console.log("[WRAPPER] - PYTHON: "+message);
-				});
+				if(logger.level.levelStr == 'DEBUG')
+					// listening 'print' output
+					pyshell.on('message', function (message) {
+						// received a message sent from the Python script (a simple "print" statement)
+						console.log("[PLUGIN-WRAPPER] - PYTHON: "+message);
+					});
+
 
 				// end the input stream and allow the process to exit
 				pyshell.end(function (err, code, signal) {
@@ -695,7 +747,7 @@ function pySyncStarter(plugin_name, plugin_json) {
 						d.resolve(response);
 
 					}else{
-						logger.debug('[SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
+						logger.debug('[PLUGIN-SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
 					}
 
 				});
@@ -921,9 +973,7 @@ exports.call = function (args){
 
 
 					case 'python':
-
-
-
+						
 						pySyncStarter(plugin_name, plugin_json).then(
 
 							function (execRes) {
@@ -1547,31 +1597,47 @@ exports.kill = function (args){
 				logger.info('[PLUGIN] --> '+ plugin_name + ' - Plugin (with PID='+pid+') being stopped!');
 		  
 		  		//PLUGIN KILLING
-		  		process.kill(pid);
+				try{
+
+		  			process.kill(pid);
+
+				}
+				catch(err){
+
+					response.result = "ERROR";
+					response.message = 'Error killing plugin: '+ err;
+					logger.error('[PLUGIN] - stop plugin "'+plugin_name + '" error: '+response.message);
+					d.resolve(response);
+
+				}finally {
+
+					pluginsConf.plugins[plugin_name].status = "off";
+					pluginsConf.plugins[plugin_name].pid = "";
+
+					// updates the JSON file
+					fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+						if(err) {
+
+							response.result = "ERROR";
+							response.message = 'Error writing plugins.json: '+ err;
+							logger.error('[PLUGIN] - stop plugin '+plugin_name + ' error: '+response.message);
+							d.resolve(response);
+
+						} else {
+							logger.debug("[PLUGIN] --> " + PLUGINS_SETTING + " updated!");
+							clearPluginTimer(plugin_name);
+							response.result = "SUCCESS";
+							response.message = 'Plugin killed!';
+							logger.info('[PLUGIN] - stop plugin '+plugin_name + ': '+response.message);
+							d.resolve(response);
+						}
+
+					});
+
+				}
 		  
-		  		pluginsConf.plugins[plugin_name].status = "off";
-		  		pluginsConf.plugins[plugin_name].pid = "";
 
-		  		// updates the JSON file
-		  		fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
-		    
-		      		if(err) {
-
-						response.result = "ERROR";
-						response.message = 'Error writing plugins.json: '+ err;
-						logger.error('[PLUGIN] - stop plugin '+plugin_name + ' error: '+response.message);
-						d.resolve(response);
-
-		      		} else {
-			  			logger.debug("[PLUGIN] --> " + PLUGINS_SETTING + " updated!");
-			  			clearPluginTimer(plugin_name);
-						response.result = "SUCCESS";
-						response.message = 'Plugin killed!';
-						logger.info('[PLUGIN] - stop plugin '+plugin_name + ': '+response.message);
-						d.resolve(response);
-		      		}
-
-		  		});
 
 
 		  
@@ -1597,7 +1663,7 @@ exports.kill = function (args){
 
 		response.result = "ERROR";
 		response.message = 'Error parsing JSON file plugins.json: '+ err;
-		logger.error('[PLUGIN] - stop plugin "'+plugin_name + '" error: '+response.message);
+		logger.error('[PLUGIN] -ppppppppppppp stop plugin "'+plugin_name + '" error: '+response.message);
 		d.resolve(response);
     }
 
