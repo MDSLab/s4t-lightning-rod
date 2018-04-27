@@ -29,7 +29,7 @@ import json
 
 # Inputs
 plugin_name = sys.argv[1]
-params = sys.argv[2]
+plugin_params = sys.argv[2]
 
 
 # Globals
@@ -51,6 +51,9 @@ class Plugin(threading.Thread):
     def run(self):
 
         try:
+
+            print("Plugin Thread starting...")
+            print("--> PARAMS:" + str(self.params))
 
             result = plugin.main(self.params)
 
@@ -76,7 +79,7 @@ class Plugin(threading.Thread):
 if __name__ == '__main__':
 
     worker = Plugin(
-        params,
+        plugin_params,
         q_result
     )
 

@@ -18,14 +18,8 @@
 
 # User imports
 from datetime import datetime
-#import json
 
 def main(params):
-
-    print("Plugin Thread starting...")
-    print("--> PARAMS: " + str(params))
-
-    #params = json.loads(params)
 
     now = datetime.now().strftime( "%-d %b %Y %H:%M:%S.%f" )
 

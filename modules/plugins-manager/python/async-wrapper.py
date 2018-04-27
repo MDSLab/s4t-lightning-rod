@@ -40,19 +40,21 @@ q_result = Queue.Queue()
 
 # Thread to run user's plugin logic
 class Plugin(threading.Thread):
+
     def __init__(self, params, q_result):
+
         threading.Thread.__init__(self)
-        # self.setDaemon(1)
-        self.setName(plugin_name)  # Set thread name
+        self.setName(plugin_name)
         self.params = json.loads(params)
         self.q_result = q_result
 
     def run(self):
-        print("Plugin Thread starting...")
-        print("--> PARAMS:" + str(self.params))
-
 
         try:
+
+            print("Plugin Thread starting...")
+            print("--> PARAMS:" + str(self.params))
+
             result = "Plugin " +plugin_name+" is running!"
 
             response = {
@@ -92,22 +94,18 @@ if __name__ == '__main__':
     while q_result.empty():
         pass
 
-
     # 3. Get data from plugin queue and parsing
     data = q_result.get()
     data_parsed = json.loads(data)
 
-    #msg="Plugin " +plugin_name+" is running!"
-    #msg=q_result.get()
+    # 4. Create package for Plugin Manager
     msg = json.dumps({
         "plugin": plugin_name,
         "payload": str(data_parsed["message"]),
         "result": str(data_parsed["result"])
     })
 
-    print(msg)
-
-    # connect to the unix local socket with a stream type
+    # 5. Connect to the unix local socket to send the plugin package
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(socket_path)
     client.send(msg)

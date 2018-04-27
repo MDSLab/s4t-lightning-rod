@@ -675,10 +675,22 @@ function pySyncStarter(plugin_name, plugin_json) {
 
 			}else{
 
-				response.result = "SUCCESS";
-				response.message = data_parsed.payload;
-				logger.info('[PLUGIN] - '+plugin_name + ': '+ JSON.stringify(response.message, null, "\t"));
-				d.resolve(response);
+
+				try{
+
+					response.result = "SUCCESS";
+					response.message = data_parsed.payload;
+					logger.info('[PLUGIN] - '+plugin_name + ': '+ JSON.stringify(response.message, null, "\t"));
+					d.resolve(response);
+
+				}
+				catch(err){
+					response.result = "ERROR";
+					response.message = JSON.stringify(err);
+					logger.error('Error parsing '+plugin_name + ' plugin response: '+ response.message);
+					d.resolve(response);
+				}
+
 
 			}
 
