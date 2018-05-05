@@ -21,7 +21,7 @@ from datetime import datetime
 
 def main(params):
 
-    now = datetime.now().strftime( "%-d %b %Y %H:%M:%S.%f" )
+    now = datetime.now().strftime( "%d %b %Y %H:%M:%S.%f" )
 
     result = { 'time':now, 'name':str(params['name']) }
 
