@@ -473,7 +473,7 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 
 	var options = {
 		mode: 'text',
-		//pythonPath: '/usr/bin/python2.7',
+		pythonPath: '/usr/bin/python3',
 		pythonOptions: ['-u'],
 		scriptPath: __dirname,
 		args: [plugin_name, plugin_json]
@@ -729,7 +729,7 @@ function pySyncStarter(plugin_name, plugin_json) {
 				// after socket creation we will start the plugin wrapper
 				var options = {
 					mode: 'text',
-					//pythonPath: '/usr/bin/python2.7',
+					pythonPath: '/usr/bin/python3',
 					pythonOptions: ['-u'],
 					scriptPath: __dirname,
 					args: [plugin_name, plugin_json]
