@@ -24,7 +24,6 @@ import time
 import os
 import json
 import threading
-import queue
 
 # Inputs
 plugin_name = sys.argv[1]
@@ -35,7 +34,14 @@ plugin_params = sys.argv[2]
 socket_path = '/tmp/plugin-'+plugin_name
 plugin_path = os.environ.get('IOTRONIC_HOME')+"/plugins/"+plugin_name+"/"+plugin_name+".py"
 plugin = imp.load_source("plugin", plugin_path)
-q_result = queue.Queue()
+
+
+if sys.version_info[0] < 3:
+    import Queue
+    q_result = Queue.Queue()
+else:
+    import queue
+    q_result = queue.Queue()
 
 
 # Thread to run user's plugin logic
