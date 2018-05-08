@@ -4,7 +4,7 @@ echo -e "Installing Stack4Things Lightning-rod.\n"
 
 
 echo "Configure IoTronic ENV:"
-mkdir /var/lib/iotronic/
+mkdir -p /var/lib/iotronic/
 cd /var/lib/iotronic/ && mkdir plugins && mkdir drivers
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
@@ -12,7 +12,7 @@ cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/
 echo " - IoTronic Home created and configured."
 
 
-mkdir /var/log/iotronic/
+mkdir -p /var/log/iotronic/
 touch /var/log/iotronic/lightning-rod.log
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 echo " - logging configured."
@@ -38,7 +38,7 @@ cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/cron.d/root_openwrt 
 echo " - crond configuration installed."
 
 
-echo "Rebooting..."
-reboot
+#echo "Rebooting..."
+#reboot
 
 

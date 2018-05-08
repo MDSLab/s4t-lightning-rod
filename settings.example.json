@@ -35,10 +35,20 @@
 			"label":"",
 			"status": "new",
 			"position":{
-				"altitude":0,
-				"longitude":0,
-				"latitude":0
+				"altitude":"",
+				"longitude":"",
+				"latitude":"",
+				"timestamp": ""
 				
+			},
+			"modules": {
+				"plugins_manager": true,
+				"services_manager": true,
+				"nodered_manager": true,
+				"vnets_manager": false,
+				"gpio_manager": true,
+				"drivers_manager": false,
+				"vfs_manager": false
 			}
 		}
 

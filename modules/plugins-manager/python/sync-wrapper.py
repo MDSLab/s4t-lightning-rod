@@ -21,7 +21,8 @@ import imp
 import socket
 from datetime import datetime
 import time
-import Queue
+import queue
+
 import os
 import threading
 import json
@@ -36,7 +37,8 @@ plugin_params = sys.argv[2]
 socket_path = '/tmp/plugin-'+plugin_name
 plugin_path = os.environ.get('IOTRONIC_HOME')+"/plugins/"+plugin_name+"/"+plugin_name+".py"
 plugin = imp.load_source("plugin", plugin_path)
-q_result = Queue.Queue()
+
+q_result = queue.Queue()
 
 
 # Thread to run user's plugin logic
@@ -95,14 +97,16 @@ if __name__ == '__main__':
     data_parsed = json.loads(data)
 
     # 4. Create package for Plugin Manager
+
     msg = json.dumps({
         "plugin": plugin_name,
         "payload": str(data_parsed["message"]),
         "result": str(data_parsed["result"])
     })
 
+
     # 5. Connect to the unix local socket to send the plugin package
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(socket_path)
-    client.send(msg)
+    client.send(msg.encode('utf-8'))
     client.close()
