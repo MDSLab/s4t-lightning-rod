@@ -9,12 +9,14 @@ sed -i "s/\"device\":.*\"\"/\"device\": \"$DEVICE\"/g" /var/lib/iotronic/setting
 
 if [ "$DEVICE" = "arduino_yun" ]; then
 
-    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
-    sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
+    cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
+    #sed -i "s/<LIGHTNINGROD_HOME>/export LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod/g" /etc/init.d/lightning-rod
+    sed -i "s|<LIGHTNINGROD_HOME>|export LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod|g" /etc/init.d/lightning-rod
+
     chmod +x /etc/init.d/lightning-rod
 
     # Configure logrotate
-    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+    cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
     # Set WSTUN PATH
     sed -i "s|\"bin\":.*\"wstun\"|\"bin\": \"$NODE_PATH/@mdslab/wstun/bin/wstun.js\"|g" /var/lib/iotronic/settings.json
@@ -29,28 +31,30 @@ if [ "$DEVICE" = "server" ]; then
 
     if [ "$DISTRO" = "14.04" ]; then
 
-        chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
+        chmod +x $NODE_PATH/@mdslab/iotronic-lightning-rod/lr-server.js
 
-        cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/lightning-rod
+        cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_ubu14 /etc/init.d/lightning-rod
         chmod +x /etc/init.d/lightning-rod
 
         # Configure logrotate
-        cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+        cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
         # Set WSTUN PATH
         sed -i "s|\"bin\":.*\"wstun\"|\"bin\": \"$NODE_PATH/@mdslab/wstun/bin/wstun.js\"|g" /var/lib/iotronic/settings.json
 
     elif [ "$DISTRO" = "16.04" ]; then
 
-        chmod +x /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/lr-server.js
+        chmod +x $NODE_PATH/@mdslab/iotronic-lightning-rod/lr-server.js
 
-        cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
-        sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
+        cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+        #sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
+        sed -i "s|Environment=\"LIGHTNINGROD_HOME=\"|Environment=\"LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod\"|g" /etc/systemd/system/lightning-rod.service
+
         chmod +x /etc/systemd/system/lightning-rod.service
         systemctl daemon-reload
 
         # Configure logrotate
-        cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+        cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
     fi
 
@@ -59,13 +63,15 @@ fi
 
 if [ "$DEVICE" = "raspberry_pi" ]; then
 
-    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
-    sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
+    cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
+    #sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
+    sed -i "s|Environment=\"LIGHTNINGROD_HOME=\"|Environment=\"LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod\"|g" /etc/systemd/system/lightning-rod.service
+
     chmod +x /etc/systemd/system/lightning-rod.service
     systemctl daemon-reload
 
     # Configure logrotate
-    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+    cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 fi
 

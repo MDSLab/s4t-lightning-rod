@@ -3,7 +3,7 @@
 export NODE_PATH=/usr/lib/node_modules:$NODE_PATH
 
 NAME=lightning-rod
-FOLDER=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod
+FOLDER=$NODE_PATH/@mdslab/iotronic-lightning-rod
 DAEMON=$FOLDER/lr-server.js
 DESC=lightning-rod
 LOGFILE="/var/log/iotronic/lightning-rod.log"

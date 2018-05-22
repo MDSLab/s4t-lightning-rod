@@ -8,7 +8,7 @@
 # Description:       The\\\ IoTronic\\\ board-side\\\ probe
 ### END INIT INFO
 
-SCRIPT="node /usr/lib/node_modules/iotronic-lightning-rod/lightning-rod.js"
+SCRIPT="node $NODE_PATH/iotronic-lightning-rod/lightning-rod.js"
 RUNAS=root
 NAME=lightning-rod
 
