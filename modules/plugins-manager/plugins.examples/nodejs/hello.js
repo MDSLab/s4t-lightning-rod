@@ -1,18 +1,16 @@
 //pluginjsonschema = {"name": "IoTronic"}
 
-exports.main = function (arguments){ 
-  
+exports.main = function (plugin_name, arguments, api){
+
     var name = arguments.name;
-  
-    var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
-    api = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/plugin-apis');
-    logger = api.getLogger();
+
+    logger = api.getLogger(plugin_name, 'debug');
 
     logger.info("Hello plugin starting...");
-  
-    setInterval(function(){ 
-	logger.info('Hello '+name+'!'); 
-      
-    }, 3000); 
-  
+
+    setInterval(function(){
+        logger.info('Hello '+name+'!');
+
+    }, 3000);
+
 };

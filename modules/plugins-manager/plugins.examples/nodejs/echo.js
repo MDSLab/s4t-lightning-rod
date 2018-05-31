@@ -1,12 +1,10 @@
 //pluginjsonschema = {"says": "BlaBlaBla..."}
 
-exports.main = function (arguments, callback){ 
+exports.main = function (plugin_name, arguments, api, callback){ 
   
   var says = arguments.says;
-  
-  var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
-  api = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/plugin-apis');
-  logger = api.getLogger();
+
+  logger = api.getLogger(plugin_name, 'debug');
   
   logger.info(says); 
   

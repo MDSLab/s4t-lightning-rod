@@ -30,6 +30,9 @@ process.once('message', function(message) {
     plugin_name = message.plugin_name;
     plugin_json = message.plugin_json;
 
+    var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
+    var api = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/plugin-apis');
+
     var plugin_folder = PLUGINS_STORE + plugin_name;
     var fileName = plugin_folder + "/" + plugin_name + '.js';
     
@@ -43,7 +46,7 @@ process.once('message', function(message) {
 
         process.send({ name: plugin_name, status: "alive"});
 
-        plugin.main(plugin_json);
+        plugin.main(plugin_name, plugin_json, api);
       
     }
     else{

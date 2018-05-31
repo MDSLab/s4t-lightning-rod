@@ -21,7 +21,7 @@
 var logger = log4js.getLogger('noderedManager');
 logger.setLevel(loglevel);
 
-
+var requestify = require('requestify');
 
 RED = require("node-red");
 var Q = require("q");
@@ -171,6 +171,34 @@ exports.stop = function (){
 };
 
 
+exports.getFlows = function (){
+
+    logger.info("[NODE-RED] - Getting Node-RED flows");
+
+    var d = Q.defer();
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    requestify.get('http://localhost:1880/flows').then( function(response) {
+
+        var flows = response.getBody();
+
+        response.message = flows;
+        response.result = "SUCCESS";
+
+        d.resolve(response);
+
+    });
+
+
+    return d.promise;
+
+};
+
+
 //This function Inits the Node-RED Manager
 exports.Init = function (session){
 
@@ -178,7 +206,17 @@ exports.Init = function (session){
     session.register('s4t.'+ boardCode+'.nodered.start', exports.start);
     session.register('s4t.'+ boardCode+'.nodered.stop', exports.stop);
 
+    session.register('s4t.'+ boardCode+'.nodered.getFlows', exports.getFlows);
+
+
     logger.info('[WAMP-EXPORTS] Node-RED methods exported to the cloud!');
 
 };
 
+
+//This function executes procedures at boot time (no Iotronic dependent)
+exports.Boot = function (){
+
+    logger.info('[BOOT] - Node-RED Manager booting procedures not defined.');
+
+};

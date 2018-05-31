@@ -20,9 +20,14 @@
 import time
 from datetime import datetime
 
-def main(params):
+#PARAMS: {"name": "S4T"}
+
+def main(plugin_name, params, api):
+
+   logging = api.getLogger(plugin_name);
 
    while(True):
-        now = datetime.now().strftime( "%d %b %Y %H:%M:%S.%f" )
-        print("I'm "+str(params['name'])+" @ "+now)
+        now = datetime.now().strftime( "%-d %b %Y %H:%M:%S.%f" )
+        #print("I'm "+str(params['name'])+" @ "+now)
+        logging.info("I'm "+str(params['name'])+" @ "+now)
         time.sleep(1)

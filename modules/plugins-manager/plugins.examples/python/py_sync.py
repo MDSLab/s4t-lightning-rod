@@ -19,10 +19,17 @@
 # User imports
 from datetime import datetime
 
-def main(params):
+#PARAMS: {"name": "S4T"}
+
+def main(plugin_name, params, api):
+
+    logging = api.getLogger(plugin_name);
 
     now = datetime.now().strftime( "%d %b %Y %H:%M:%S.%f" )
 
     result = { 'time':now, 'name':str(params['name']) }
+
+    logging.info(result)
+
 
     return result

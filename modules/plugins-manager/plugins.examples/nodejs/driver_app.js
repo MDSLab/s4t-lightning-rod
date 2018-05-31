@@ -4,8 +4,10 @@ exports.main = function (arguments){
     /* THIS PLUGIN REQUIRES THE DRIVER "led_driver" MOUNTED */
   
     var fs = require('fs');
-    
-    var api = require('../../plugin-apis');
+
+	var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
+	api = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/plugin-apis');
+	
     var logger = api.getLogger();
     logger.info("DRIVER-APP - Plugin driver application starting...");
     

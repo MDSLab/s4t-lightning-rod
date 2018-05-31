@@ -47,12 +47,15 @@ else:
 # Thread to run user's plugin logic
 class Plugin(threading.Thread):
 
-    def __init__(self, params, q_result):
+    def __init__(self, params, q_result, api):
 
         threading.Thread.__init__(self)
         self.setName(plugin_name)
+        self.name = plugin_name
         self.params = json.loads(params)
         self.q_result = q_result
+        self.api = api
+
 
     def run(self):
 
@@ -70,7 +73,7 @@ class Plugin(threading.Thread):
 
             self.q_result.put(json.dumps(response))
 
-            plugin.main(self.params)
+            plugin.main(self.name, self.params, api)
 
 
         except Exception as err:
@@ -88,9 +91,15 @@ class Plugin(threading.Thread):
 # WRAPPER MAIN
 if __name__ == '__main__':
 
+    api = imp.load_source("api", os.environ['LIGHTNINGROD_HOME'] + "/modules/plugins-manager/python/plugin_apis.py")
+
+    logging = api.getLogger(plugin_name)
+    logging.info(plugin_name + " started with these parameters: " + str(plugin_params) )
+
     worker = Plugin(
         plugin_params,
-        q_result
+        q_result,
+        api
     )
 
     # 1. thread plugin starting

@@ -1503,3 +1503,10 @@ exports.Init = function (session){
     
 };
 
+
+//This function executes procedures at boot time (no Iotronic dependent)
+exports.Boot = function (){
+
+	logger.info('[BOOT] - Driver Manager booting procedures not defined.');
+
+};

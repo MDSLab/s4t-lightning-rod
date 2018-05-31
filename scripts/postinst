@@ -31,7 +31,7 @@ if [ "$rm_check" = "no" ] || [ ! -d "$IOTRONIC_HOME" ]; then
 
     chmod +x $NODE_PATH/@mdslab/iotronic-lightning-rod/lr-server.js
 
-    mkdir /var/log/iotronic/
+    mkdir -p /var/log/iotronic/plugins
     touch /var/log/iotronic/lightning-rod.log
 
 fi
@@ -62,6 +62,17 @@ else
     . /etc/environment
 fi
 
+
+if grep -Fq "NODE_TLS_REJECT_UNAUTHORIZED" /etc/environment
+then
+    # if found
+    echo "NODE_TLS_REJECT_UNAUTHORIZED env var already set."
+else
+    # if not found
+    echo "Setting NODE_TLS_REJECT_UNAUTHORIZED env var."
+    echo "NODE_TLS_REJECT_UNAUTHORIZED=0" >> /etc/environment
+    . /etc/environment
+fi
 
 echo "After the installation execute lr_configure.sh script in order to complete the Lightning-rod configuration!"
 echo "--> $NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh"

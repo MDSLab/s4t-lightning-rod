@@ -107,3 +107,11 @@ exports.Init = function (session, device) {
     logger.info('[WAMP-EXPORTS] Pins exported to the cloud!');
 
 };
+
+
+//This function executes procedures at boot time (no Iotronic dependent)
+exports.Boot = function (){
+
+    logger.info('[BOOT] - GPIO Manager booting procedures not defined.');
+
+};

@@ -50,11 +50,6 @@ function manage_WAMP_connection(session) {
         }
 
     );
-
-    /*
-    var networksManager = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
-    networksManager.Init(session);
-    */
     
     //Topic on which the board can send a message to be registered
     var connectionTopic = 'board.connection';
@@ -71,8 +66,7 @@ function onTopicConnection(args) {
     var message = args[0];
     if (message == 'IoTronic-connected')
         logger.info("Message on board.connection: " + args[0])
-
-
+    
 }
 
 function checkModEnabled(module_name) {
@@ -81,7 +75,7 @@ function checkModEnabled(module_name) {
 
     var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
 
-    var modules = configFile.config["board"]["modules"]; console.log(module_name, modules[module_name]);
+    var modules = configFile.config["board"]["modules"]; //console.log(module_name, modules[module_name]);
 
     d.resolve(modules[module_name]);
 
@@ -96,16 +90,16 @@ function moduleLoader (session, device) {
 
     var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
 
-    var modules = configFile.config["board"]["modules"]; //console.log(modules);
+    var modules = configFile.config["board"]["modules"];
 
-    var modules_keys = Object.keys( modules ); //console.log(modules_keys);
+    var modules_keys = Object.keys( modules );
 
     for (var i = 0; i < modules_keys.length; i++) {
 
         (function (i) {
 
             var module_name = modules_keys[i];
-            var enabled = modules[module_name]; //console.log(enabled);
+            var enabled = modules[module_name]["enabled"];
 
 
             if(enabled)
@@ -198,6 +192,84 @@ function moduleLoader (session, device) {
     */
 
 }
+
+
+// This function loads at boot the Lightning-rod modules
+exports.moduleLoaderOnBoot = function() {
+
+    logger.info("[SYSTEM] - Modules loading:");
+
+    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+
+    var modules = configFile.config["board"]["modules"]; //console.log(modules);
+
+    var modules_keys = Object.keys( modules ); //console.log(modules_keys);
+
+    for (var i = 0; i < modules_keys.length; i++) {
+
+        (function (i) {
+
+            var module_name = modules_keys[i];
+            var enabled = modules[module_name]["boot"];
+            
+            if(enabled)
+
+                switch (module_name) {
+
+                    case 'plugins_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var pluginsManager = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
+                        pluginsManager.Boot();
+                        break;
+
+                    case 'services_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
+                        servicesManager.Boot();
+                        break;
+
+                    case 'nodered_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var nodeRedManager = require(LIGHTNINGROD_HOME + '/modules/nodered-manager/manage-nodered');
+                        nodeRedManager.Boot();
+                        break;
+
+                    
+                     case 'vnets_manager':
+                         logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                     break;
+                    
+
+                    case 'gpio_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        break;
+
+                    case 'drivers_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        break;
+
+                    case 'vfs_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+
+                    default:
+
+                        logger.warn("[SYSTEM] --> Wrong module: " + module_name);
+
+                        break;
+
+
+
+                }
+
+
+        })(i);
+
+    }
+    
+
+}
+
+
 
 
 // Init() LR function in order to control the correct LR configuration:
@@ -545,9 +617,13 @@ exports.checkRegistrationStatus = function(args){
 
     var d = Q.defer();
 
+
     if(regStatus.result == "SUCCESS"){
 
         logger.info("[SYSTEM] - Connection to Iotronic "+regStatus.result+":\n"+JSON.stringify(regStatus.message, null, "\t"));
+
+        exports.exportManagementCommands(board_session);
+
 
         if(regStatus.message['state'] == "new"){
 
@@ -567,8 +643,7 @@ exports.checkRegistrationStatus = function(args){
                     console.log(msg);
 
                     d.resolve(msg);
-
-
+                    
                     //Restarting LR
                     setTimeout(function () {
                         process.exit();
@@ -581,7 +656,8 @@ exports.checkRegistrationStatus = function(args){
 
 
 
-        }else if(regStatus.message['state'] == "registered"){
+        }
+        else if(regStatus.message['state'] == "registered"){
 
             logger.info("[SYSTEM] - Board registered - Start module loading... ");
 
@@ -590,8 +666,7 @@ exports.checkRegistrationStatus = function(args){
             response.message = "Board '"+boardCode+"' is loading modules.";
             response.result = "SUCCESS";
             d.resolve(response);
-
-
+            
 
         } else{
 
@@ -601,18 +676,19 @@ exports.checkRegistrationStatus = function(args){
             process.exit();
 
         }
-
         
 
     }
     else {
+        
         // IF access to IoTronic was rejected
-        logger.error("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
+        logger.error("[SYSTEM] - Connection to Iotronic " + regStatus.result + " - " + regStatus.message);
         logger.info("[SYSTEM] - Bye");
 
-        d.resolve("Board "+boardCode+" disconnection...")
+        d.resolve("Board " + boardCode + " disconnection...");
 
         process.exit();
+        
     }
 
 
@@ -764,20 +840,25 @@ exports.execAction = function(args){
 
 
 
-
-
-exports.exportManagementCommands = function (session) {
+exports.IotronicLogin = function (session) {
 
     board_session = session;
+
+    session.register('s4t.' + session._id + '.board.checkRegistrationStatus', exports.checkRegistrationStatus);
+
+    manage_WAMP_connection(session)
+
+};
+
+
+
+exports.exportManagementCommands = function (session, callback) {
 
     //Register all the module functions as WAMP RPCs
     logger.info('[WAMP-EXPORTS] Management commands exported to the cloud!');
     session.register('s4t.' + boardCode + '.board.setBoardPosition', exports.setBoardPosition);
-    session.register('s4t.' + boardCode + '.board.checkRegistrationStatus', exports.checkRegistrationStatus);
     session.register('s4t.' + boardCode + '.board.execAction', exports.execAction);
     session.register('s4t.' + boardCode + '.board.updateConf', exports.updateConf);
 
-    manage_WAMP_connection(session)
-    
 };
 

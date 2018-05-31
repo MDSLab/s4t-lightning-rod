@@ -41,6 +41,7 @@ reg_status = null;		//valued in checkSettings
 device = null;			//valued in checkSettings
 lyt_device = null;		//valued here in main
 net_backend='';
+wampIP = null;
 
 // To test the connection status
 reconnected = false;		// We use this flag to identify the connection status of reconnected after a connection fault
@@ -60,6 +61,9 @@ if(hack){
 var manageBoard = require('./board-management');
 
 
+var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
+
+
 //Init_Ligthning_Rod(function (check) {
 manageBoard.Init_Ligthning_Rod(function (check) {
 
@@ -77,26 +81,25 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 	}else{
 
 		// Configuration file is correctly configured... Starting LR...
-
-
-		var wampUrl = nconf.get('config:wamp:url_wamp')+":"+nconf.get('config:wamp:port_wamp')+"/ws";
-		var wampIP = wampUrl.split("//")[1].split(":")[0];
 		
-		logger.info("[SYSTEM] - Iotronic server IP: "+wampIP);
 		logger.info('[SYSTEM] - DEVICE: ' + device);
 
 		//----------------------------------------
 		// 1. Set WAMP connection configuration
 		//----------------------------------------
 		var wampUrl = nconf.get('config:wamp:url_wamp')+":"+nconf.get('config:wamp:port_wamp')+"/ws";
+		wampIP = wampUrl.split("//")[1].split(":")[0];
 		var wampRealm = nconf.get('config:wamp:realm');
+
+		logger.info("[SYSTEM] - Iotronic server IP: "+wampIP);
+
+
 		var wampConnection = new autobahn.Connection({
 			url: wampUrl,
 			realm: wampRealm,
 			max_retries: -1
 		});
 
-		var wampIP = wampUrl.split("//")[1].split(":")[0];
 		logger.info("[SYSTEM] - WAMP server IP: "+wampIP);
 
 		logger.info("[SYSTEM] - Node ID: "+boardCode);
@@ -122,7 +125,8 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 					logger.info("[SYSTEM] - " + response.message );
 
 					// RPC registration of Board Management Commands
-					manageBoard.exportManagementCommands(session);
+					//manageBoard.exportManagementCommands(session);
+					manageBoard.IotronicLogin(session);
 
 
 					if(hack){
@@ -334,6 +338,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 				},
 				function (err) {
+					
 					// IoTronic is not connected to the realm yet so LR need to try to reconnect later
 					logger.error("[SYSTEM] - IoTronic is not online: " + JSON.stringify(err) );
 					//if (err.error !== 'wamp.error.no_such_procedure') {}
@@ -348,7 +353,6 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 				}
 			);
-			
 
 
 
@@ -412,6 +416,15 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 			process.exit(1);
 
 		}
+
+
+		//--------------------------------------------------------------
+		// 5. Load Plugin Manager
+		//--------------------------------------------------------------
+
+		manageBoard.moduleLoaderOnBoot();
+
+
 
 
 	}

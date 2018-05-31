@@ -420,3 +420,11 @@ exports.Init = function (session) {
     logger.info('[WAMP-EXPORTS] Network commands exported to the cloud!');
 
 };
+
+
+//This function executes procedures at boot time (no Iotronic dependent)
+exports.Boot = function (){
+
+    logger.info('[BOOT] - VNET Manager booting procedures not defined.');
+
+};

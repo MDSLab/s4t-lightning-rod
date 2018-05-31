@@ -11,6 +11,7 @@ StandardOutput=journal
 StandardError=journal
 WorkingDirectory=${LIGHTNINGROD_HOME}
 Environment="NODE_PATH=/usr/lib/node_modules"
+Environment="NODE_TLS_REJECT_UNAUTHORIZED=0"
 Environment="IOTRONIC_HOME=/var/lib/iotronic"
 Environment="LIGHTNINGROD_HOME="
 ExecStart=/usr/bin/node ${LIGHTNINGROD_HOME}/lightning-rod.js

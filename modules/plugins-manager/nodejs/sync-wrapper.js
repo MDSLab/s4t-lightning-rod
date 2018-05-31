@@ -34,12 +34,15 @@ process.once('message', function(message) {
     if (fs.existsSync(fileName) === true){
 
         var plugin = require(plugin_folder + "/" + plugin_name);
+
+        var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
+        var api = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/plugin-apis');
       
         process.send({ name: plugin_name, status: true , logmsg: "I'm alive!"});
         process.send({ name: plugin_name, level: "info" , logmsg: "starting..."});
         process.send({ name: plugin_name, status: "alive"});
       
-        plugin.main(plugin_json, function(err, result){
+        plugin.main(plugin_name, plugin_json, api, function(err, result){
 	
             process.send({ name: plugin_name, status: "finish", logmsg: result});
 
