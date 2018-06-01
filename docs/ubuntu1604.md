@@ -7,30 +7,45 @@ We tested this procedure on a Ubuntu 16.04 (also within a LXD container). Everyt
 
 ##### Install dependencies via apt-get
 ```
-apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate
+apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate build-essential
 ```
 
 ##### Install latest NodeJS 8.x release
+Execute the following procedures only if are not already installed:
+
+- NodeJS installation:
 ```
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 apt-get install -y nodejs
 node -v
-
+```
+- NPM installation:
+```
 npm install -g npm
 npm config set python `which python2.7`
 npm -v
-
-echo "NODE_PATH=/usr/lib/node_modules" | tee -a /etc/environment
-source /etc/environment > /dev/null
+```
+- Check if the NODE_PATH variable is set:
+```
 echo $NODE_PATH
 ```
 
+otherwise:
+```
+echo "NODE_PATH="`npm -g root` | tee -a /etc/environment
+. /etc/environment > /dev/null
+echo $NODE_PATH
+
+reboot
+```
 
 ## Install from NPM
 ```
 npm install -g --unsafe @mdslab/wstun
 
 npm install -g --unsafe @mdslab/iotronic-lightning-rod
+
+reboot
 ```
 
 
@@ -67,6 +82,8 @@ source /etc/environment > /dev/null
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+
+reboot
 ```
 
 
