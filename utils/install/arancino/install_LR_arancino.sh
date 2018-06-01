@@ -21,9 +21,11 @@ echo " - logging configured."
 echo "export NODE_PATH=/usr/lib/node_modules" >> /etc/profile
 echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/profile
 echo "export LIGHTNINGROD_HOME=/usr/lib/node_modules/@mdslab/iotronic-lightning-rod" >> /etc/profile
+echo "export NODE_TLS_REJECT_UNAUTHORIZED=0" >> /etc/profile
 source /etc/profile
 echo " - environment configured:"
 echo " --> NODE_PATH: "$NODE_PATH
+echo " --> NODE_TLS_REJECT_UNAUTHORIZED "$NODE_TLS_REJECT_UNAUTHORIZED
 echo " --> IOTRONIC_HOME: "$IOTRONIC_HOME
 echo " --> LIGHTNINGROD_HOME: "$LIGHTNINGROD_HOME
 
