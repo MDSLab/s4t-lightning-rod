@@ -12,7 +12,7 @@ cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/
 echo " - IoTronic Home created and configured."
 
 
-mkdir -p /var/log/iotronic/
+mkdir -p /var/log/iotronic/plugins
 touch /var/log/iotronic/lightning-rod.log
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 echo " - logging configured."
