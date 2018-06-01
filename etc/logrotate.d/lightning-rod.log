@@ -1,7 +1,11 @@
 /var/log/iotronic/lightning-rod.log {
+    copytruncate
+    create
+    missingok
     weekly
     rotate = 3
     compress
+    notifempty
     su root root
     maxsize 5M
 }
