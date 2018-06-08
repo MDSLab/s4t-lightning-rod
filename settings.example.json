@@ -10,7 +10,8 @@
 		{
 			"url_wamp": "",
 			"port_wamp": "8181",
-			"realm": "s4t"
+			"realm": "s4t",
+			"wifi_force_reconnect": "true"
 		},
 		"reverse":
 		{

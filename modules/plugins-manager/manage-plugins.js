@@ -1219,7 +1219,7 @@ exports.pluginKeepAlive = function (plugin_name, plugin_checksum){
 		    
 		      		pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checksum);
 
-		  		}, alive_timer);  //every 5 minutes (300000 ms) LR checks if the plugin is alive
+		  		}, alive_timer);  //LR checks if the plugin is alive
 
 		  		plugins[plugin_name]={
 					child: "",
@@ -1246,7 +1246,6 @@ exports.pluginKeepAlive = function (plugin_name, plugin_checksum){
 exports.pluginsBootLoader = function (){
   
     logger.info('[PLUGIN] - Plugins loader is running!');
-
 
 	PLUGIN_MODULE_LOADED = true;
 
@@ -1316,7 +1315,7 @@ exports.pluginsBootLoader = function (){
 									setTimeout(function () {
 
 										//var plugin_checksum = md5(	fs.readFileSync(PLUGINS_STORE + plugin_name + "/"+plugin_name+ext, 'utf8'));
-										var plugin_checksum = CHECKSUMS_PLUGINS_LIST[plugin_name];
+										var plugin_checksum = CHECKSUMS_PLUGINS_LIST[plugin_name]; //if LR will start without connection to Iotronic this value will be "undefined"
 
 										exports.pluginKeepAlive(plugin_name, plugin_checksum);
 
@@ -2325,6 +2324,7 @@ exports.Boot = function (){
 
 								// Test if IoTronic is connected to the realm
 								session_plugins.call("s4t.iotronic.isAlive", [boardCode]).then(
+
 									function(response){
 
 										// Get plugins checksum from Iotronic
@@ -2341,7 +2341,7 @@ exports.Boot = function (){
 
 													CHECKSUMS_PLUGINS_LIST = rpc_response.message;
 
-													logger.debug("[PLUGIN-CONNECTION-RECOVERY] --> Plugins checksums list recovered: ",CHECKSUMS_PLUGINS_LIST);
+													logger.debug("[PLUGIN-CONNECTION-RECOVERY] --> Plugins checksums list recovered: ", CHECKSUMS_PLUGINS_LIST);
 
 													clearInterval( checkIotronicWampConnection );
 

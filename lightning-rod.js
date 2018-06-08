@@ -47,9 +47,10 @@ wampIP = null;
 reconnected = false;		// We use this flag to identify the connection status of reconnected after a connection fault
 
 //WIFI HACK
-hack = false;
+wifi_force_reconnect = nconf.get('config:wamp:wifi_force_reconnect'); //hack = true;
 
-if(hack){
+
+if(wifi_force_reconnect){
 	keepWampAlive = null;		// It is a timer related to the function that every "X" seconds/minutes checks the connection status
 	online = true;				// We use this flag during the process of connection recovery
 	wamp_check = null;			// "false" = we need to restore the WAMP connection (with tcpkill). "true" = the WAMP connection is enstablished or the standard reconnection procedure was triggered by the WAMP client and managed by "onclose" precedure.
@@ -100,9 +101,12 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 			max_retries: -1
 		});
 
-		logger.info("[SYSTEM] - WAMP server IP: "+wampIP);
+		logger.info("[SYSTEM] - WAMP server IP: " + wampIP);
 
-		logger.info("[SYSTEM] - Node ID: "+boardCode);
+		logger.info("[SYSTEM] - Node ID: " + boardCode);
+
+		logger.debug("[SYSTEM] - Wifi force reconnection: " + wifi_force_reconnect);
+
 
 
 		//----------------------------------------------------------------------------------------
@@ -129,7 +133,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 					manageBoard.IotronicLogin(session);
 
 
-					if(hack){
+					if(wifi_force_reconnect){
 
 						//----------------------------------------------------------------------------------------------------
 						// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
@@ -371,7 +375,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 			try{
 
 				//WIFI HACK
-				if(hack)
+				if(wifi_force_reconnect)
 					wamp_check = true;  // IMPORTANT: for ethernet connections this flag avoid to start recovery procedure (tcpkill will not start!)
 
 				logger.error('[WAMP] - Error in connecting to WAMP server!');

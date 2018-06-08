@@ -385,7 +385,7 @@ exports.checkSettings = function (callback) {
         } else {
             check_response = true;
         }
-
+        
         //REVERSE CONF
         url_reverse = nconf.get('config:reverse:server:url_reverse');
         port_reverse = nconf.get('config:reverse:server:port_reverse');
