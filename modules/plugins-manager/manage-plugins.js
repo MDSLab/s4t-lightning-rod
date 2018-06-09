@@ -2287,9 +2287,6 @@ exports.Boot = function (){
 	// connectionTester: library used to check the reachability of Iotronic-Server/WAMP-Server
 	var connectionTester = require('connection-tester');
 
-	//if(PLUGIN_MODULE_LOADED == false)
-	//	exports.pluginsBootLoader();
-
 	setTimeout(function(){
 
 		connectionTester.test(wampIP, port_wamp, 1000, function (err, output) {
@@ -2365,15 +2362,14 @@ exports.Boot = function (){
 								logger.warn('[PLUGIN-CONNECTION-RECOVERY] - Error calling "s4t.iotronic.isAlive"');
 							}
 
+
 						}
 
 					});
 
 
-
-
-
 				}, 10 * 1000);
+
 
 			}else{
 
@@ -2403,7 +2399,10 @@ exports.Boot = function (){
 
 					}
 					catch(err){
-						logger.warn('[PLUGIN-CONNECTION-RECOVERY] - Error calling "s4t.iotronic.isAlive"');
+						logger.warn('[PLUGIN-CONNECTION-RECOVERY] - Internet connection available BUT wamp session not established!');
+						if(PLUGIN_MODULE_LOADED == false)
+							exports.pluginsBootLoader();
+
 					}
 
 
