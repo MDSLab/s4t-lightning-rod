@@ -50,7 +50,7 @@ reconnected = false;		// We use this flag to identify the connection status of r
 wifi_force_reconnect = nconf.get('config:wamp:wifi_force_reconnect'); //hack = true;
 
 
-if(wifi_force_reconnect){
+if(wifi_force_reconnect == true || wifi_force_reconnect == "true"){
 	keepWampAlive = null;		// It is a timer related to the function that every "X" seconds/minutes checks the connection status
 	online = true;				// We use this flag during the process of connection recovery
 	wamp_check = null;			// "false" = we need to restore the WAMP connection (with tcpkill). "true" = the WAMP connection is enstablished or the standard reconnection procedure was triggered by the WAMP client and managed by "onclose" precedure.
@@ -119,7 +119,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 			logger.info('[WAMP] |--> Realm: '+ wampRealm);
 			logger.info('[WAMP] |--> Session ID: '+ session._id);
 			//logger.debug('[WAMP] |--> Connection details:\n'+ JSON.stringify(details));
-
+			logger.info('[WAMP] |--> WIFI-HACK: '+ wifi_force_reconnect);
 
 			// Test if IoTronic is connected to the realm
 			session.call("s4t.iotronic.isAlive", [boardCode]).then(
@@ -133,7 +133,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 					manageBoard.IotronicLogin(session);
 
 
-					if(wifi_force_reconnect){
+					if(wifi_force_reconnect == true || wifi_force_reconnect == "true"){
 
 						//----------------------------------------------------------------------------------------------------
 						// THIS IS AN HACK TO FORCE RECONNECTION AFTER A BREAK OF INTERNET CONNECTION
@@ -335,9 +335,10 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 						logger.debug('[WAMP] - TIMER to keep alive WAMP connection set up!');
 
+						//----------------------------------------------------------------------------------------------------
+
+
 					}
-
-
 
 
 				},
@@ -356,11 +357,10 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 
 				}
+
 			);
 
 
-
-			//----------------------------------------------------------------------------------------------------
 
 
 		};
@@ -375,7 +375,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 			try{
 
 				//WIFI HACK
-				if(wifi_force_reconnect)
+				if(wifi_force_reconnect == true || wifi_force_reconnect == "true")
 					wamp_check = true;  // IMPORTANT: for ethernet connections this flag avoid to start recovery procedure (tcpkill will not start!)
 
 				logger.error('[WAMP] - Error in connecting to WAMP server!');
