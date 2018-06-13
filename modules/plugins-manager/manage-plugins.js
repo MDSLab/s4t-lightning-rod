@@ -1219,7 +1219,7 @@ exports.pluginKeepAlive = function (plugin_name, plugin_checksum){
 		    
 		      		pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checksum);
 
-		  		}, alive_timer);  //LR checks if the plugin is alive
+		  		}, alive_timer * 1000);  //LR checks if the plugin is alive
 
 		  		plugins[plugin_name]={
 					child: "",
@@ -2282,7 +2282,7 @@ exports.Init = function (session){
 exports.Boot = function (){
 
 	logger.info('[BOOT] - Plugin Manager booting');
-	logger.debug('[BOOT] --> plugin alive check timer: ' + alive_timer);
+	logger.debug('[BOOT] --> plugin alive check timer: ' + alive_timer + ' seconds');
 
 	// connectionTester: library used to check the reachability of Iotronic-Server/WAMP-Server
 	var connectionTester = require('connection-tester');
@@ -2368,7 +2368,7 @@ exports.Boot = function (){
 					});
 
 
-				}, 10 * 1000);
+				}, alive_timer * 1000);
 
 
 			}else{

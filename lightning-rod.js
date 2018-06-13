@@ -48,6 +48,7 @@ reconnected = false;		// We use this flag to identify the connection status of r
 
 //WIFI HACK
 wifi_force_reconnect = nconf.get('config:wamp:wifi_force_reconnect'); //hack = true;
+wifi_force_reconnect_time = nconf.get('config:wamp:wifi_force_reconnect_time'); //hack = true;
 
 
 if(wifi_force_reconnect == true || wifi_force_reconnect == "true"){
@@ -119,7 +120,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 			logger.info('[WAMP] |--> Realm: '+ wampRealm);
 			logger.info('[WAMP] |--> Session ID: '+ session._id);
 			//logger.debug('[WAMP] |--> Connection details:\n'+ JSON.stringify(details));
-			logger.info('[WAMP] |--> WIFI-HACK: '+ wifi_force_reconnect);
+			logger.info('[WAMP] |--> WIFI-HACK: '+ wifi_force_reconnect + " - Timing: " + wifi_force_reconnect_time + " seconds");
 
 			// Test if IoTronic is connected to the realm
 			session.call("s4t.iotronic.isAlive", [boardCode]).then(
@@ -331,7 +332,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 							});
 
 
-						}, 10 * 1000);
+						}, wifi_force_reconnect_time * 1000);
 
 						logger.debug('[WAMP] - TIMER to keep alive WAMP connection set up!');
 

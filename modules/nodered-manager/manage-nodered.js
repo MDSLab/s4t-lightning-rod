@@ -17,7 +17,6 @@
 //############################################################################################
 
 
-//service logging configuration: "pluginsManager"
 var logger = log4js.getLogger('noderedManager');
 logger.setLevel(loglevel);
 
@@ -66,7 +65,8 @@ exports.init = function (settings){
         // Serve the http nodes UI from /api
         app.use(settings.httpNodeRoot, RED.httpNode);
 
-        d.resolve(server.listen(8000))
+        d.resolve(server.listen(8000));
+
     }
 
     return d.promise;
@@ -199,6 +199,36 @@ exports.getFlows = function (){
 };
 
 
+exports.getFlowInfo = function (args){
+
+    logger.info("[NODE-RED] - Getting Node-RED flow info");
+
+    var flow_id = String(args[0]);
+
+    var d = Q.defer();
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    requestify.get('http://localhost:1880/flow/'+flow_id).then( function(response) {
+
+        var flow = response.getBody();
+
+        response.message = flow;
+        response.result = "SUCCESS";
+
+        d.resolve(response);
+
+    });
+
+
+    return d.promise;
+
+};
+
+
 //This function Inits the Node-RED Manager
 exports.Init = function (session){
 
@@ -207,6 +237,7 @@ exports.Init = function (session){
     session.register('s4t.'+ boardCode+'.nodered.stop', exports.stop);
 
     session.register('s4t.'+ boardCode+'.nodered.getFlows', exports.getFlows);
+    session.register('s4t.'+ boardCode+'.nodered.getFlowInfo', exports.getFlowInfo);
 
 
     logger.info('[WAMP-EXPORTS] Node-RED methods exported to the cloud!');
