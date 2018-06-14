@@ -48,10 +48,14 @@ reconnected = false;		// We use this flag to identify the connection status of r
 
 //WIFI HACK
 wifi_force_reconnect = nconf.get('config:wamp:wifi_force_reconnect'); //hack = true;
-wifi_force_reconnect_time = nconf.get('config:wamp:wifi_force_reconnect_time'); //hack = true;
-
 
 if(wifi_force_reconnect == true || wifi_force_reconnect == "true"){
+
+	wifi_force_reconnect_time = undefined;//nconf.get('config:wamp:wifi_force_reconnect_time');
+
+	if (isNaN(wifi_force_reconnect_time))
+		wifi_force_reconnect_time = 60; //set default value
+
 	keepWampAlive = null;		// It is a timer related to the function that every "X" seconds/minutes checks the connection status
 	online = true;				// We use this flag during the process of connection recovery
 	wamp_check = null;			// "false" = we need to restore the WAMP connection (with tcpkill). "true" = the WAMP connection is enstablished or the standard reconnection procedure was triggered by the WAMP client and managed by "onclose" precedure.

@@ -42,10 +42,12 @@ var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
 SETTINGS = process.env.IOTRONIC_HOME+'/settings.json';
 nconf = require('nconf');
 nconf.file ({file: SETTINGS});
+
 alive_timer = nconf.get('config:board:modules:plugins_manager:alive_timer');
+if (isNaN(alive_timer))
+	alive_timer = 60; //set default value
 
 var PLUGIN_MODULE_LOADED = false;
-
 
 CHECKSUMS_PLUGINS_LIST = [];
 
@@ -2371,7 +2373,8 @@ exports.Boot = function (){
 				}, alive_timer * 1000);
 
 
-			}else{
+			}
+			else{
 
 
 				checkIotronicWampConnection = setInterval(function(){
@@ -2407,7 +2410,7 @@ exports.Boot = function (){
 
 
 
-				}, 10 * 1000);
+				}, alive_timer * 1000);
 
 
 
@@ -2417,13 +2420,7 @@ exports.Boot = function (){
 		});
 
 	}, 5000);
-
-
-
-
-
-
-
+	
 
 
 };
