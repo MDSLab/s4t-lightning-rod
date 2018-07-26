@@ -182,16 +182,25 @@ exports.getFlows = function (){
         result: ''
     };
 
-    requestify.get('http://localhost:1880/flows').then( function(response) {
+    requestify.get('http://localhost:1880/flows').then(
+        function(response) {
 
-        var flows = response.getBody();
+            var flows = response.getBody();
 
-        response.message = flows;
-        response.result = "SUCCESS";
+            response.message = flows;
+            response.result = "SUCCESS";
 
-        d.resolve(response);
+            d.resolve(response);
 
-    });
+        },function (error) {
+
+            response.message = error;
+            response.result = "ERROR";
+
+            d.resolve(response);
+
+        }
+    );
 
 
     return d.promise;
@@ -212,17 +221,74 @@ exports.getFlowInfo = function (args){
         result: ''
     };
 
-    requestify.get('http://localhost:1880/flow/'+flow_id).then( function(response) {
+    requestify.get('http://localhost:1880/flow/'+flow_id).then(
+        function(response) {
 
-        var flow = response.getBody();
+            var flow = response.getBody();
 
-        response.message = flow;
-        response.result = "SUCCESS";
+            response.message = flow;
+            response.result = "SUCCESS";
 
-        d.resolve(response);
+            logger.debug("[NODE-RED] --> flow '"+flow_id+"' retrieved");
 
-    });
+            d.resolve(response);
 
+        },function (error) {
+
+            response.message = error;
+            response.result = "ERROR";
+
+            logger.warn("[NODE-RED] --> Error retrieving flow '"+flow_id+"': " + JSON.stringify(error));
+
+            d.resolve(response);
+
+        }
+    );
+
+
+    return d.promise;
+
+};
+
+
+exports.injectFlow = function (args){
+
+    logger.info("[NODE-RED] - Injecting Node-RED flow");
+
+    var flow = args[0];
+
+    var d = Q.defer();
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    requestify.post('http://localhost:1880/flow', flow).then(
+
+        function(noderes) {
+
+            console.log(noderes);
+
+            response.message = noderes;
+            response.result = "SUCCESS";
+
+            logger.debug("[NODE-RED] --> " + JSON.stringify(noderes));
+
+            d.resolve(response);
+
+        },function (error) {
+
+            response.message = error.getBody();
+            response.result = "ERROR";
+
+            logger.warn("[NODE-RED] --> Error injecting flow: " + JSON.stringify(error.getBody()));
+
+            d.resolve(response);
+
+        }
+
+    );
 
     return d.promise;
 
@@ -238,6 +304,7 @@ exports.Init = function (session){
 
     session.register('s4t.'+ boardCode+'.nodered.getFlows', exports.getFlows);
     session.register('s4t.'+ boardCode+'.nodered.getFlowInfo', exports.getFlowInfo);
+    session.register('s4t.'+ boardCode+'.nodered.injectFlow', exports.injectFlow);
 
 
     logger.info('[WAMP-EXPORTS] Node-RED methods exported to the cloud!');

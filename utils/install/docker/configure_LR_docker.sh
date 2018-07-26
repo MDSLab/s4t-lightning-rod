@@ -13,6 +13,6 @@ echo " --> Configuration file path: "$3
 sed -i "s/\"device\":.*\"\"/\"device\": \"server\"/g" $3
 sed -i "s/\"code\":.*\"\"/\"code\": \"$1\"/g" $3
 sed -i "s,\"url_wamp\":.*,\"url_wamp\": \"$2\"\,,g" $3
-sed -i "s,\"url_reverse\":.*,\"url_reverse\": \"$2\"\,,g" $3
+sed -i "s,\"wstun_url\":.*,\"wstun_url\": \"$2\"\,,g" $3
 sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" $3
 echo -e "\nsettings.json file configured."

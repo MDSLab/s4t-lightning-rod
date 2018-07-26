@@ -1,4 +1,4 @@
-/var/log/iotronic/lightning-rod.log /var/log/iotronic/plugins/*.log {
+/var/log/iotronic/lightning-rod.log /var/log/iotronic/plugins/*.log /var/log/wstun/wstun.log{
     copytruncate
     create
     missingok

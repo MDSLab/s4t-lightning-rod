@@ -667,7 +667,9 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 			response.result = "ERROR";
 			response.message = err;
 			d.resolve(response);
+
 		}else{
+
 			logger.debug('[PLUGIN-SHELL] - Python shell of "'+plugin_name+'" plugin terminated: {signal: '+ signal+', code: '+code+'}');
 
 			if(signal == null && code == 0){
@@ -697,6 +699,7 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 					}
 
 				});
+				
 			}else{
 				logger.debug("[PLUGIN-SHELL] --> Python plugin '"+plugin_name+"' terminated!")
 			}
@@ -1247,7 +1250,7 @@ exports.pluginKeepAlive = function (plugin_name, plugin_checksum){
 // RPC to restart all enabled plugins at LR boot
 exports.pluginsBootLoader = function (){
   
-    logger.info('[PLUGIN] - Plugins loader is running!');
+    logger.info('[PLUGIN] - Plugins Boot Loader is running!');
 
 	PLUGIN_MODULE_LOADED = true;
 
@@ -1360,7 +1363,8 @@ exports.pluginsBootLoader = function (){
 // RPC to restart all enabled plugins at LR startup...moreover associates a timer with each plugin to check if the plugin process is alive
 exports.pluginsLoader = function (){
 
-	logger.info('[PLUGIN] - Plugins loader is running!');
+	logger.info('[PLUGIN] - Plugins Loader is running!');
+	
 	try{
 
 		// Get plugins checksum from Iotronic
@@ -1376,6 +1380,7 @@ exports.pluginsLoader = function (){
 				else {
 
 					CHECKSUMS_PLUGINS_LIST = rpc_response.message;
+					logger.info("[PLUGIN] --> Plugins checksum list recovered!");
 
 					try{
 
@@ -1387,7 +1392,7 @@ exports.pluginsLoader = function (){
 
 						// Get the number of plugins in the list "plugins_keys" in order to use it in the next loop
 						var plugin_num = plugins_keys.length;
-						logger.debug('[PLUGIN] - Number of installed plugins: '+ plugin_num);
+						logger.info('[PLUGIN] --> Number of installed plugins: '+ plugin_num);
 
 						if(plugin_num > 0) {
 
@@ -1415,7 +1420,7 @@ exports.pluginsLoader = function (){
 										var enabled_keys = Object.keys( enabledPlugins["plugins"] );
 										var enabled_num = enabled_keys.length;
 
-										logger.debug('[PLUGIN] - Number of enabled plugins: '+ enabled_num);
+										logger.info('[PLUGIN] --> Number of enabled plugins: '+ enabled_num);
 
 										if(enabled_num > 0) {
 
@@ -1493,17 +1498,16 @@ exports.pluginsLoader = function (){
 
 						}
 						else{
-							logger.info('[PLUGIN] - No enabled plugins to be restarted!');
+							logger.info('[PLUGIN] --> No enabled plugins to be restarted!');
 						}
 
 					}
 					catch(err){
-						logger.warn('[PLUGIN] - Error parsing plugins.json: '+ err);
+						logger.warn('[PLUGIN] --> Error parsing plugins.json: '+ err);
 					}
 
-
-
 				}
+
 			}
 
 		);
@@ -1526,7 +1530,11 @@ exports.run = function (args){
     var plugin_json = String(args[1]);
 	var plugin_checksum = String(args[2]);
 
-    // The autostart parameter at RUN stage is OPTIONAL. It is used at this stage if the user needs to change the boot execution configuration of the plugin after the INJECTION stage.
+
+	CHECKSUMS_PLUGINS_LIST[plugin_name] = plugin_checksum;
+
+
+	// The autostart parameter at RUN stage is OPTIONAL. It is used at this stage if the user needs to change the boot execution configuration of the plugin after the INJECTION stage.
     var plugin_autostart = "";
 
 	var d = Q.defer();
@@ -2420,7 +2428,7 @@ exports.Boot = function (){
 		});
 
 	}, 5000);
-	
+
 
 
 };

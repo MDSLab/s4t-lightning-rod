@@ -1,24 +1,28 @@
 #!/bin/ash
 
-if [ "$#" -ne 2 ]; then
-        echo "Usage: ./configure_LR_arancino.sh <BOARD_ID> <WAMP_URL>"
+if [ "$#" -ne 3 ]; then
+        echo "Usage: ./configure_LR_arancino.sh <IOTRONIC_BOARD_ID> <IOTRONIC_BOARD_PASSWORD> <WAMP_URL>"
         exit
 fi
 
 echo "Stack4Things Lightning-rod configuration with the following parameters:"
-echo " --> Device UUID: "$1
-echo " --> WAMP URL: "$2
+echo " --> Board UUID: "$1
+echo " --> Board password: "$2
+echo " --> WAMP URL: "$3
 echo -e "\n"
 
+sed -i "s/\"code\":.*\"\"/\"code\": \"$1\"/g" /etc/iotronic/authentication.json
+sed -i "s/\"layout\":.*\"\"/\"layout\": \"raspberry_pi\"/g" /etc/iotronic/authentication.json
+sed -i "s,\"password\":.*,\"password\": \"$2\",g" /etc/iotronic/authentication.json
 
-sed -i "s/\"device\":.*\"\"/\"device\": \"raspberry_pi\"/g" /var/lib/iotronic/settings.json
-sed -i "s/\"code\":.*\"\"/\"code\": \"$1\"/g" /var/lib/iotronic/settings.json
-sed -i "s,\"url_wamp\":.*,\"url_wamp\": \"wss://crossbar.$2\"\,,g" /var/lib/iotronic/settings.json
-sed -i "s,\"port_wamp\":.*,\"port_wamp\": \"443\"\,,g" /var/lib/iotronic/settings.json
-sed -i "s,\"url_reverse\":.*,\"url_reverse\": \"wss://wstun.$2\"\,,g" /var/lib/iotronic/settings.json
-sed -i "s,\"port_reverse\":.*,\"port_reverse\": \"443\",g" /var/lib/iotronic/settings.json
-sed -i "s/\"bin\":.*\"wstun\"/\"bin\":\"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /var/lib/iotronic/settings.json
-echo " - settings.json file configured."
+sed -i "s,\"url_wamp\":.*,\"url_wamp\": \"wss://crossbar.$3\"\,,g" /etc/iotronic/authentication.json
+sed -i "s,\"port_wamp\":.*,\"port_wamp\": \"443\"\,,g" /etc/iotronic/authentication.json
+
+sed -i "s,\"ws_url\":.*,\"ws_url\": \"wss://wstun.$3\"\,,g" /etc/iotronic/authentication.json
+sed -i "s,\"ws_port\":.*,\"ws_port\": \"443\"\,,g" /etc/iotronic/authentication.json
+sed -i "s/\"bin\":.*\"wstun\"/\"bin\":\"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" /etc/iotronic/authentication.json
+
+echo " - authentication.json file configured."
 
 
 /etc/init.d/lightning-rod enable

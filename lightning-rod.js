@@ -26,8 +26,21 @@ var autobahn = require('autobahn');
 
 //settings parser
 nconf = require('nconf');
+/*
 SETTINGS = process.env.IOTRONIC_HOME+'/settings.json';
 nconf.file ({file: SETTINGS});
+*/
+SETTINGS = process.env.IOTRONIC_HOME+'/settings.json';
+nconf.file ('config', {file: SETTINGS});
+AUTH_CONF = '/etc/iotronic/authentication.json';
+nconf.file ('auth', {file: AUTH_CONF});
+
+/*
+NPM_CONF = process.env.LIGHTNINGROD_HOME+'/package.json';
+npm_conf = require('nconf');
+npm_conf.file ({file: NPM_CONF});
+LR_VERSION = npm_conf.get('version');
+*/
 
 //logging configuration: "board-management"
 log4js = require('log4js');
@@ -40,18 +53,19 @@ board_position = null;	//valued by Iotronic (via updateConf, setConf or setBoard
 reg_status = null;		//valued in checkSettings
 device = null;			//valued in checkSettings
 lyt_device = null;		//valued here in main
-net_backend='';
+net_backend = '';
 wampIP = null;
+auth_lr_mode = null;
 
 // To test the connection status
 reconnected = false;		// We use this flag to identify the connection status of reconnected after a connection fault
 
 //WIFI HACK
-wifi_force_reconnect = nconf.get('config:wamp:wifi_force_reconnect'); //hack = true;
+wifi_force_reconnect = nconf.get('auth:wamp:wifi_force_reconnect'); //hack = true;
 
 if(wifi_force_reconnect == true || wifi_force_reconnect == "true"){
 
-	wifi_force_reconnect_time = undefined;//nconf.get('config:wamp:wifi_force_reconnect_time');
+	wifi_force_reconnect_time = nconf.get('auth:wamp:wifi_force_reconnect_time');
 
 	if (isNaN(wifi_force_reconnect_time))
 		wifi_force_reconnect_time = 60; //set default value
@@ -60,11 +74,14 @@ if(wifi_force_reconnect == true || wifi_force_reconnect == "true"){
 	online = true;				// We use this flag during the process of connection recovery
 	wamp_check = null;			// "false" = we need to restore the WAMP connection (with tcpkill). "true" = the WAMP connection is enstablished or the standard reconnection procedure was triggered by the WAMP client and managed by "onclose" precedure.
 	var tcpkill_pid = null;		// PID of tcpkill process spawned to manage the connection recovery process
+
 }
 
 
 // LR s4t libraries
 var manageBoard = require('./board-management');
+
+LR_VERSION = manageBoard.getLRversion();
 
 
 var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
@@ -93,9 +110,13 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		//----------------------------------------
 		// 1. Set WAMP connection configuration
 		//----------------------------------------
-		var wampUrl = nconf.get('config:wamp:url_wamp')+":"+nconf.get('config:wamp:port_wamp')+"/ws";
+//		var wampUrl = nconf.get('config:wamp:url_wamp')+":"+nconf.get('config:wamp:port_wamp')+"/ws";
+		var wampUrl = url_wamp+":"+port_wamp+"/ws";
+
 		wampIP = wampUrl.split("//")[1].split(":")[0];
-		var wampRealm = nconf.get('config:wamp:realm');
+		
+		//var wampRealm = nconf.get('config:wamp:realm');
+		var wampRealm = realm;
 
 		logger.info("[SYSTEM] - Iotronic server IP: "+wampIP);
 
@@ -174,6 +195,8 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 									online = false;
 
 								} else {
+
+									//logger.debug("[CONNECTION-ALIVE] - INTERNET CONNECTION STATUS: " + reachable + " - ERROR: " + error_test);
 
 									//CONNECTION STATUS: TRUE
 									try{

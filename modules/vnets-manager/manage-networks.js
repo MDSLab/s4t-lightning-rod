@@ -103,13 +103,13 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 
     var spawn = require('child_process').spawn;
 
-    var basePort = nconf.get('config:socat:client:port');
-    var rtpath = nconf.get('config:reverse:lib:bin');
-    var reverseS_url = nconf.get('config:reverse:server:url_reverse') + ":" + nconf.get('config:reverse:server:port_reverse');
+    var basePort = nconf.get('config:board:modules:vnets_manager:socat:client:port');
+    var rtpath = nconf.get('auth:wstun:bin');
+    var reverseS_url = nconf.get('auth:wstun:ws_url') + ":" + nconf.get('auth:wstun:ws_port');
 
     var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
-    var socat_config = configFile.config["socat"];
-    var wstun_config = configFile.config["reverse"];
+    var socat_config = configFile.config.board.modules.vnets_manager["socat"];
+    var wstun_config = configFile.config.board.modules.vnets_manager["wstun"];
 
 
     logger.info("[VNET] --> Network Boot status:");
@@ -133,7 +133,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
 
     } else {
 
-        var socat_pid_conf = nconf.get('config:socat:pid');
+        var socat_pid_conf = nconf.get('config:board:modules:vnets_manager:socat:pid');
 
         if (socat_pid_conf != "") {
 
@@ -163,6 +163,7 @@ exports.initNetwork = function (socatServer_ip, socatServer_port, socatBoard_ip,
         }
 
     } else {
+        
         var wstun_pid_conf = nconf.get('config:reverse:pid');
 
         if (wstun_pid_conf != "") {

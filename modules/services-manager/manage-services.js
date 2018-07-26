@@ -37,7 +37,6 @@ exports.enableService = function(args){
     var localPort = String(args[1]);
     var publicPort = String(args[2]);
     var restore = String(args[3]);
-
     var db_tunnel_pid = String(args[4]);
 
     var response = {
@@ -47,28 +46,51 @@ exports.enableService = function(args){
 
     var d = Q.defer();
 
-
     logger.debug("[SERVICE] - RPC enableService called: " + args);
 
+    var i = findValue(servicesProcess, serviceName, 'key');
+
+/*
+    if(servicesProcess[i] != undefined){
+        console.log("--------------------------------------------");
+        console.log(servicesProcess[i].process.pid, db_tunnel_pid);
+        console.log("--------------------------------------------");
+    }
+    else{
+        console.log("--------------------------------------------");
+        console.log(servicesProcess[i], db_tunnel_pid);
+        console.log("--------------------------------------------");
+    }
+
+
+    if(servicesProcess[i] != undefined)
+        var service_pid = servicesProcess[i].process.pid;
+    else
+        var service_pid = db_tunnel_pid;
+ */
 
     if(running(db_tunnel_pid)){
 
         // Call when Restore tunnel API is called and after injection LR conf is called
+/*
+        servicesProcess[i].restore = true;
+        console.log("onRESTORE " + servicesProcess[i].restore);
+*/
 
         //kill tunnel process
         process.kill(db_tunnel_pid);
+
+        logger.warn("[SERVICE] --> Tunnel process of service '"+ serviceName +"' still active: killed!");
 
         //clean data structure
         var i = findValue(servicesProcess, serviceName, 'key');
         servicesProcess.splice(i,1);
 
-        logger.warn("[SERVICE] --> Tunnel process of service "+ serviceName +" still active: killed!");
-
         createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
 
             response.result = "SUCCESS";
             response.pid = newTunnel.process.pid;
-            response.message = "Service "+ serviceName +" successfully restored on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
+            response.message = "Service '"+ serviceName +"' successfully restored on port " + publicPort;
             logger.info('[SERVICE] --> ' + response.message);
             d.resolve(response);
 
@@ -92,17 +114,26 @@ exports.enableService = function(args){
                 //Killing the process
                 logger.debug('[SERVICE] --> killing '+serviceName+' process [ PID ' + servicesProcess[i].process.pid + " ]");
                 servicesProcess[i].process.kill('SIGINT');
+
+
                 servicesProcess.splice(i,1);
 
                 createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
 
                     response.result = "SUCCESS";
                     response.pid = newTunnel.process.pid;
-                    response.message = "Service "+ serviceName +" successfully restored (after reconnection) on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
+                    response.message = "Service '"+ serviceName +"' successfully restored (after reconnection) on port " + publicPort;
                     logger.info('[SERVICE] --> ' + response.message);
                     d.resolve(response);
 
                 });
+
+
+                response.result = "SUCCESS";
+                //response.pid = newTunnel.process.pid;
+                response.message = "Service '"+ serviceName +"' successfully restored (after reconnection) on port " + publicPort;
+                logger.info('[SERVICE] --> ' + response.message);
+                d.resolve(response);
 
 
             }else{
@@ -121,12 +152,12 @@ exports.enableService = function(args){
 
             // Call when LR restore tunnels at boot time and when enable-service API is called
 
-            logger.info('[SERVICE] - Exposing new tunnel for '+ serviceName + ' service...');
+            logger.info("[SERVICE] - Exposing new tunnel for '"+ serviceName + "' service...");
             createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
 
                 response.result = "SUCCESS";
                 response.pid = newTunnel.process.pid;
-                response.message = "Service "+ serviceName +" successfully exposed on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
+                response.message = "Service '"+ serviceName +"' successfully exposed on port " + publicPort;// + " - [PID "+newTunnel.process.pid+"]";
                 logger.info('[SERVICE] --> ' + response.message);
                 d.resolve(response);
 
@@ -136,14 +167,6 @@ exports.enableService = function(args){
 
 
     }
-
-
-
-
-
-
-
-    
     
     return d.promise;
 
@@ -167,7 +190,7 @@ exports.disableService = function(args){
         message:""
     };
 
-    logger.info('[SERVICE] - Disabling ' + serviceName + " service...");
+    logger.info("[SERVICE] - Disabling '" + serviceName + "' service...");
 
     var d = Q.defer();
 
@@ -181,7 +204,7 @@ exports.disableService = function(args){
         servicesProcess[i].process.kill('SIGINT');
 
         response.result = "SUCCESS";
-        response.message = "Tunnel for "+ serviceName +" service successfully removed from public port " + servicesProcess[i].port;
+        response.message = "Tunnel for '"+ serviceName +"' service successfully removed from public port " + servicesProcess[i].port;
         logger.info('[SERVICE] --> ' + response.message);
 
         servicesProcess.splice(i,1);
@@ -210,7 +233,6 @@ exports.disableService = function(args){
 exports.checkService = function(args){
 
     var serviceName = args[0];
-
     var serviceDbPID = args[1];
 
     var response = {
@@ -225,7 +247,7 @@ exports.checkService = function(args){
         message:""
     };
 
-    logger.info('[SERVICE] - Checking ' + serviceName + " service...");
+    logger.info("[SERVICE] - Checking '" + serviceName + "' service...");
 
     var d = Q.defer();
     
@@ -281,12 +303,12 @@ exports.checkService = function(args){
 
 function createTunnel(serviceName, localPort, publicPort, callback) {
 
-    reverseTunnellingServer = nconf.get('config:reverse:server:url_reverse')+":"+nconf.get('config:reverse:server:port_reverse');
-
+    reverseTunnellingServer = wstun_url+":"+wstun_port;
+    
     logger.info('[SERVICE] --> exposing local port ' + localPort + ' on public port ' + publicPort + ' contacting remote server ' + reverseTunnellingServer);
 
     //Getting the path of the wstun.js module from the configuration file
-    var reverseTunnellingClient = nconf.get('config:reverse:lib:bin');
+    var reverseTunnellingClient = wstun_lib;
 
     //I spawn a process executing the reverse tunnel client with appropriate parameters
     var spawn = require('child_process').spawn;
@@ -297,19 +319,42 @@ function createTunnel(serviceName, localPort, publicPort, callback) {
     var newTunnel = {
         key: serviceName,
         port: publicPort,
+        //restore: false,
         process: spawn(reverseTunnellingClient, ['-r '+publicPort+':'+'127.0.0.1'+':'+localPort, reverseTunnellingServer])
     };
 
+    //console.log(newTunnel)
     servicesProcess.push(newTunnel);
 
     newTunnel.process.stdout.on('data', function(data){
-        logger.debug('[SERVICE] - onData - '+newTunnel.key+' stdout of process ' + newTunnel.process.pid + ': '+data);
+        logger.debug('[SERVICE] - onData - '+newTunnel.key+' stdout of process ' + newTunnel.process.pid + ': '+data.toString().replace(/\n$/, ''));
     });
     newTunnel.process.stderr.on('data', function(data){
         logger.error('[SERVICE] - onError - '+newTunnel.key+' stderr of process ' + newTunnel.process.pid + ': '+ data);
     });
     newTunnel.process.on('close', function(code){
+
         logger.debug('[SERVICE] - onClose - '+newTunnel.key+' child process ' + newTunnel.process.pid + ' exited with code '+ code);
+
+/*
+        //clean data structure
+        var i = findValue(servicesProcess, serviceName, 'key');
+        console.log("onKILL "  + i + " " + servicesProcess[i].restore);
+
+        if(servicesProcess[i].restore == false){
+            //exports.enableService([serviceName, localPort, publicPort, "false", null]);
+            //servicesProcess[i].restore = false;
+            servicesProcess.splice(i,1);
+            //servicesProcess[i].process.pid =
+            createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
+
+                logger.info("[SERVICE] --> Service '"+ serviceName +"' successfully exposed on port " + publicPort);
+
+            });
+        }
+*/
+
+
     });
 
     callback(newTunnel);

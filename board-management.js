@@ -31,8 +31,22 @@ var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
 var exec = require('child_process').exec;
 var Q = require("q");
 
+var PKG_MNG_SUPPORTED = ["apt", "apt-get", "pip", "pip3", "opkg"];
 
-// This function contains the logic that has to be performed if I'm connected to the WAMP server
+
+var crypto = require('crypto');
+function signatureKey() {
+
+    var privateKey = fs.readFileSync('/var/lib/iotronic/ssl/client.key', 'utf-8');
+    var sign = crypto.createSign('RSA-SHA256');
+    sign.update(boardCode); sign.end();
+
+    return sign.sign(privateKey);
+
+}
+
+
+// This function contains the logic that has to be performed if LR is connected to the WAMP server
 function manage_WAMP_connection(session) {
 
     logger.info('[CONFIGURATION] - Board configuration starting...');
@@ -56,8 +70,45 @@ function manage_WAMP_connection(session) {
     session.subscribe(connectionTopic, onTopicConnection);
     
     //Registering the board to the Cloud by sending a message to the connection topic
-    logger.info("[WAMP] - Sending board ID '" + boardCode + "' to topic " + connectionTopic + " to register the board");
-    session.publish(connectionTopic, [boardCode, 'connection', session._id]);
+    //logger.info("[WAMP] - Sending board ID '" + boardCode + "' to topic " + connectionTopic + " to register the board");
+
+    logger.info("[AUTH] - Authentication mode: " + auth_lr_mode);
+
+    switch (auth_lr_mode) {
+
+        case 'basic':
+            //Send board_id to authenticate the board in Iotronic
+
+            session.publish(connectionTopic, [boardCode, 'connection', session._id]);
+            break;
+
+        case 'password':
+
+            //Send board_id and password to authenticate the board in Iotronic
+
+            session.publish(connectionTopic, [boardCode, 'connection', session._id, auth_pw]);
+            break;
+
+        case 'certs':
+
+            //Send board_id and signature to authenticate the board in Iotronic
+
+            var board_signature = signatureKey();
+            logger.debug("[AUTH] --> Board signature:\n"+board_signature.toString('hex'));
+
+            session.publish(connectionTopic, [boardCode, 'connection', session._id, board_signature.toString('base64')]);
+            break;
+
+
+        default:
+
+            logger.error("[SYSTEM] --> Wrong authentication mode: " + auth_lr_mode);
+
+            break;
+
+    }
+
+
 
 }
 
@@ -165,31 +216,7 @@ function moduleLoader (session, device) {
         })(i);
 
     }
-    
-    /*
-    // MODULES LOADING--------------------------------------------------------------------------------------------------
-    var gpioManager = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
-    gpioManager.Init(session, lyt_device);
 
-    var pluginsManager = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
-    pluginsManager.Init(session);
-
-    var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
-    driversManager.Init(session);
-    driversManager.restartDrivers();
-
-    var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
-    fsManager.Init(session);
-    var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
-    fsLibsManager.exportFSLibs(session);
-
-    var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
-    servicesManager.Init(session);
-
-    var nodeRedManager = require(LIGHTNINGROD_HOME + '/modules/nodered-manager/manage-nodered');
-    nodeRedManager.Init(session);
-    //------------------------------------------------------------------------------------------------------------------
-    */
 
 }
 
@@ -265,9 +292,9 @@ exports.moduleLoaderOnBoot = function() {
         })(i);
 
     }
-    
 
-}
+
+};
 
 
 
@@ -283,6 +310,10 @@ exports.Init_Ligthning_Rod = function (callback) {
         logger.info('##############################');
         logger.info('  Stack4Things Lightning-rod');
         logger.info('##############################');
+
+        logger.info('#       version ' + LR_VERSION + '        #');
+        logger.info('##############################');
+
     }
 
     /*
@@ -369,9 +400,9 @@ exports.checkSettings = function (callback) {
         var check_response = null;
 
         //WAMP CONF
-        url_wamp = nconf.get('config:wamp:url_wamp');
-        port_wamp = nconf.get('config:wamp:port_wamp');
-        realm = nconf.get('config:wamp:realm');
+        url_wamp = nconf.get('auth:wamp:url_wamp');
+        port_wamp = nconf.get('auth:wamp:port_wamp');
+        realm = nconf.get('auth:wamp:realm');
 
         if ((url_wamp == undefined || url_wamp == "") || (port_wamp == undefined || port_wamp == "") || (realm == undefined || realm == "")) {
 
@@ -382,20 +413,21 @@ exports.checkSettings = function (callback) {
 
             process.exit();
 
-        } else {
+        }
+        else {
             check_response = true;
         }
-        
-        //REVERSE CONF
-        url_reverse = nconf.get('config:reverse:server:url_reverse');
-        port_reverse = nconf.get('config:reverse:server:port_reverse');
-        wstun_lib = nconf.get('config:reverse:lib:bin');
 
-        if ((url_reverse == undefined || url_reverse == "") || (port_reverse == undefined || port_reverse == "") || (wstun_lib == undefined || wstun_lib == "")) {
+        //WSTUN CONF
+        wstun_url = nconf.get('auth:wstun:ws_url');
+        wstun_port = nconf.get('auth:wstun:ws_port');
+        wstun_lib = nconf.get('auth:wstun:bin');
+
+        if ((wstun_url == undefined || wstun_url == "") || (wstun_port == undefined || wstun_port == "") || (wstun_lib == undefined || wstun_lib == "")) {
 
             logger.warn('[SYSTEM] - WSTUN configuration is wrong or not specified!');
-            logger.debug(' - url_reverse value: ' + url_reverse);
-            logger.debug(' - port_reverse value: ' + port_reverse);
+            logger.debug(' - wstun_url value: ' + wstun_url);
+            logger.debug(' - wstun_port value: ' + wstun_port);
             logger.debug(' - wstun_lib value: ' + wstun_lib);
 
             process.exit();
@@ -405,15 +437,14 @@ exports.checkSettings = function (callback) {
         }
 
         // BOARD CONF
-        device = nconf.get('config:device');
-        
+        device = nconf.get('auth:board:layout');
         if (device == undefined || device == "") {
             logger.warn('[SYSTEM] - Device "' + device + '" not supported!');
             logger.warn(' - Supported devices are: "laptop", "arduino_yun", "raspberry_pi".');
             process.exit();
         }
 
-        boardCode = nconf.get('config:board:code');
+        boardCode = nconf.get('auth:board:code');
         if (boardCode == undefined || boardCode == "") {
             logger.warn('[SYSTEM] - Board UUID undefined or not specified!');
             process.exit();
@@ -421,21 +452,15 @@ exports.checkSettings = function (callback) {
             check_response = true;
         }
 
-        reg_status = nconf.get('config:board:status');
-        
+        auth_lr_mode = nconf.get('auth:board:authentication:auth_lr_mode');
+        auth_pw = nconf.get('auth:board:authentication:password');
+
+        reg_status = nconf.get('auth:board:status');
         boardLabel = nconf.get('config:board:label');
+        board_position = nconf.get('config:board:position');
 
-        var board_position = nconf.get('config:board:position');
-
-        if ( (board_position == undefined || Object.keys(board_position).length === 0 ) && (reg_status == "registered") ) {
-            logger.warn('[SYSTEM] - Wrong board coordinates!');
-            logger.debug('- Coordinates: ' + JSON.stringify(board_position));
-            process.exit();
-
-        }
-
-        // SOCAT CONF
-        var socat_port = nconf.get('config:socat:client:port');
+        // VNETs: SOCAT CONF
+        var socat_port = nconf.get('config:board:modules:vnets_manager:socat:client:port');
 
         if (socat_port == undefined || socat_port == "") {
             logger.warn("[SYSTEM] - 'socat_port' not specified or 'undefined': if the board is network enabled specify this parameter!");
@@ -463,12 +488,11 @@ exports.checkSettings = function (callback) {
 
 };
 
-
 // This function sets the coordinates of the device: called by Iotronic via RPC
 exports.setBoardPosition = function (args) {
 
     var board_position = args[0];
-    logger.info("[SYSTEM] - Set board position: " + JSON.stringify(board_position));
+    //logger.info("[SYSTEM] - Set board position: " + JSON.stringify(board_position));
 
     var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
     var board_config = configFile.config["board"];
@@ -591,6 +615,7 @@ exports.setConf = function (args) {
 
             logger.debug("[SYSTEM] --> settings.json configuration file saved to " + SETTINGS);
             response.message = "Board '"+boardCode+"' configuration updated!";
+            response.lr_version = LR_VERSION;
             response.result = "SUCCESS";
             d.resolve(response);
 
@@ -612,28 +637,27 @@ exports.checkRegistrationStatus = function(args){
 
     var response = {
         message: '',
+        lr_version: LR_VERSION,
         result: ''
     };
 
     var d = Q.defer();
 
-
     if(regStatus.result == "SUCCESS"){
 
         logger.info("[SYSTEM] - Connection to Iotronic "+regStatus.result+":\n"+JSON.stringify(regStatus.message, null, "\t"));
 
+        //export RPC 
         exports.exportManagementCommands(board_session);
-
 
         if(regStatus.message['state'] == "new"){
 
-            logger.info('[CONFIGURATION] - NEW BOARD CONFIGURATION STARTED... ');
+            logger.info('[CONFIGURATION] - New board configuration started... ');
 
             var confBundle = {
                 message: ''
             };
 
-            regStatus.message['conf']['config']['board']['status'] = "registered";
             confBundle.message = regStatus.message['conf'];
 
             exports.setConf([confBundle]).then(
@@ -668,7 +692,37 @@ exports.checkRegistrationStatus = function(args){
             d.resolve(response);
             
 
-        } else{
+        }
+        else if(regStatus.message['state'] == "updated"){
+
+            logger.info('[CONFIGURATION] - Updated board configuration started... ');
+
+            var confBundle = {
+                message: ''
+            };
+
+            confBundle.message = regStatus.message['conf'];
+
+            exports.setConf([confBundle]).then(
+
+                function (msg) {
+
+                    console.log(msg);
+
+                    d.resolve(msg);
+
+                    //Restarting LR
+                    setTimeout(function () {
+                        process.exit();
+                    }, 2000)
+
+
+                }
+
+            )
+
+        }
+        else{
 
             d.resolve("Board "+boardCode+" in wrong status!");
 
@@ -696,6 +750,69 @@ exports.checkRegistrationStatus = function(args){
 
 };
 
+
+
+exports.updateLR = function(args){
+
+    logger.info("[SYSTEM] - Updating LR RPC called...");
+
+    var d = Q.defer();
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    var lr_version = args[0];
+    var pkg_mng = args[1];
+    var operation = args[2];
+
+    var lr_pkg_name = "node-iotronic-lightning-rod";
+    
+    if (pkg_mng == "opkg"){
+        
+        var pkg_name = lr_pkg_name;
+        
+    }else if (pkg_mng == "apt" || pkg_mng == "apt-get"){
+
+        if(lr_version != undefined && lr_version != "")
+            var pkg_name = lr_pkg_name+"="+lr_version;
+        else
+            var pkg_name = lr_pkg_name;
+
+    }
+
+    var pkg_opts = "";
+
+    if(operation == "update" || operation == undefined || operation == ""){
+
+        var pkg_mng_cmd = "install";
+
+        managePackage(pkg_mng, pkg_mng_cmd, pkg_opts, pkg_name, function (pack) {
+
+            pack.lr_version = exports.getLRversion();
+
+            console.log(pack);
+
+            d.resolve(pack);
+
+        });
+
+    }
+    else{
+
+        response.message = "Operation '"+operation+"' on Lightning-rod package not supported!";
+        response.result = "ERROR";
+        logger.error("[SYSTEM] --> " + response.message);
+        d.resolve(response);
+    }
+
+
+
+
+    return d.promise;
+
+};
 
 // To execute pre-defined commands in the board shell
 exports.execAction = function(args){
@@ -752,9 +869,10 @@ exports.execAction = function(args){
 
             break;
 
+
         case 'hostname':
 
-            exec('echo `hostname`', function(error, stdout, stderr){
+            exec('echo `hostname`@`date`', function(error, stdout, stderr){
 
                 if(error) {
                     logger.error('[SYSTEM] - Echo result: ' + error);
@@ -783,11 +901,63 @@ exports.execAction = function(args){
             break;
 
 
+        case 'pkg_manager':
+
+
+            try{
+
+                //var params = JSON.parse(params);
+                logger.info("[SYSTEM] --> parameters:\n" + JSON.stringify(params));
+
+            }
+            catch (err) {
+
+                response.message = "Error parsing package parameters: " + JSON.stringify(err);
+                response.result = "ERROR";
+                logger.error("[SYSTEM] --> " + response.message);
+                //d.resolve(response);
+
+            }
+
+            var pkg_mng = params["pkg_mng"];
+            var pkg_mng_cmd = params["pkg_mng_cmd"];
+            var pkg_name = params["pkg_name"];
+            var pkg_opts = params["pkg_opts"];
+
+            managePackage(pkg_mng, pkg_mng_cmd, pkg_opts, pkg_name, function (pack) {
+
+                d.resolve(pack);
+
+            });
+
+            break;
+
         case 'restart_lr':
 
-            params=JSON.parse(params);
+            try{
 
-            logger.info("[SYSTEM] --> parameters:\n" + JSON.stringify(params, null, "\t"));
+                var params = JSON.parse(params);
+
+            }
+            catch (err) {
+
+
+                logger.debug("[SYSTEM] --> parsing parameters error: "+JSON.stringify(err));
+
+            }
+
+            if(params == null || params == undefined  || params == "")
+                var restart_time = 5;
+            else{
+                logger.info("[SYSTEM] --> parameters:\n" + JSON.stringify(params, null, "\t"));
+                var restart_time = params["time"];
+                if(restart_time == null || restart_time == undefined  || restart_time == "")
+                    restart_time = 5;
+
+            }
+
+
+
 
             // activate listener on-exit event after LR exit on-update-conf
             logger.debug("[SYSTEM] --> Listener on process 'exit' event activated:");
@@ -802,7 +972,7 @@ exports.execAction = function(args){
 
             });
 
-            logger.info('[SYSTEM] - Restarting Lightning-rod');
+            logger.info('[SYSTEM] - Restarting Lightning-rod in ' + restart_time + ' seconds...');
             response.message = "Restarting Lightning-rod on board "+ boardCode;
             response.result = "SUCCESS";
             d.resolve(response);
@@ -812,7 +982,7 @@ exports.execAction = function(args){
                 
                 process.exit();
                 
-            }, params["time"]);
+            }, restart_time * 1000);
 
 
             break;
@@ -822,7 +992,7 @@ exports.execAction = function(args){
             response.message = "Board operation '" + action + "' not supported!";
             response.result = 'ERROR';
             logger.error("[SYSTEM] - " + response.message);
-            d.resolve(JSON.stringify(response));
+            d.resolve(response);
 
             break;
 
@@ -838,8 +1008,137 @@ exports.execAction = function(args){
 
 
 
+var managePackage = function (pkg_mng, pkg_mng_cmd, pkg_opts, pkg_name, callback) {
+
+    var response = {
+        message: '',
+        result: ''
+    };
+    
+    if(PKG_MNG_SUPPORTED.includes(pkg_mng)){
+
+        if(pkg_opts == "")
+            var install_cmd = pkg_mng + " " + pkg_mng_cmd + " " + pkg_name;
+        else
+            var install_cmd = pkg_mng + " " + pkg_mng_cmd + " " + pkg_opts + " " + pkg_name;
 
 
+        if(pkg_mng == "opkg")
+            if(pkg_opts == "")
+                var install_cmd = "opkg update && " + pkg_mng + " " + pkg_mng_cmd + " " + pkg_name;
+            else
+                var install_cmd = "opkg update && " + pkg_mng + " " + pkg_mng_cmd + " " + pkg_opts + " " + pkg_name;
+
+        logger.debug("[SYSTEM] --> cmd: " + install_cmd);
+
+
+        exec( install_cmd , function(error, stdout, stderr){
+
+            if(error) {
+
+                var error_msg = error.message;
+
+                logger.error('[SYSTEM] - Package manager result (error):\n' + error);
+
+                if(pkg_mng == "apt-get" || pkg_mng == "apt"){
+                    var final_result = error_msg.split("\n");
+                    response.message = final_result[final_result.length-2].trim();
+                }else if(pkg_mng == "pip"){
+                    var final_result = error_msg.split("\n");
+                    response.message = final_result[final_result.length-2].trim();
+                }else if(pkg_mng == "opkg"){
+                    var final_result = error_msg.split("\n");
+                    response.message = final_result[final_result.length-2].trim();
+                }else{
+                    var final_result = error_msg.split("\n");
+                    response.message = final_result[1];
+                    //response.message = error;
+                }
+
+                response.logs = error_msg;
+                response.result = "ERROR";
+
+                callback(response);
+
+            }
+            else if (stderr){
+
+                if(pkg_mng == "apt-get" || pkg_mng == "apt"){
+                    var final_result = stderr.split("\n");
+                    response.message = final_result[final_result.length-2].trim();
+                    response.result = "SUCCESS";
+                }else if(pkg_mng == "pip"){
+                    var final_result = stderr.split("\n");
+                    response.message = final_result[final_result.length-2].trim();
+                    response.result = "WARNING";
+                }else if(pkg_mng == "opkg"){
+                    var final_result = stderr.split("\n");
+                    response.message = final_result[final_result.length-2].trim();
+                    response.result = "SUCCESS";
+                }else{
+                    response.message = stderr;
+                    response.result = "SUCCESS";
+                }
+
+                logger.warn('[SYSTEM] - Package manager result (stderr):\n' + stderr);
+                response.logs = stderr;
+
+                callback(response);
+            }
+            else if (stdout){
+
+                //stdout = stdout.replace(/\n$/, '');
+
+                if(pkg_mng == "apt-get" || pkg_mng == "apt"){
+                    var final_result = stdout.split("\n");
+                    response.message = final_result[final_result.length-2].trim();
+                }else if(pkg_mng == "pip"){
+                    var final_result = stdout.split("\n");
+                    response.message = final_result[final_result.length-2].trim();
+                }else if(pkg_mng == "opkg"){
+                    var final_result = stdout.split("\n");
+                    response.message = final_result[final_result.length-2].trim();
+                }else{
+                    response.message = stdout;
+                }
+
+                logger.info('[SYSTEM] - Package manager result (stdout):\n' + stdout);
+                response.logs = stdout;
+                response.result = "SUCCESS";
+
+                callback(response);
+
+            }
+
+        });
+
+    }
+    else{
+
+        response.message = "Package manager '"+pkg_mng+"' not supported!";
+        response.result = "ERROR";
+        logger.warn('[SYSTEM] - ' + response.message);
+        callback(response);
+        //d.resolve(response);
+    }
+
+
+
+};
+
+
+exports.getLRversion = function () {
+
+    NPM_CONF = process.env.LIGHTNINGROD_HOME+'/package.json';
+    npm_conf = require('nconf');
+    npm_conf.file ({file: NPM_CONF});
+    lr_v = npm_conf.get('version');
+
+    return lr_v;
+
+};
+
+// Login to Crossbar server and to Iotornic
 exports.IotronicLogin = function (session) {
 
     board_session = session;
@@ -859,6 +1158,7 @@ exports.exportManagementCommands = function (session, callback) {
     session.register('s4t.' + boardCode + '.board.setBoardPosition', exports.setBoardPosition);
     session.register('s4t.' + boardCode + '.board.execAction', exports.execAction);
     session.register('s4t.' + boardCode + '.board.updateConf', exports.updateConf);
+    session.register('s4t.' + boardCode + '.board.updateLR', exports.updateLR);
 
 };
 

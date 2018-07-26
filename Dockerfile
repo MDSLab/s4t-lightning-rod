@@ -12,6 +12,8 @@ RUN npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings reque
 RUN mkdir -p /var/lib/iotronic/plugins \
  && mkdir -p /var/lib/iotronic/drivers/mountpoints/ \
  && mkdir -p /var/log/iotronic/ \
+ && mkdir -p /var/log/wstun/ \
+ && touch /var/log/wstun/wstun.log \
  && touch /var/log/iotronic/lightning-rod.log
 
 WORKDIR /usr/local/lib/node_modules/

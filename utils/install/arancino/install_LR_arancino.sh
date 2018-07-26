@@ -3,18 +3,28 @@
 echo -e "Installing Stack4Things Lightning-rod.\n"
 
 
-echo "Configure IoTronic ENV:"
+echo "Configure IoTronic environment:"
 mkdir -p /var/lib/iotronic/
 cd /var/lib/iotronic/ && mkdir plugins && mkdir drivers
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/utils/templates/settings.example.json /var/lib/iotronic/settings.json
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
-echo " - IoTronic Home created and configured."
+
+mkdir -p /etc/iotronic/
+cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example.json /etc/iotronic/authentication.json
+
+echo " - Lightning-rod environment configured."
 
 
 mkdir -p /var/log/iotronic/plugins
 touch /var/log/iotronic/lightning-rod.log
+
+
+mkdir -p /var/log/wstun
+touch /var/log/wstun/wstun.log
+
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
+
 echo " - logging configured."
 
 
