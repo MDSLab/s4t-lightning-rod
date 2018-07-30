@@ -9,12 +9,12 @@ IOTRONIC_HOME="/var/lib/iotronic"
 if [ -d "$IOTRONIC_HOME" ]; then
 
     rm_check=
-    echo -n "Do you want to keep IoTronic home (/var/lib/iotronic) ? (yes/no) "
+    echo -n "Do you want to keep Lightning-rod configuration (in /var/lib/iotronic) ? (yes/no) "
     read rm_check
 
     if [ "$rm_check" = "yes" ]; then
 
-        echo "--> IoTronic home is save!"
+        echo "--> Lightning-rod configuration is save!"
 
     fi
 
@@ -22,10 +22,10 @@ fi
 
 if [ "$rm_check" = "no" ] || [ ! -d "$IOTRONIC_HOME" ]; then
 
-    mkdir /var/lib/iotronic/
+    mkdir -p /var/lib/iotronic/
     cd /var/lib/iotronic/ && mkdir plugins && mkdir drivers
 
-    cp $NODE_PATH/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
+    cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/templates/settings.example.json /var/lib/iotronic/settings.json
     cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
     cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
 
@@ -35,6 +35,38 @@ if [ "$rm_check" = "no" ] || [ ! -d "$IOTRONIC_HOME" ]; then
     touch /var/log/iotronic/lightning-rod.log
 
 fi
+
+
+
+
+
+IOTRONIC_AUTH="/etc/iotronic"
+
+if [ -d "$IOTRONIC_AUTH" ]; then
+
+    rm_check=
+    echo -n "Do you want to keep Lightning-rod authentication settings (in /etc/iotronic) ? (yes/no) "
+    read rm_check
+
+    if [ "$rm_check" = "yes" ]; then
+
+        echo "--> Lightning-rod authentication settings are save!"
+
+    fi
+
+fi
+
+if [ "$rm_check" = "no" ] || [ ! -d "$IOTRONIC_HOME" ]; then
+
+    mkdir -p /etc/iotronic/
+
+    cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example.json /etc/iotronic/authentication.json
+
+fi
+
+
+
+
 
 
 echo "Configuring..."
@@ -62,7 +94,6 @@ else
     . /etc/environment
 fi
 
-
 if grep -Fq "NODE_TLS_REJECT_UNAUTHORIZED" /etc/environment
 then
     # if found
@@ -74,8 +105,19 @@ else
     . /etc/environment
 fi
 
+
+
+echo "\n\n\n"
+echo "----------------------------------------------------------------------------------------------------------------"
+echo "\n"
 echo "After the installation execute lr_configure.sh script in order to complete the Lightning-rod configuration!"
 echo "--> $NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh"
 chmod +x $NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh
-
+echo "\n"
 echo "Bye!"
+echo "\n"
+echo "----------------------------------------------------------------------------------------------------------------"
+echo "\n\n\n"
+
+
+

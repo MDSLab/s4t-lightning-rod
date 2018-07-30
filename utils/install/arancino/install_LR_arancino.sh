@@ -10,8 +10,16 @@ cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/utils/templates/settings
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
 cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
 
-mkdir -p /etc/iotronic/
-cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example.json /etc/iotronic/authentication.json
+
+if [ -e /etc/iotronic/authentication.json ]
+then
+	# set the new default password
+	echo -e "--> Authentication settings file already present"
+else
+	echo -e "--> Authentication settings file missing. Added..."
+    mkdir -p /etc/iotronic/
+    cp /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example.json /etc/iotronic/authentication.json
+fi
 
 echo " - Lightning-rod environment configured."
 

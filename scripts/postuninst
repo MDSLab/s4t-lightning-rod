@@ -8,7 +8,7 @@ IOTRONIC_HOME="/var/lib/iotronic"
 if [ -d "$IOTRONIC_HOME" ]; then
 
     rm_check=
-    echo -n "Do you want to keep IoTronic home (/var/lib/iotronic) ? (yes/no) "
+    echo -n "Do you want to keep Lightning-rod configurations (in /var/lib/iotronic) ? (yes/no) "
     read rm_check
 
     if [ "$rm_check" = "no" ]; then
@@ -16,9 +16,26 @@ if [ -d "$IOTRONIC_HOME" ]; then
         rm -rf /var/lib/iotronic/
 
     else
-        echo "--> IoTronic home is save!"
+        echo "--> Lightning-rod configuration is save!"
     fi
 
 fi
 
 
+IOTRONIC_AUTH="/etc/iotronic"
+
+if [ -d "$IOTRONIC_AUTH" ]; then
+
+    rm_check=
+    echo -n "Do you want to keep Lightning-rod authentication settings (in /etc/iotronic) ? (yes/no) "
+    read rm_check
+
+    if [ "$rm_check" = "no" ]; then
+
+        rm -rf /etc/iotronic/
+
+    else
+        echo "--> Lightning-rod authentication settings are save!"
+    fi
+
+fi
