@@ -129,7 +129,8 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 		logger.info("[SYSTEM] - WAMP server IP: " + wampIP);
 
-		logger.info("[SYSTEM] - Node ID: " + boardCode);
+		logger.info("[SYSTEM] - Board ID: " + boardCode);
+		logger.info("[SYSTEM] - Board label: " + boardLabel);
 
 		logger.debug("[SYSTEM] - Wifi force reconnection: " + wifi_force_reconnect);
 
