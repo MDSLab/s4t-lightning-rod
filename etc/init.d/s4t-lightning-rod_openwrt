@@ -21,8 +21,8 @@ STOP=99
 
 boot () {
 
-        start
-
+        #start
+	    echo "LR booting..."
 }
 
 start () {
