@@ -50,7 +50,7 @@ exports.enableService = function(args){
 
     var i = findValue(servicesProcess, serviceName, 'key');
 
-/*
+    /*
     if(servicesProcess[i] != undefined){
         console.log("--------------------------------------------");
         console.log(servicesProcess[i].process.pid, db_tunnel_pid);
@@ -67,15 +67,15 @@ exports.enableService = function(args){
         var service_pid = servicesProcess[i].process.pid;
     else
         var service_pid = db_tunnel_pid;
- */
+    */
 
     if(running(db_tunnel_pid)){
 
         // Call when Restore tunnel API is called and after injection LR conf is called
-/*
+        /*
         servicesProcess[i].restore = true;
         console.log("onRESTORE " + servicesProcess[i].restore);
-*/
+        */
 
         //kill tunnel process
         process.kill(db_tunnel_pid);
@@ -122,18 +122,20 @@ exports.enableService = function(args){
 
                     response.result = "SUCCESS";
                     response.pid = newTunnel.process.pid;
-                    response.message = "Service '"+ serviceName +"' successfully restored (after reconnection) on port " + publicPort;
+                    response.message = "Service '"+ serviceName +"' successfully restored (new wstun process) on port " + publicPort;
                     logger.info('[SERVICE] --> ' + response.message);
                     d.resolve(response);
 
                 });
 
 
+                /*
                 response.result = "SUCCESS";
                 //response.pid = newTunnel.process.pid;
                 response.message = "Service '"+ serviceName +"' successfully restored (after reconnection) on port " + publicPort;
                 logger.info('[SERVICE] --> ' + response.message);
                 d.resolve(response);
+                */
 
 
             }else{
@@ -336,7 +338,7 @@ function createTunnel(serviceName, localPort, publicPort, callback) {
 
         logger.debug('[SERVICE] - onClose - '+newTunnel.key+' child process ' + newTunnel.process.pid + ' exited with code '+ code);
 
-/*
+        /*
         //clean data structure
         var i = findValue(servicesProcess, serviceName, 'key');
         console.log("onKILL "  + i + " " + servicesProcess[i].restore);
@@ -352,7 +354,7 @@ function createTunnel(serviceName, localPort, publicPort, callback) {
 
             });
         }
-*/
+        */
 
 
     });
