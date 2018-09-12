@@ -24,8 +24,8 @@
 					"boot": false
 				},
 				"nodered_manager": {
-					"enabled": true,
-					"boot": true
+					"enabled": false,
+					"boot": false
 				},
 				"vnets_manager": {
 					"enabled": false,

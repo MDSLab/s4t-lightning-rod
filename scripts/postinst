@@ -106,18 +106,12 @@ else
 fi
 
 
-
-echo "\n\n\n"
 echo "----------------------------------------------------------------------------------------------------------------"
-echo "\n"
 echo "After the installation execute lr_configure.sh script in order to complete the Lightning-rod configuration!"
 echo "--> $NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh"
 chmod +x $NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh
-echo "\n"
 echo "Bye!"
-echo "\n"
 echo "----------------------------------------------------------------------------------------------------------------"
-echo "\n\n\n"
 
 
 

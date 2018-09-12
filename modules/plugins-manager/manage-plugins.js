@@ -1,6 +1,6 @@
 //############################################################################################
 //##
-//# Copyright (C) 2014-2017 Dario Bruneo, Francesco Longo, Giovanni Merlino, Nicola Peditto
+//# Copyright (C) 2014-2018 Dario Bruneo, Francesco Longo, Giovanni Merlino, Nicola Peditto
 //##
 //# Licensed under the Apache License, Version 2.0 (the "License");
 //# you may not use this file except in compliance with the License.
@@ -125,10 +125,26 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 					if(checksum != plugin_checksum){
 
 						process.kill(plugins[plugin_name].pid);
-
+						
 						// the plugin is not alive and its checksum mismatches!
 						logger.warn( '[PLUGIN] - PluginChecker - '+ plugin_name + ' - The plugin was modified: checksum mismatches!');
 						clearPluginTimer(plugin_name);
+
+						pluginsConf.plugins[plugin_name].status = "off";
+						pluginsConf.plugins[plugin_name].pid = "";
+
+						// updates the JSON file
+						fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+							if(err) {
+								logger.warn('[PLUGIN] --> Error updating '+plugin_name + ' plugin in "plugins.json": '+err);
+
+							} else {
+
+								logger.debug('[PLUGIN] --> Plugin "'+plugin_name + '" local status updated.');
+							}
+
+						});
 
 						session_plugins.call('s4t.iotronic.plugin.invalidPlugin', [boardCode, plugin_name, plugin_version]).then(
 
@@ -181,11 +197,12 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 
 				var checksum = md5(	fs.readFileSync(PLUGINS_STORE + plugin_name + "/"+plugin_name+ext, 'utf8'));
 
-				if(CHECKSUMS_PLUGINS_LIST.length != 0)
+				if(CHECKSUMS_PLUGINS_LIST.length != 0)			// LR is connected to Iotronic and retrieved the plugins checksum list
 					var plugin_checksum = CHECKSUMS_PLUGINS_LIST[plugin_name];
 
-				//logger.warn(CHECKSUMS_PLUGINS_LIST);
 
+				// If LR started without connection CHECKSUMS_PLUGINS_LIST.length is ZERO and the enabled plugin will start without checksum check
+				// OTHERWISE the plugins will start only if their checksum are validated!
 				if( (checksum === plugin_checksum) || (CHECKSUMS_PLUGINS_LIST.length == 0) ){
 
 					// the plugin is not alive: we are in the state after a reboot of the device/LR or after a crash of the plugin process
@@ -193,7 +210,6 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 
 					// If the schema json file exists the board will create a child_process to restart the plugin and update the status and the PID value
 					if (fs.existsSync(plugin_json_name) === true){
-
 
 						// Check the plugin type: "nodejs" or "python"
 
@@ -936,7 +952,7 @@ exports.call = function (args){
 		var ext ='.py';
 
 
-	var checksum = md5(	fs.readFileSync(PLUGINS_STORE + plugin_name + "/"+plugin_name+ext, 'utf8'));
+	var checksum = md5(	fs.readFileSync(PLUGINS_STORE + plugin_name + "/"+plugin_name+ext, 'utf8') );
 	
 	if(checksum === plugin_checksum){
 
@@ -1904,7 +1920,7 @@ exports.injectPlugin = function(args){
     logger.info("[PLUGIN] - Injecting plugin RPC called for '"+plugin_name+"' plugin...");
     logger.debug("[PLUGIN] --> Parameters injected: { plugin_name : " + plugin_name + ", autostart : " + autostart + ", force : " + force + " }");
     //logger.debug("[PLUGIN] --> plugin code:\n\n" + plugin_code + "\n\n");
-	logger.debug(JSON.stringify(plugin_bundle, null, "\t"))
+	logger.debug(JSON.stringify(plugin_bundle, null, "\t"));
 
 	var plugin_folder = PLUGINS_STORE + plugin_name;
 
@@ -2176,8 +2192,10 @@ exports.restartPlugin = function(args){
 
 					}else {
 
+						console.log(response)
+
 						response.result = "ERROR";
-						response.message = "Error restarting plugin '" + plugin_name + "' during killing procedure!";
+						response.message = "Error restarting plugin '" + plugin_name + "' during killing procedure... please retry.";
 						logger.error("[PLUGIN] - " + response.message);
 						d.resolve(response);
 
@@ -2272,17 +2290,8 @@ exports.Init = function (session){
 	session.register('s4t.'+ boardCode+'.plugin.restart', exports.restartPlugin);
 	session.register('s4t.'+ boardCode+'.plugin.logs', exports.getPluginLogs);
 
-	
-    
+
     logger.info('[WAMP-EXPORTS] Plugin commands exported to the cloud!');
-
-
-	// PLUGINS RESTART ALL --------------------------------------------------------------------------------
-	//This procedure restarts all plugins in "ON" status
-	//if(PLUGIN_MODULE_LOADED == false)
-	//	exports.pluginsLoader();
-	//-----------------------------------------------------------------------------------------------------
-
 
     
 };
@@ -2299,7 +2308,131 @@ exports.Boot = function (){
 
 	setTimeout(function(){
 
-		connectionTester.test(wampIP, port_wamp, 1000, function (err, output) {
+		var output = connectionTester.test(wampIP, port_wamp, 10000);
+		var reachable = output.success;
+		var error_test = output.error;
+
+		if (!reachable) {
+
+			//CONNECTION STATUS: FALSE
+			logger.warn("[PLUGIN-CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: " + reachable + " - ERROR: " + error_test);
+
+			exports.pluginsBootLoader();
+
+			checkIotronicWampConnection = setInterval(function(){
+
+				logger.warn("[PLUGIN-CONNECTION-RECOVERY] - RETRY...");
+
+				connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
+
+					var reachable = output.success;
+					var error_test = output.error;
+
+					if (!reachable) {
+
+						//CONNECTION STATUS: FALSE
+						logger.warn("[PLUGIN-CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: " + reachable + " - ERROR: " + error_test);
+
+					}else{
+
+						try {
+
+							// Test if IoTronic is connected to the realm
+							session_plugins.call("s4t.iotronic.isAlive", [boardCode]).then(
+
+								function(response){
+
+									// Get plugins checksum from Iotronic
+									session_plugins.call('s4t.iotronic.plugin.checksum', [boardCode]).then(
+
+										function (rpc_response) {
+
+											if (rpc_response.result == "ERROR") {
+
+												logger.error("[PLUGIN-CONNECTION-RECOVERY] --> Getting plugin checksum list failed: " + rpc_response.message);
+
+											}
+											else {
+
+												CHECKSUMS_PLUGINS_LIST = rpc_response.message;
+
+												logger.debug("[PLUGIN-CONNECTION-RECOVERY] --> Plugins checksums list recovered: ", CHECKSUMS_PLUGINS_LIST);
+
+												clearInterval( checkIotronicWampConnection );
+
+											}
+
+										}
+
+									);
+
+								},
+								function(err){
+
+									logger.warn("NO WAMP CONNECTION YET!")
+
+								}
+
+							);
+
+						}
+						catch(err){
+							logger.warn('[PLUGIN-CONNECTION-RECOVERY] - Error calling "s4t.iotronic.isAlive"');
+						}
+
+
+					}
+
+				});
+
+
+			}, alive_timer * 1000);
+
+
+		}
+		else{
+
+
+			checkIotronicWampConnection = setInterval(function(){
+
+				try {
+
+					// Test if IoTronic is connected to the realm
+					session_plugins.call("s4t.iotronic.isAlive", [boardCode]).then(
+
+						function(response){
+
+							exports.pluginsLoader();
+
+							clearInterval( checkIotronicWampConnection );
+
+
+						},
+						function(err){
+
+							logger.warn("[PLUGIN-CONNECTION-RECOVERY] - No WAMP connection yet!")
+
+						}
+
+					);
+
+				}
+				catch(err){
+					logger.warn('[PLUGIN-CONNECTION-RECOVERY] - Internet connection available BUT wamp session not established!');
+					if(PLUGIN_MODULE_LOADED == false)
+						exports.pluginsBootLoader();
+
+				}
+
+
+
+			}, alive_timer * 1000);
+
+
+		}
+
+		/*
+		connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
 
 			var reachable = output.success;
 			var error_test = output.error;
@@ -2307,7 +2440,7 @@ exports.Boot = function (){
 			if (!reachable) {
 
 				//CONNECTION STATUS: FALSE
-				logger.warn("[CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: " + reachable + " - ERROR: " + error_test);
+				logger.warn("[PLUGIN-CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: " + reachable + " - ERROR: " + error_test);
 
 				exports.pluginsBootLoader();
 
@@ -2315,7 +2448,7 @@ exports.Boot = function (){
 
 					logger.warn("[PLUGIN-CONNECTION-RECOVERY] - RETRY...");
 
-					connectionTester.test(wampIP, port_wamp, 1000, function (err, output) {
+					connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
 
 						var reachable = output.success;
 						var error_test = output.error;
@@ -2402,7 +2535,7 @@ exports.Boot = function (){
 							},
 							function(err){
 
-								logger.warn("NO WAMP CONNECTION YET!")
+								logger.warn("[PLUGIN-CONNECTION-RECOVERY] - No WAMP connection yet!")
 
 							}
 
@@ -2426,6 +2559,7 @@ exports.Boot = function (){
 			}
 
 		});
+		*/
 
 	}, 5000);
 

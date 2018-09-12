@@ -41,7 +41,54 @@ AndroidDevice.prototype.Main = function (wampConnection, logger) {
 
     // CONNECTION TO WAMP SERVER --------------------------------------------------------------------------
     logger.info('[WAMP] - Opening connection to WAMP server...');
-    wampConnection.open();
+
+    // connectionTester: library used to check the reachability of Iotronic-Server/WAMP-Server
+    var connectionTester = require('connection-tester');
+
+    var checkIotronicWampConnection = setInterval(function(){
+
+        connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
+
+            var reachable = output.success;
+            var error_test = output.error;
+
+            if (!reachable) {
+                //CONNECTION STATUS: FALSE
+                logger.warn("[SYSTEM] - INTERNET BOOT STATUS: " + reachable + " - ERROR: " + error_test);
+            }
+            else {
+
+                clearInterval( checkIotronicWampConnection );
+
+                wampConnection.open();
+
+            }
+
+        });
+
+    }, 30000);
+
+
+    connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
+
+        var reachable = output.success;
+        var error_test = output.error;
+
+        if (!reachable) {
+            //CONNECTION STATUS: FALSE
+            logger.warn("[SYSTEM] - INTERNET BOOT STATUS: " + reachable + " - ERROR: " + error_test);
+        }
+        else {
+
+            clearInterval( checkIotronicWampConnection );
+
+            wampConnection.open();
+
+        }
+
+    });
+
+
     //-----------------------------------------------------------------------------------------------------
     
 };

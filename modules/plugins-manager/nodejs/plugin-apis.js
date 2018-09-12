@@ -1,6 +1,6 @@
 //############################################################################################
 //##
-//# Copyright (C) 2014-2017 Dario Bruneo, Francesco Longo, Giovanni Merlino, Nicola Peditto
+//# Copyright (C) 2014-2018 Dario Bruneo, Francesco Longo, Giovanni Merlino, Nicola Peditto
 //##
 //# Licensed under the Apache License, Version 2.0 (the "License");
 //# you may not use this file except in compliance with the License.
@@ -18,8 +18,18 @@
 
 
 SETTINGS = process.env.IOTRONIC_HOME+'/settings.json';
-nconf = require('nconf');
-nconf.file ({file: SETTINGS});
+
+
+try{
+
+    nconf = require('nconf');
+    nconf.file ({file: SETTINGS});
+
+}
+catch (err) {
+
+    console.log("[SYSTEM] - Error parsing settings file: "+JSON.stringify(err));
+}
 
 var Q = require("q");
 
@@ -52,6 +62,27 @@ exports.getPosition = function (){
     
     return position;
 	
+};
+
+exports.getExtraInfo = function (){
+
+    try{
+
+        if(nconf.get('config:extra') != undefined || nconf.get('config:extra') != null)
+            var extra = nconf.get('config:extra');
+        else
+            var extra = "NA"
+
+    }
+    catch (err) {
+
+        console.log("[SYSTEM] - parsing extra-info error: "+JSON.stringify(err));
+
+        var extra = "NA"
+    }
+
+    return extra;
+
 };
 
 exports.getBoardId = function (){

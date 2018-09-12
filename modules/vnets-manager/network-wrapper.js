@@ -1,6 +1,6 @@
 //############################################################################################
 //##
-//# Copyright (C) 2014-2017 Dario Bruneo, Francesco Longo, Giovanni Merlino,
+//# Copyright (C) 2014-2018 Dario Bruneo, Francesco Longo, Giovanni Merlino,
 //# Nicola Peditto, Fabio Verboso
 //##
 //# Licensed under the Apache License, Version 2.0 (the "License");

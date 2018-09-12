@@ -57,12 +57,13 @@ reboot
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile md5 python-shell net node-red
+npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile md5 python-shell net
 npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 
 ##### Install the Lightning-rod
 ```
+mkdir -p /etc/iotronic/
 mkdir -p /var/lib/iotronic/plugins
 mkdir -p /var/lib/iotronic/drivers/mountpoints/
 mkdir -p $NODE_PATH/@mdslab/
@@ -70,18 +71,20 @@ mkdir -p $NODE_PATH/@mdslab/
 git clone --depth=1 git://github.com/MDSLab/s4t-lightning-rod.git $NODE_PATH/@mdslab/iotronic-lightning-rod
 
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/systemd/system/s4t-lightning-rod.service /etc/systemd/system/lightning-rod.service
-sed -i "s/Environment=\"LIGHTNINGROD_HOME=\"/Environment=\"LIGHTNINGROD_HOME=\/usr\/lib\/node_modules\/@mdslab\/iotronic-lightning-rod\"/g" /etc/systemd/system/lightning-rod.service
+sed -i "s|Environment=\"LIGHTNINGROD_HOME=\"|Environment=\"LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod\"|g" /etc/systemd/system/lightning-rod.service
 chmod +x /etc/systemd/system/lightning-rod.service
 systemctl daemon-reload
 
 mkdir -p /var/log/iotronic/
-touch /var/log/iotronic/lightning-rod.log
+mkdir -p /var/log/wstun/
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/logrotate.d/lightning-rod.log /etc/logrotate.d/lightning-rod.log
 
 echo "IOTRONIC_HOME=/var/lib/iotronic" | tee -a /etc/environment
 echo "LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod" | tee -a /etc/environment
+echo "NODE_TLS_REJECT_UNAUTHORIZED=0" | tee -a /etc/environment
 source /etc/environment > /dev/null
 
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example /etc/iotronic/authentication.json
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
@@ -91,15 +94,38 @@ reboot
 
 
 ## Configure Lightning-rod
+Now we have to choose which Lightning-rod modules enable. In the /var/lib/iotronic/settings.json configuration file there is the "modules" section:
+```
+"modules": {
+
+        "plugins_manager": {
+            "enabled": true,
+            "boot": true,
+            "alive_timer": 60
+        },
+        "services_manager": {
+            "enabled": true,
+            "boot": false
+        },
+
+        etc
+
+}
+```
+
+In each module section (e.g. "plugins_manager", "services_manager", etc) to enable that module you have to set at "true" the "enabled" field.
+
 At the end of the installation process we have to execute the LR configuration script:
 ```
 $NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh
 ```
 This script asks the following information:
 ```
-* device type: "raspberry_pi"
+* device type: 1 -> 'server', 2 -> 'arduino_yun', 3 -> 'raspberry_pi'
 
 * Board ID: UUID released by the registration process managed by IoTronic.
+
+* Board password: password to log in to Iotronic
 
 * IoTronic server IP
 

@@ -1,6 +1,6 @@
 //############################################################################################
 //##
-//# Copyright (C) 2014-2017 Dario Bruneo, Francesco Longo, Giovanni Merlino,
+//# Copyright (C) 2014-2018 Dario Bruneo, Francesco Longo, Giovanni Merlino,
 //# Nicola Peditto, Fabio Verboso
 //##
 //# Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,9 @@ var fs = require("fs");
 
 var session_wamp;
 
-var utility = require('./../../board-management');
+var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
+
+var utility = require(LIGHTNINGROD_HOME + '/modules/board-manager/board-management');
 
 var socat_pid = null;
 var wstun_pid = null;
@@ -37,7 +39,6 @@ var wstun_pid = null;
 
 var spawn = require('child_process').spawn;
 
-var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
 
 
 function update_net_conf(configFile, section) {
