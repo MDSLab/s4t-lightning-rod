@@ -9,7 +9,7 @@ Everything needs to be run as root!
 
 ##### Install dependencies via apt-get
 ```
-apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate build-essential
+apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate build-essential gdb
 ```
 
 ##### Install latest NodeJS 8.x release
@@ -57,7 +57,7 @@ reboot
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile md5 python-shell net
+npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile md5 python-shell net lsof
 npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 

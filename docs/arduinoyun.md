@@ -13,7 +13,7 @@ echo $NODE_PATH
 ##### Install dependencies via opkg
 ```
 opkg update
-opkg install logrotate ntpdate nano git unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs
+opkg install logrotate ntpdate nano git unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs gdb
 opkg install kmod-gre kmod-ip6-tunnel kmod-iptunnel4 kmod-iptunnel6 kmod-ipv6 kmod-tun
 ```
 
@@ -33,7 +33,7 @@ If you have some problems during npm dependencies installation phase we suggest 
 
 ##### Install required NodeJS modules via npm
 ```
-npm install -g requestify is-running connection-tester@0.1.2 log4js@1.1.1 q fs-access util md5 python-shell net
+npm install -g requestify is-running connection-tester@0.1.2 log4js@1.1.1 q fs-access util md5 python-shell net lsof
 ```
 
 ##### Install the Lightning-rod
