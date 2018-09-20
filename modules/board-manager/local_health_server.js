@@ -33,74 +33,103 @@ exports.start = function (){
 
     var HealthLRserver = http.createServer(function(request, response) {
 
-        var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-        var timestamp = (new Date(Date.now() - tzoffset)).toISOString();
+        if(request.url == "/diagnostics"){
 
-        connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
+            var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+            var timestamp = (new Date(Date.now() - tzoffset)).toISOString();
 
-            var reachable = output.success;
-            var error_test = output.error;
+            connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
 
-            if (reachable) {
+                var reachable = output.success;
+                var error_test = output.error;
 
-                exports.sendRPCalive(function (alive_msg) {
+                if (reachable) {
 
-                    try{
-                        response.writeHead(200, {"Content-Type": "application/json"});
+                    exports.sendRPCalive(function (alive_msg) {
 
-                        var health = {
-                            "lr_pid": LR_PID,
-                            "internet_connection": {
-                                "status": "true",
-                                "reason": error_test
-                            },
-                            "wamp_connection": alive_msg,
-                            "board_id": boardCode,
-                            "timestamp":timestamp
-                        };
+                        try{
+                            response.writeHead(200, {"Content-Type": "application/json"});
 
-                        response.write(JSON.stringify(health),function(msg) { response.end(); });
+                            var health = {
+                                "lr_pid": LR_PID,
+                                "internet_connection": {
+                                    "status": "true",
+                                    "reason": error_test
+                                },
+                                "wamp_connection": alive_msg,
+                                "board_id": boardCode,
+                                "timestamp":timestamp
+                            };
 
-                    }
-                    catch (err) {
-                        response.writeHead(200, {"Content-Type": "text/plain"});
-                        var health = "Health Check error!";
-                        response.write(JSON.stringify(health),function(msg) { response.end(); });
+                            response.write(JSON.stringify(health),function(msg) { response.end(); });
 
-                    }
+                        }
+                        catch (err) {
+                            response.writeHead(200, {"Content-Type": "text/plain"});
+                            var health = "Health Check error!";
+                            response.write(JSON.stringify(health),function(msg) { response.end(); });
 
-                });
+                        }
 
-            }
-            else{
+                    });
 
-                response.writeHead(200, {"Content-Type": "application/json"});
+                }
+                else{
 
-                var health = {
-                    "lr_pid": LR_PID,
-                    "internet_connection": {
-                        "status": "false",
-                        "log": error_test
-                    },
-                    "wamp_connection": {
-                        "status": "false",
-                        "reason": "No Internet connection!"
-                    },
-                    "board_id": boardCode,
-                    "timestamp":timestamp
-                };
+                    response.writeHead(200, {"Content-Type": "application/json"});
 
-                response.write(JSON.stringify(health),function(msg) { response.end(); });
+                    var health = {
+                        "lr_pid": LR_PID,
+                        "internet_connection": {
+                            "status": "false",
+                            "log": error_test
+                        },
+                        "wamp_connection": {
+                            "status": "false",
+                            "reason": "No Internet connection!"
+                        },
+                        "board_id": boardCode,
+                        "timestamp":timestamp
+                    };
 
-            }
+                    response.write(JSON.stringify(health),function(msg) { response.end(); });
 
-        });
+                }
+
+            });
+
+        }
+        else{
+
+            response.writeHead(200, {"Content-Type": "text/html"});
+            response.write("<!DOCTYPE 'html'>");
+            response.write("<html>");
+            response.write("<head>");
+            response.write("<title>Lightning-rod REST server</title>");
+            response.write("</head>");
+            response.write("<body>");
+            response.write("Lightning-rod management services:");
+            response.write("<br>");
+            response.write("<ul>");
+
+            response.write("<li><a href='http://"+request.headers.host+"/diagnostics'>Diagnostics</a></li>");
+
+            response.write("</ul>");
+            response.write("</body>");
+            response.write("</html>");
+            response.end();
+
+        }
+
+
 
 
 
 
 
     });
+
+
 
     HealthLRserver.listen(health_rest_port, function() {
         logger.info("[HEALTH] - Health LR server is listening on port " + health_rest_port);
