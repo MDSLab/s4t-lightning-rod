@@ -316,43 +316,8 @@ exports.Init_Ligthning_Rod = function (callback) {
         logger.info('[SYSTEM] - LR PID: ' + LR_PID);
     }
 
-
-    //---HEALTH-CHECK-REST-SERVER---------------------------------------------------------------------------------------
-    var http = require('http');
-    var HealthLRserver = http.createServer(function(request, response) {
-
-        var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-        var timestamp = (new Date(Date.now() - tzoffset)).toISOString();
-
-        exports.sendRPCalive(function (alive_msg) {
-
-            try{
-                response.writeHead(200, {"Content-Type": "application/json"});
-                var health = {
-                    "lr_pid": LR_PID,
-                    "wamp_connection": alive_msg,
-                    "board_id": boardCode,
-                    "timestamp":timestamp
-                };
-                response.write(JSON.stringify(health));
-                response.end();
-            }
-            catch (err) {
-                response.writeHead(200, {"Content-Type": "text/plain"});
-                var health = "Health Check error!";
-                response.write(JSON.stringify(health));
-                response.end();
-            }
-
-        });
-        
-    });
-
-    HealthLRserver.listen("8888", function() {
-        logger.info("[SYSTEM] - Health LR server is listening...");
-    });
-    //------------------------------------------------------------------------------------------------------------------
-
+    var HealthManager = require(LIGHTNINGROD_HOME + '/modules/board-manager/local_health_server');
+    HealthManager.start();
 
     /*
      OFF	nothing is logged
@@ -1186,55 +1151,6 @@ exports.IotronicLogin = function (session) {
     manage_WAMP_connection(session)
 
 };
-
-
-
-
-exports.sendRPCalive = function (callback) {
-
-    var checkIotronicResponse = setTimeout(function(){
-
-        callback("EUNREACH")
-
-    }, 5000);
-
-
-    try{
-
-
-        // Test if IoTronic is connected to the realm
-        board_session.call("s4t.iotronic.isAlive", [boardCode]).then(
-
-            function(response){
-
-                //logger.info("[WAMP-ALIVE] - WAMP CONNECTION STATUS: " + JSON.stringify(response.message));
-                clearTimeout(checkIotronicResponse);
-                callback("ALIVE")
-
-            },
-            function (err) {
-
-                // WAMP connection is OK but I got an error on RPC communication
-                //logger.warn("[WAMP-ALIVE] - WAMP CONNECTION STATUS: " + JSON.stringify(err));
-                clearTimeout(checkIotronicResponse);
-                callback("ERROR")
-
-
-            }
-
-        );
-
-    }
-    catch (err) {
-
-        callback("ERROR")
-
-    }
-
-
-};
-
-
 
 
 exports.exportManagementCommands = function (session, callback) {

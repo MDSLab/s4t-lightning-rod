@@ -95,6 +95,7 @@ LR_PID = process.pid;
 //Init_Ligthning_Rod(function (check) {
 manageBoard.Init_Ligthning_Rod(function (check) {
 
+
 	if(check.result === "ERROR"){
 
 		// Got a critical error in configuration file (settings.json)
