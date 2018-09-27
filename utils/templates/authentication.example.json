@@ -15,7 +15,7 @@
 			"port_wamp": "8181",
 			"realm": "s4t",
 			"wamp_socket_recovery": "true",
-			"rpc_alive_time": 60,
+			"rpc_alive_time": 600,
 			"check_skt_time": 30
 		},
 		"wstun":

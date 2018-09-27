@@ -25,8 +25,10 @@ def main(plugin_name, params, api):
 
     extra = api.getExtraInfo()
 
-    result = extra['field1']
+    #result = extra['field1']
+    #logging.info(str(extra) + " - " + str(result))
 
-    logging.info(str(extra) + " - " + str(result))
+    result = extra
+    logging.info("Board extra-info: " + str(result))
 
     return result

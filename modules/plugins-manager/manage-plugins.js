@@ -759,7 +759,7 @@ function pySyncStarter(plugin_name, plugin_json) {
 
 				response.result = "ERROR";
 				response.message = data_parsed.payload;
-				logger.info('[PLUGIN] - Error in '+plugin_name + ':\n'+JSON.stringify(response.message, null, "\t"));
+				logger.warn('[PLUGIN] - Error in '+plugin_name + ':\n'+JSON.stringify(response.message, null, "\t"));
 				d.resolve(response);
 
 			}else{
