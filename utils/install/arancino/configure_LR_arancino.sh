@@ -26,7 +26,7 @@ sed -i "s/\"bin\":.*\"wstun\"/\"bin\":\"\/usr\/lib\/node_modules\/@mdslab\/wstun
 echo " - authentication.json file configured."
 
 
-cp /etc/init-cfg/lightning-rod /etc/init.d/
+#cp /etc/init-cfg/lightning-rod /etc/init.d/
 /etc/init.d/lightning-rod enable
 echo " - Lightning-rod enabled at boot."
 
