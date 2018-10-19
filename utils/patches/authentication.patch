@@ -1,0 +1,13 @@
+@@ -14,8 +14,9 @@
+ 			"url_wamp": "",
+ 			"port_wamp": "8181",
+ 			"realm": "s4t",
+-			"wifi_force_reconnect": "true",
+-			"wifi_force_reconnect_time": 60
++			"wamp_socket_recovery": "true",
++			"rpc_alive_time": 600,
++			"check_skt_time": 30
+ 		},
+ 		"wstun":
+ 		{
+

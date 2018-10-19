@@ -44,6 +44,10 @@ IOTRONIC_AUTH="/etc/iotronic"
 
 if [ -d "$IOTRONIC_AUTH" ]; then
 
+
+    LR_INSTALLED_VERSION=`cat /var/lib/iotronic/patches/package.json | grep \"version\" | awk '{print $2}' | tr -d , | tr -d \"`
+    logger -t DEBUG "Authentication settings file already present (LR v$LR_INSTALLED_VERSION)"
+
     rm_check=
     echo -n "Do you want to keep Lightning-rod authentication settings (in /etc/iotronic) ? (yes/no) "
     read rm_check
@@ -52,17 +56,26 @@ if [ -d "$IOTRONIC_AUTH" ]; then
 
         echo "--> Lightning-rod authentication settings are save!"
 
+
+        if [ "$LR_INSTALLED_VERSION" == "2.2.0" ]; then
+                echo "--> APPLY THE 2.3.0 PATCH"
+                patch /etc/iotronic/authentication.json $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/patches/authentication.patch
+        fi
+
+
+    fi
+
+    if [ "$rm_check" = "no" ] || [ ! -d "$IOTRONIC_HOME" ]; then
+
+        mkdir -p /etc/iotronic/
+
+        cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example.json /etc/iotronic/authentication.json
+
     fi
 
 fi
 
-if [ "$rm_check" = "no" ] || [ ! -d "$IOTRONIC_HOME" ]; then
 
-    mkdir -p /etc/iotronic/
-
-    cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example.json /etc/iotronic/authentication.json
-
-fi
 
 
 
