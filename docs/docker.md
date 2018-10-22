@@ -52,10 +52,10 @@ points at the folder that you created in the first step (e.g: /etc/iotronic/):
 
 * for "x86_64":
 ```
-docker run -d -v lr_data:/var/lib/iotronic -v </CONFIG/PATH/>/settings.json:/var/lib/iotronic/settings.json -v </CONFIG/PATH/>/authentication.json:/etc/iotronic/authentication.json -net=host --name=lightning-rod mdslab/iotronic-lightning-rod
+docker run -d -v lr_data:/var/lib/iotronic -v </CONFIG/PATH/>/settings.json:/var/lib/iotronic/settings.json -v </CONFIG/PATH/>/authentication.json:/etc/iotronic/authentication.json --net=host --name=lightning-rod mdslab/iotronic-lightning-rod
 ```
 
 * for "ARMv7l" on Raspberry Pi 3:
 ```
-docker run -d -v lr_data:/var/lib/iotronic -v </CONFIG/PATH/>/settings.json:/var/lib/iotronic/settings.json -v </CONFIG/PATH/>/authentication.json:/etc/iotronic/authentication.json -net=host --name=lightning-rod mdslab/rpi-iotronic-lightning-rod
+docker run -d -v lr_data:/var/lib/iotronic -v </CONFIG/PATH/>/settings.json:/var/lib/iotronic/settings.json -v </CONFIG/PATH/>/authentication.json:/etc/iotronic/authentication.json --net=host --name=lightning-rod mdslab/rpi-iotronic-lightning-rod
 ```

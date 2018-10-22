@@ -130,6 +130,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		wampConnection = new autobahn.Connection({
 			url: wampUrl,
 			realm: wampRealm,
+			tlsConfiguration: {},
 			max_retries: -1
 		});
 

@@ -4,8 +4,7 @@ RUN  apt-get update && apt-get install -y \
  socat dsniff fuse libfuse-dev git ntpdate python pkg-config build-essential gdb \
  && rm -rf /var/lib/apt/lists/*
 
-
-RUN npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile md5 python-shell net node-red lsof\
+RUN npm install -g --unsafe gyp autobahn@18.10.2 ws@6.1.0 nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile md5 python-shell net node-red lsof\
  && npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0 \
  && npm cache --force clean
 

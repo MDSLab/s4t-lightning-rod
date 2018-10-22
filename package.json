@@ -12,8 +12,8 @@
     "uninstall": "./scripts/postuninst"
   },
   "dependencies": {
-    "autobahn": ">=0.9.9",
-    "ws":"4.1.0",
+    "autobahn": "18.10.2",
+    "ws":"6.1.0",
     "connection-tester": ">=0.1.1",
     "fs-access": ">=1.0.1",
     "fuse-bindings": "2.8.1",
