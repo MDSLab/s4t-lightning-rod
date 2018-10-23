@@ -1,6 +1,6 @@
 {
   "name": "@mdslab/iotronic-lightning-rod",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Implementation of the Lightning-rod, the Stack4Things node-side probe (this version works with the standalone version of IoTronic) http://stack4things.unime.it/",
   "main": "lightning-rod.js",
   "directories": {
@@ -14,16 +14,16 @@
   "dependencies": {
     "autobahn": "18.10.2",
     "ws":"6.1.0",
-    "connection-tester": ">=0.1.1",
-    "fs-access": ">=1.0.1",
+    "connection-tester": "0.2.0",
+    "fs-access": "1.0.1",
     "fuse-bindings": "2.8.1",
-    "is-running": ">=2.0.0",
+    "is-running": "2.1.0",
     "log4js": "1.1.1",
-    "mknod": ">=1.1.0",
-    "nconf": ">=0.8.4",
-    "q": ">=0.9.7",
-    "requestify": ">=0.1.17",
-    "md5":"<=2.2.1",
+    "mknod": "1.1.0",
+    "nconf": "0.10.0",
+    "q": "1.5.1",
+    "requestify": "0.2.5",
+    "md5":"2.2.1",
     "python-shell":"0.5.0",
     "net":"1.0.2",
     "lsof":"0.1.0"
