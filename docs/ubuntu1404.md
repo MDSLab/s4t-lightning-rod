@@ -52,7 +52,7 @@ reboot
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g --unsafe gyp autobahn@18.10.2 ws@6.1.0 nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile md5 python-shell net lsof
+npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile md5 python-shell net lsof
 npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 

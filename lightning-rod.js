@@ -130,7 +130,6 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		wampConnection = new autobahn.Connection({
 			url: wampUrl,
 			realm: wampRealm,
-			tlsConfiguration: {},
 			max_retries: -1
 		});
 
@@ -474,8 +473,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 			logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
 			lyt_device.Main(wampConnection, logger);
 
-		}
-		catch (e) {
+		}catch (e) {
 
 			logger.error('[SYSTEM] - Loading IoT device failure: ', e);
 			logger.error('[SYSTEM] - Device "' + device + '" not supported!');
