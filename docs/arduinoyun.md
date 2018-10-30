@@ -87,7 +87,7 @@ In each module section (e.g. "plugins_manager", "services_manager", etc) to enab
 
 At the end of the installation process we have to execute the LR configuration script:
 ```
-$NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh
+$NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure
 ```
 This script asks the following information:
 ```
@@ -97,17 +97,10 @@ This script asks the following information:
 
 * Board password: password to log in to Iotronic
 
-* IoTronic server IP
-
 * WAMP server URL
-```
 
-Check ENV variables
+* WSTUN URL
 ```
-IOTRONIC_HOME=/var/lib/iotronic
-LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod
-```
-otherwise add them in /etc/environment
 
 
 ##### Configure cron to launch the Lightning-rod if not yet running

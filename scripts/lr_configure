@@ -1,0 +1,196 @@
+#!/bin/sh
+
+INTERACTIVE=$1
+PARAM=`echo $1 | awk -F= '{print $1}'`
+VALUE=`echo $1 | awk -F= '{print $2}'`
+
+if [ "$PARAM" = "-i" ];
+then
+
+    IOTRONIC_AUTH="/etc/iotronic"
+
+    # Configure LR ---------------------------------------------------------------------------------------------------------------------------------------------------
+    DEVICE=
+    echo -n "Enter device model: [1 -> 'Generic server', 2 -> 'Arduino YUN', 3 -> 'Raspberry Pi', 4 -> 'Kitra']: "
+    read DEVICE
+    echo "-->" $DEVICE
+    if [ "$DEVICE" != "1" ] && [ "$DEVICE" != "2" ] && [ "$DEVICE" != "3" ] && [ "$DEVICE" != "4" ] ; then
+        echo " --> WRONG LAYOUT SELECTED: " $DEVICE
+    else
+
+        if [ "$DEVICE" = "1" ]; then
+
+            sed -i "s/\"layout\":.*/\"layout\": \"server\"\,/g" $IOTRONIC_AUTH/authentication.json
+
+            DISTRO=`cat /etc/*release | grep DISTRIB_RELEASE | cut -d "=" -f2`
+
+            echo "--> Server Distribution: " $DISTRO
+
+        fi
+
+
+        if [ "$DEVICE" = "2" ]; then
+
+            sed -i "s/\"layout\":.*/\"layout\": \"arduino_yun\"\,/g" $IOTRONIC_AUTH/authentication.json
+
+            cp $NODE_PATH/@mdslab/iotronic-lightning-rod/etc/init.d/s4t-lightning-rod_yun /etc/init.d/lightning-rod
+            sed -i "s|<LIGHTNINGROD_HOME>|export LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod|g" /etc/init.d/lightning-rod
+            chmod +x /etc/init.d/lightning-rod
+
+        fi
+
+
+        if [ "$DEVICE" = "3" ]; then
+
+            sed -i "s/\"layout\":.*/\"layout\": \"raspberry_pi\"\,/g" $IOTRONIC_AUTH/authentication.json
+
+        fi
+
+
+        if [ "$DEVICE" = "4" ]; then
+
+            echo "--> Device layout: Kitra"
+
+            sed -i "s/\"layout\":.*/\"layout\": \"kitra\"\,/g" $IOTRONIC_AUTH/authentication.json
+
+        fi
+
+
+
+        BOARD_ID=
+        echo -n "Enter s4t board ID: "
+        read BOARD_ID
+        echo "-->" $BOARD_ID
+        sed -i "s/\"code\":.*/\"code\": \"$BOARD_ID\"\,/g" $IOTRONIC_AUTH/authentication.json
+
+
+        LR_PW=
+        echo -n "Enter LR password: "
+        read LR_PW
+        echo "-->" $LR_PW
+        sed -i "s,\"password\":.*,\"password\": \"$LR_PW\",g" $IOTRONIC_AUTH/authentication.json
+
+
+        WAMP_URL=
+        echo -n "Enter WAMP SERVER URL (e.g. ws://IP or wss://IP): "
+        read WAMP_URL
+        echo "-->" $WAMP_URL
+        sed -i "s,\"url_wamp\":.*,\"url_wamp\": \"$WAMP_URL\"\,,g" $IOTRONIC_AUTH/authentication.json
+
+
+        same_url=
+        echo -n "Do you want confirm the same URL for the reverse tunnel ($WAMP_URL)? (yes/no) "
+        read same_url
+
+        if [ "$same_url" = "yes" ]; then
+            sed -i "s,\"ws_url\":.*,\"ws_url\": \"$WAMP_URL\"\,,g" $IOTRONIC_AUTH/authentication.json
+        else
+
+            WSTUN_URL=
+            echo -n "Enter WSTUN URL (e.g. ws://IP or wss://IP): "
+            read WSTUN_URL
+            echo "-->" $WSTUN_URL
+            sed -i "s,\"ws_url\":.*,\"ws_url\": \"$WSTUN_URL\"\,,g" $IOTRONIC_AUTH/authentication.json
+
+        fi
+
+
+    fi
+
+else
+
+
+    IOTRONIC_AUTH="/etc/iotronic"
+
+    if [ "$#" -ne 5 ]; then
+            echo "Usage: ./lr_configure <DEVICE_LAYOUT> <IOTRONIC_BOARD_ID> <IOTRONIC_BOARD_PASSWORD> <WAMP_URL> <WSTUN_URL>"
+            echo -n " --> <DEVICE_LAYOUT> supported: [1 -> 'Generic server', 2 -> 'Arduino YUN', 3 -> 'Raspberry Pi', 4 -> 'Kitra']"
+            exit
+    fi
+
+    echo "Stack4Things Lightning-rod configuration with the following parameters:"
+    echo " --> Iotronic device ID: "$2
+    echo " --> Iotronic device password: "$3
+    echo " --> WAMP URL: "$4
+    echo " --> WSTUN URL: "$5
+    echo -e "\n"
+
+    # Configure LR ---------------------------------------------------------------------------------------------------------------------------------------------------
+    DEVICE=$1
+
+    if [ "$DEVICE" != "1" ] && [ "$DEVICE" != "2" ] && [ "$DEVICE" != "3" ] && [ "$DEVICE" != "4" ] ; then
+
+        echo "WRONG LAYOUT SELECTED: " $DEVICE
+        echo -n " --> specify one of these device models: [1 -> 'Generic server', 2 -> 'Arduino YUN', 3 -> 'Raspberry Pi', 4 -> 'Kitra']"
+
+    else
+
+        echo "--> Device ID: " $DEVICE
+
+        if [ "$DEVICE" = "1" ]; then
+
+            echo "--> Device layout: Generic server"
+
+            sed -i "s/\"layout\":.*/\"layout\": \"server\"\,/g" $IOTRONIC_AUTH/authentication.json
+
+            DISTRO=`cat /etc/*release | grep DISTRIB_RELEASE | cut -d "=" -f2`
+
+            echo "--> OS distribution: " $DISTRO
+
+        fi
+
+
+        if [ "$DEVICE" = "2" ]; then
+
+            echo "--> Device layout: Arduino YUN"
+
+            #sed -i "s/\"layout\":.*/\"layout\": \"arduino_yun\"\,/g" $IOTRONIC_AUTH/authentication.json
+
+            echo "--> Please follow the manual installation procedure: https://github.com/MDSLab/s4t-lightning-rod/blob/master/docs/arduinoyun.md"
+
+        fi
+
+
+        if [ "$DEVICE" = "3" ]; then
+
+            echo " --> Device layout: Raspberry Pi"
+
+            sed -i "s/\"layout\":.*/\"layout\": \"raspberry_pi\"\,/g" $IOTRONIC_AUTH/authentication.json
+
+        fi
+
+
+        if [ "$DEVICE" = "4" ]; then
+
+            echo " --> Device layout: Kitra"
+
+            sed -i "s/\"layout\":.*/\"layout\": \"kitra\"\,/g" $IOTRONIC_AUTH/authentication.json
+
+        fi
+
+
+
+        BOARD_ID=$2
+        # echo "-->" $BOARD_ID
+        sed -i "s/\"code\":.*\"\"/\"code\": \"$BOARD_ID\"/g" $IOTRONIC_AUTH/authentication.json
+
+        LR_PW=$3
+        # echo "-->" $LR_PW
+        sed -i "s,\"password\":.*,\"password\": \"$LR_PW\",g" $IOTRONIC_AUTH/authentication.json
+
+        WAMP_URL=$4
+        # echo "-->" $WAMP_URL
+        sed -i "s,\"url_wamp\":.*,\"url_wamp\": \"$WAMP_URL\"\,,g" $IOTRONIC_AUTH/authentication.json
+
+        WSTUN_URL=$5
+        # echo "-->" $WSTUN_URL
+        sed -i "s,\"ws_url\":.*,\"ws_url\": \"$WSTUN_URL\"\,,g" $IOTRONIC_AUTH/authentication.json
+
+
+
+    fi
+
+
+fi
+
+

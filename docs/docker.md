@@ -30,19 +30,23 @@ sudo wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/util
 ```
 cd /tmp/
 
-wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/install/docker/configure_LR_docker.sh -O lr_configure.sh
+wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/install/docker/configure_LR_docker.sh -O lr_configure
 
-chmod +x lr_configure.sh
+chmod +x lr_configure
 
-lr_configure.sh <BOARD_ID> <BOARD_PASSWORD> <WAMP_URL> </CONFIG/PATH/>
+lr_configure <BOARD_ID> <BOARD_PASSWORD> <WAMP_URL> <WSTUN_URL> </CONFIG/PATH/>
 ```
 This script asks the following information:
 ```
-* Board_ID: UUID released by the registration process managed by IoTronic.
+* Device ID: UUID released by the registration process managed by IoTronic.
 
-* Board password: password to log in to Iotronic
+* Device Iotronic password: password to log in to Iotronic
 
-* WAMP_URL: ws://<IP> or wss://<IP>
+* WAMP url: ws://<IP> or wss://<IP>
+
+* WSTUN url: ws://<IP> or wss://<IP>
+
+* Configuration files path: e.g. /etc/iotronic/
 ```
 
 ## Get container

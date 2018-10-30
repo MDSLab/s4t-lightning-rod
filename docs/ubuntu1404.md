@@ -114,33 +114,28 @@ In each module section (e.g. "plugins_manager", "services_manager", etc) to enab
 
 At the end of the installation process we have to execute the LR configuration script:
 ```
-$NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure.sh
+$NODE_PATH/@mdslab/iotronic-lightning-rod/scripts/lr_configure
 ```
-This script asks the following information:
+You can execute this script in interactive mode:
 ```
-* device type: 1 -> 'server', 2 -> 'arduino_yun', 3 -> 'raspberry_pi'
-
-* Board ID: UUID released by the registration process managed by IoTronic.
-
-* Board password: password to log in to Iotronic
-
-* IoTronic server IP
-
-* WAMP server URL
+$ ./lr_configure -i
 ```
 
+or in shell-mode passing the following parameters:
+```
+$ ./lr_configure <DEVICE_LAYOUT> <IOTRONIC_BOARD_ID> <IOTRONIC_BOARD_PASSWORD> <WAMP_URL> <WSTUN_URL>
 
-##### Configure logrotate
-nano /etc/logrotate.d/lightning-rod.log
+* <DEVICE_LAYOUT>: 1 -> 'server', 2 -> 'arduino_yun', 3 -> 'raspberry_pi', 4 -> 'kitra'
+
+* <IOTRONIC_BOARD_ID>: ID released by the registration process managed by IoTronic.
+
+* <IOTRONIC_BOARD_PASSWORD>: password to log in to Iotronic
+
+* <WAMP_URL>: Crossbar server URL
+
+* <WSTUN_URL>: WSTUN server URL
 ```
-/var/log/iotronic/lightning-rod.log {
-    weekly
-    rotate = 3
-    compress
-    su root root
-    maxsize 5M
-}
-```
+
 
 ## Start Lightning-rod
 ```
