@@ -44,5 +44,7 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 * [Installation guide for Ubuntu 16.04](https://github.com/MDSLab/s4t-lightning-rod/blob/master/docs/ubuntu1604.md)
 * [Installation guide for Ubuntu 14.04](https://github.com/MDSLab/s4t-lightning-rod/blob/master/docs/ubuntu1404.md)
 
+<!--
 ### LXD
 If you want to install Lightning-rod within an LXD container, you can follow the first part of the IoTronic installation guide you can find [here](https://github.com/MDSLab/s4t-iotronic-standalone/blob/master/docs/installation_lxd.md).
+-->

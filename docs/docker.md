@@ -34,7 +34,7 @@ wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/ins
 
 chmod +x lr_configure
 
-lr_configure <BOARD_ID> <BOARD_PASSWORD> <WAMP_URL> <WSTUN_URL> </CONFIG/PATH/>
+./lr_configure <BOARD_ID> <BOARD_PASSWORD> <WAMP_URL> <WSTUN_URL> </CONFIG/PATH/>
 ```
 This script asks the following information:
 ```

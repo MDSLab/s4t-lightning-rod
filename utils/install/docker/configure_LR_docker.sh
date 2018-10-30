@@ -1,16 +1,18 @@
 #!/bin/sh
 
-if [ "$#" -ne 3 ]; then
-        echo "Usage: ./configure_LR_arancino.sh <BOARD_ID> <BOARD_PASSWORD> <WAMP_URL> <WSTUN_URL> </CONFIG/PATH/>"
-        exi
+
+if [ "$#" -ne 5 ]; then
+        echo "Usage: ./lr_configure <BOARD_ID> <BOARD_PASSWORD> <WAMP_URL> <WSTUN_URL> </CONFIG/PATH/>"
+        exit
 fi
 
-echo "Stack4Things Lightning-rod configuration with the following parameters:"
-echo " --> Device UUID: "$1
-echo " --> Device password: "$2
+echo "Lightning-rod configuration with the following parameters:"
+echo " --> Iotronic device ID: "$1
+echo " --> Iotronic device password: "$2
 echo " --> WAMP URL: "$3
 echo " --> WSTUN URL: "$4
 echo " --> Configuration file path: "$5
+
 
 sed -i "s/\"layout\":.*\"\"/\"layout\": \"server\"/g" $5
 sed -i "s/\"code\":.*\"\"/\"code\": \"$1\"/g" $5
