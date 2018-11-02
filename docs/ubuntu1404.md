@@ -40,7 +40,10 @@ reboot
 ## Install from NPM
 ```
 npm install -g --unsafe @mdslab/wstun
+
 npm install -g --unsafe @mdslab/iotronic-lightning-rod
+
+reboot
 
 ```
 
@@ -49,7 +52,7 @@ npm install -g --unsafe @mdslab/iotronic-lightning-rod
 
 ##### Install required NodeJS modules via npm:
 ```
-npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile
+npm install -g --unsafe gyp autobahn nconf @mdslab/wstun fuse-bindings requestify is-running connection-tester log4js@1.1.1 q fs-access mknod jsonfile md5 python-shell net node-red
 npm install -g --unsafe https://github.com/PlayNetwork/node-statvfs/tarball/v3.0.0
 ```
 
@@ -78,6 +81,8 @@ source /etc/environment > /dev/null
 cp /var/lib/iotronic/iotronic-lightning-rod/settings.example.json /var/lib/iotronic/settings.json
 cp /var/lib/iotronic/iotronic-lightning-rod/plugins.example.json /var/lib/iotronic/plugins/plugins.json
 cp /var/lib/iotronic/iotronic-lightning-rod/drivers.example.json /var/lib/iotronic/drivers/drivers.json
+
+reboot
 ```
 
 

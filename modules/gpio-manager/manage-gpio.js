@@ -17,8 +17,8 @@
 //##
 //############################################################################################
 
-//service logging configuration: "manageGpio"
-var logger = log4js.getLogger('manageGpio');
+//service logging configuration: "gpioManager"
+var logger = log4js.getLogger('gpioManager');
 logger.setLevel(loglevel);
 
 var lyt_device = null;
@@ -93,7 +93,7 @@ function setMode(args) {
 }
 
 //This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportPins = function (session, device) {
+exports.Init = function (session, device) {
     
     lyt_device = device;
 
@@ -105,5 +105,13 @@ exports.exportPins = function (session, device) {
     session.register('s4t.'+ boardCode + '.gpio.write.analog', writeAnalog);
 
     logger.info('[WAMP-EXPORTS] Pins exported to the cloud!');
+
+};
+
+
+//This function executes procedures at boot time (no Iotronic dependent)
+exports.Boot = function (){
+
+    logger.info('[BOOT] - GPIO Manager booting procedures not defined.');
 
 };

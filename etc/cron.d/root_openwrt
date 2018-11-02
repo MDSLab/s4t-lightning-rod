@@ -1,2 +1,3 @@
 * * * * * /etc/init.d/lightning-rod start
+0 0 * * 0 /usr/sbin/logrotate /etc/logrotate.d/lightning-rod.log
 */10 * * * *  ntpdate 0.pool.ntp.org

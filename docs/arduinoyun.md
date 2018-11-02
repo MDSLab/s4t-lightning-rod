@@ -20,6 +20,7 @@ opkg install kmod-gre kmod-ip6-tunnel kmod-iptunnel4 kmod-iptunnel6 kmod-ipv6 km
 ## Install from NPM
 ```
 npm install -g --unsafe @mdslab/wstun
+
 npm install -g --unsafe @mdslab/iotronic-lightning-rod
 ```
 If you have some problems during npm dependencies installation phase we suggest you to follow the "Install from source-code" procedure.
@@ -30,7 +31,7 @@ If you have some problems during npm dependencies installation phase we suggest 
 
 ##### Install required NodeJS modules via npm
 ```
-npm install -g requestify is-running connection-tester@0.1.2 log4js@1.1.1 q fs-access util
+npm install -g requestify is-running connection-tester@0.1.2 log4js@1.1.1 q fs-access util md5 python-shell net
 ```
 
 ##### Install the Lightning-rod

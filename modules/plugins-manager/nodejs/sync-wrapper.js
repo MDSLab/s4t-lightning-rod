@@ -16,12 +16,10 @@
 //##
 //############################################################################################
 
-
 var plugin_name;
 var plugin_json;
 
 var fs = require('fs');
-
 var PLUGINS_SETTING = process.env.IOTRONIC_HOME + '/plugins/plugins.json';
 var PLUGINS_STORE = process.env.IOTRONIC_HOME + '/plugins/';
 
@@ -34,21 +32,26 @@ process.once('message', function(message) {
     var fileName = plugin_folder + "/" + plugin_name + '.js';
     
     if (fs.existsSync(fileName) === true){
-      
+
         var plugin = require(plugin_folder + "/" + plugin_name);
 
-        process.send({ name: plugin_name, level: "info" , logmsg: "I'm alive!"});
-
-        process.send({ name: plugin_name, level: "info" , logmsg: "starting..."});
-
-        process.send({ name: plugin_name, status: "alive"});
-
-        plugin.main(plugin_json);
+        var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
+        var api = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/plugin-apis');
       
+        process.send({ name: plugin_name, status: true , logmsg: "I'm alive!"});
+        process.send({ name: plugin_name, level: "info" , logmsg: "starting..."});
+        process.send({ name: plugin_name, status: "alive"});
+      
+        plugin.main(plugin_name, plugin_json, api, function(err, result){
+	
+            process.send({ name: plugin_name, status: "finish", logmsg: result});
+
+        });
+
     }
     else{
       
-      process.send({ name: plugin_name, level: "warn" , logmsg: "plugin source file does not exist!"});
+        process.send({ name: plugin_name, status: "fault" , logmsg: "Call source file does not exist!"});
       
     }
     
@@ -65,10 +68,10 @@ process.on('exit', function(){
     catch(err){
 	    process.send({ name: plugin_name, level: "error" , logmsg: 'Error parsing JSON file plugins.json'});
     }
-
+        
     pluginsConf.plugins[plugin_name].status = "off";
     pluginsConf.plugins[plugin_name].pid = "";
-
+             
     //updates the JSON file
     fs.writeFileSync(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4));
     

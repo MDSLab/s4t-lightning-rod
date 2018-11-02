@@ -1290,7 +1290,7 @@ function LoadDriver(driver_name, mountpoint, remote, mirror_board){
 function MountpointCreation(driver_name, mountpoint, remote, mirror_board, d){
 
 
-	fs.mkdir(mountpoint, 0755, function() {
+	fs.mkdir(mountpoint, "0755", function() {
 
 		logger.debug("[DRIVER] - "+driver_name+" ----> folder "+mountpoint+" CREATED!");
 
@@ -1488,7 +1488,7 @@ function HumanMaskConversion(mode_b10){
 
 
 //This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportDriverCommands = function (session){
+exports.Init = function (session){
     
     session_drivers = session;
      
@@ -1503,3 +1503,10 @@ exports.exportDriverCommands = function (session){
     
 };
 
+
+//This function executes procedures at boot time (no Iotronic dependent)
+exports.Boot = function (){
+
+	logger.info('[BOOT] - Driver Manager booting procedures not defined.');
+
+};

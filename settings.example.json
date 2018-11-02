@@ -10,7 +10,9 @@
 		{
 			"url_wamp": "",
 			"port_wamp": "8181",
-			"realm": "s4t"
+			"realm": "s4t",
+			"wifi_force_reconnect": "true",
+			"wifi_force_reconnect_time": 60
 		},
 		"reverse":
 		{
@@ -32,12 +34,45 @@
 		"board":
 		{
 			"code":"",
+			"label":"",
 			"status": "new",
 			"position":{
-				"altitude":0,
-				"longitude":0,
-				"latitude":0
+				"altitude":"",
+				"longitude":"",
+				"latitude":"",
+				"timestamp": ""
 				
+			},
+			"modules": {
+				"plugins_manager": {
+					"enabled": true,
+					"boot": true,
+					"alive_timer": 60
+				},
+				"services_manager": {
+					"enabled": true,
+					"boot": false
+				},
+				"nodered_manager": {
+					"enabled": true,
+					"boot": true
+				},
+				"vnets_manager": {
+					"enabled": false,
+					"boot": false
+				},
+				"gpio_manager": {
+					"enabled": false,
+					"boot": false
+				},
+				"drivers_manager": {
+					"enabled": false,
+					"boot": false
+				},
+				"vfs_manager": {
+					"enabled": false,
+					"boot": false
+				}
 			}
 		}
 

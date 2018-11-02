@@ -38,13 +38,23 @@ function manage_WAMP_connection(session) {
     logger.info('[CONFIGURATION] - Board configuration starting...');
 
     //EXPORTING NETWORK COMMANDS
-    var manageNetworks = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
-    manageNetworks.exportNetworkCommands(session);
+    checkModEnabled("vnets_manager").then(
+        
+        function (enabled) {
 
+            if(enabled){
+                var networksManager = require(LIGHTNINGROD_HOME + '/modules/vnets-manager/manage-networks');
+                networksManager.Init(session);
+            }
 
+        }
+
+    );
+    
     //Topic on which the board can send a message to be registered
     var connectionTopic = 'board.connection';
     session.subscribe(connectionTopic, onTopicConnection);
+    
     //Registering the board to the Cloud by sending a message to the connection topic
     logger.info("[WAMP] - Sending board ID '" + boardCode + "' to topic " + connectionTopic + " to register the board");
     session.publish(connectionTopic, [boardCode, 'connection', session._id]);
@@ -56,32 +66,210 @@ function onTopicConnection(args) {
     var message = args[0];
     if (message == 'IoTronic-connected')
         logger.info("Message on board.connection: " + args[0])
+    
+}
 
+function checkModEnabled(module_name) {
+
+    var d = Q.defer();
+
+    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+
+    var modules = configFile.config["board"]["modules"]; //console.log(module_name, modules[module_name]);
+
+    d.resolve(modules[module_name]);
+
+    return d.promise;
 
 }
 
 // This function loads the Lightning-rod modules
 function moduleLoader (session, device) {
-    // MODULES LOADING--------------------------------------------------------------------------------------------------
-    var manageGpio = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
-    manageGpio.exportPins(session, lyt_device);
 
-    var managePlugins = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
-    managePlugins.exportPluginCommands(session);
+    logger.info("[SYSTEM] - Modules loading:");
+
+    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+
+    var modules = configFile.config["board"]["modules"];
+
+    var modules_keys = Object.keys( modules );
+
+    for (var i = 0; i < modules_keys.length; i++) {
+
+        (function (i) {
+
+            var module_name = modules_keys[i];
+            var enabled = modules[module_name]["enabled"];
+
+
+            if(enabled)
+
+                switch (module_name) {
+
+                    case 'plugins_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var pluginsManager = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
+                        pluginsManager.Init(session);
+                        break;
+
+                    case 'services_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
+                        servicesManager.Init(session);
+
+                        break;
+
+                    case 'nodered_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var nodeRedManager = require(LIGHTNINGROD_HOME + '/modules/nodered-manager/manage-nodered');
+                        nodeRedManager.Init(session);
+                        break;
+
+                    /*
+                    case 'vnets_manager':
+                        break;
+                    */
+
+                    case 'gpio_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var gpioManager = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
+                        gpioManager.Init(session, lyt_device);
+                        break;
+
+                    case 'drivers_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
+                        driversManager.Init(session);
+                        driversManager.restartDrivers();
+                        break;
+
+                    case 'vfs_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
+                        fsManager.Init(session);
+                        var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
+                        fsLibsManager.exportFSLibs(session);
+                        break;
+
+                    default:
+
+                        //logger.error("[SYSTEM] --> Wrong module: " + module_name)
+
+                        break;
+
+
+
+                }
+
+
+        })(i);
+
+    }
+    
+    /*
+    // MODULES LOADING--------------------------------------------------------------------------------------------------
+    var gpioManager = require(LIGHTNINGROD_HOME + '/modules/gpio-manager/manage-gpio');
+    gpioManager.Init(session, lyt_device);
+
+    var pluginsManager = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
+    pluginsManager.Init(session);
 
     var driversManager = require(LIGHTNINGROD_HOME + "/modules/drivers-manager/manage-drivers");
-    driversManager.exportDriverCommands(session);
+    driversManager.Init(session);
     driversManager.restartDrivers();
 
     var fsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs");
-    fsManager.exportFSCommands(session);
+    fsManager.Init(session);
     var fsLibsManager = require(LIGHTNINGROD_HOME + "/modules/vfs-manager/manage-fs-libs");
     fsLibsManager.exportFSLibs(session);
 
-    var manageServices = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
-    manageServices.exportServiceCommands(session);
+    var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
+    servicesManager.Init(session);
+
+    var nodeRedManager = require(LIGHTNINGROD_HOME + '/modules/nodered-manager/manage-nodered');
+    nodeRedManager.Init(session);
     //------------------------------------------------------------------------------------------------------------------
+    */
+
 }
+
+
+// This function loads at boot the Lightning-rod modules
+exports.moduleLoaderOnBoot = function() {
+
+    logger.info("[SYSTEM] - Modules loading:");
+
+    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+
+    var modules = configFile.config["board"]["modules"]; //console.log(modules);
+
+    var modules_keys = Object.keys( modules ); //console.log(modules_keys);
+
+    for (var i = 0; i < modules_keys.length; i++) {
+
+        (function (i) {
+
+            var module_name = modules_keys[i];
+            var enabled = modules[module_name]["boot"];
+            
+            if(enabled)
+
+                switch (module_name) {
+
+                    case 'plugins_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var pluginsManager = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/manage-plugins');
+                        pluginsManager.Boot();
+                        break;
+
+                    case 'services_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var servicesManager = require(LIGHTNINGROD_HOME + '/modules/services-manager/manage-services');
+                        servicesManager.Boot();
+                        break;
+
+                    case 'nodered_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        var nodeRedManager = require(LIGHTNINGROD_HOME + '/modules/nodered-manager/manage-nodered');
+                        nodeRedManager.Boot();
+                        break;
+
+                    
+                     case 'vnets_manager':
+                         logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                     break;
+                    
+
+                    case 'gpio_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        break;
+
+                    case 'drivers_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                        break;
+
+                    case 'vfs_manager':
+                        logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+
+                    default:
+
+                        logger.warn("[SYSTEM] --> Wrong module: " + module_name);
+
+                        break;
+
+
+
+                }
+
+
+        })(i);
+
+    }
+    
+
+}
+
+
 
 
 // Init() LR function in order to control the correct LR configuration:
@@ -197,7 +385,7 @@ exports.checkSettings = function (callback) {
         } else {
             check_response = true;
         }
-
+        
         //REVERSE CONF
         url_reverse = nconf.get('config:reverse:server:url_reverse');
         port_reverse = nconf.get('config:reverse:server:port_reverse');
@@ -234,23 +422,13 @@ exports.checkSettings = function (callback) {
         }
 
         reg_status = nconf.get('config:board:status');
-        if (reg_status == undefined || reg_status == "") {
-            logger.warn('[SYSTEM] - Registration status undefined or not specified!');
-            process.exit();
-
-        } else if (reg_status != "registered" && reg_status != "new") {
-            logger.warn('[SYSTEM] - Wrong registration status: ' + reg_status);
-            logger.warn(' - The registration status can be "registered" or "new".');
-            process.exit();
-
-        } else {
-            check_response = true;
-        }
+        
+        boardLabel = nconf.get('config:board:label');
 
         var board_position = nconf.get('config:board:position');
 
         if ( (board_position == undefined || Object.keys(board_position).length === 0 ) && (reg_status == "registered") ) {
-            logger.warn('[SYSTEM] - Wrong board coordinates! Set status to "new" to retrive these information.');
+            logger.warn('[SYSTEM] - Wrong board coordinates!');
             logger.debug('- Coordinates: ' + JSON.stringify(board_position));
             process.exit();
 
@@ -260,7 +438,7 @@ exports.checkSettings = function (callback) {
         var socat_port = nconf.get('config:socat:client:port');
 
         if (socat_port == undefined || socat_port == "") {
-            logger.warn('[SYSTEM] - socat_port not specified or undefined: if the board is network enabled specify this parameter!');
+            logger.warn("[SYSTEM] - 'socat_port' not specified or 'undefined': if the board is network enabled specify this parameter!");
         }
 
         callback(check_response);
@@ -313,134 +491,208 @@ exports.setBoardPosition = function (args) {
 
 };
 
-/*
-// This function sets the coordinates of the device: called by IoTronic via RPC
+
+// This function create the settings.json file of the board injected by IoTronic
 exports.updateConf = function (args) {
 
-    var remote_conf = args[0];
-    var board_position = args[1];
-    logger.info("[SYSTEM] - Set board configuration: " + JSON.stringify(args));
+    var d = Q.defer();
 
-    var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
-    var board_config = configFile.config["board"];
-    
-    logger.info("[SYSTEM] --> BOARD CONFIGURATION " + JSON.stringify(board_config));
+    var response = {
+        message: '',
+        result: ''
+    };
 
-    board_config["remote_conf"] = remote_conf;
-    board_config["position"] = board_position;
-    logger.info("[SYSTEM] --> BOARD CONF UPDATED: " + JSON.stringify(board_config));
+    // activate listener on-exit event after LR exit on-update-conf
+    logger.debug("[SYSTEM] - Listener on process 'exit' event activated:");
+    logger.debug("[SYSTEM] --> Lightning-rod PID: " + process.pid);
+    process.on("exit", function () {
+        require("child_process").spawn(process.argv.shift(), process.argv, {
+            cwd: process.cwd(),
+            detached : true,
+            stdio: "inherit"
+        });
+    });
+
+
+    var remote_conf = args[0].message;
+
+    logger.info("[SYSTEM] - Board configuration injected: " + JSON.stringify(remote_conf, null, "\t"));
+
+    logger.info("[SYSTEM] --> BOARD CONF UPDATED: " + JSON.stringify(remote_conf));
 
     //Updates the settings.json file
-    fs.writeFile(SETTINGS, JSON.stringify(configFile, null, 4), function (err) {
+    fs.writeFile(SETTINGS, JSON.stringify(remote_conf, null, "\t"), function (err) {
         if (err) {
-            logger.error('[SYSTEM] --> Error writing settings.json file: ' + err);
+
+            response.message = 'Error writing settings.json file: ' + err;
+            response.result = "ERROR";
+            logger.error('[SYSTEM] --> ' +response.message);
+            d.resolve(response);
+
         } else {
+
             logger.debug("[SYSTEM] --> settings.json configuration file saved to " + SETTINGS);
+            response.message = "Board '"+boardCode+"' configuration updated!";
+            response.result = "SUCCESS";
+            d.resolve(response);
+
+            //Restarting LR
+            setTimeout(function () {
+                process.exit();
+            }, 1000)
+
+
         }
     });
 
-    return "Board configuration file updated!";
-
+    return d.promise;
 
 };
-*/
+
+
+// This function update the board configuration
+exports.setConf = function (args) {
+
+    var remote_conf = args[0].message;
+
+    logger.info("[SYSTEM] - Board configuration injected: " + JSON.stringify(remote_conf, null, "\t"));
+
+    var d = Q.defer();
+
+    var response = {
+        message: '',
+        result: ''
+    };
+
+    // activate listener on-exit event after LR exit on-update-conf
+    logger.debug("[SYSTEM] --> Listener on process 'exit' event activated:");
+    logger.debug("[SYSTEM] --> Lightning-rod PID: " + process.pid);
+    process.on("exit", function () {
+        require("child_process").spawn(process.argv.shift(), process.argv, {
+            cwd: process.cwd(),
+            detached : true,
+            stdio: "inherit"
+        });
+    });
+
+
+    logger.info("[SYSTEM] --> Updating board configuration: " + JSON.stringify(remote_conf));
+
+    //Updates the settings.json file
+    fs.writeFile(SETTINGS, JSON.stringify(remote_conf, null, "\t"), function (err) {
+        if (err) {
+
+            response.message = 'Error writing settings.json file: ' + err;
+            response.result = "ERROR";
+            logger.error('[SYSTEM] --> ' +response.message);
+            d.resolve(response);
+
+        } else {
+
+            logger.debug("[SYSTEM] --> settings.json configuration file saved to " + SETTINGS);
+            response.message = "Board '"+boardCode+"' configuration updated!";
+            response.result = "SUCCESS";
+            d.resolve(response);
+
+
+
+
+        }
+    });
+
+    return d.promise;
+
+};
+
 
 // This function manages the registration status of the board
 exports.checkRegistrationStatus = function(args){
 
-    var response = args[0];
-    
-    if(response.result == "SUCCESS"){
+    var regStatus = args[0];
 
-        logger.info("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
+    var response = {
+        message: '',
+        result: ''
+    };
 
-        // CONNECTION TO IoTronic after access granted.
-        var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
-        var board_config = configFile.config["board"];
+    var d = Q.defer();
 
-        logger.info("[CONFIGURATION] - Board configuration parameters: " + JSON.stringify(board_config));
 
-        //PROVISIONING: Iotronic sends coordinates to this device when its status is "new"
-        if(reg_status === "new"){
+    if(regStatus.result == "SUCCESS"){
+
+        logger.info("[SYSTEM] - Connection to Iotronic "+regStatus.result+":\n"+JSON.stringify(regStatus.message, null, "\t"));
+
+        exports.exportManagementCommands(board_session);
+
+
+        if(regStatus.message['state'] == "new"){
 
             logger.info('[CONFIGURATION] - NEW BOARD CONFIGURATION STARTED... ');
-            
-            board_session.call("s4t.board.provisioning", [boardCode]).then(
 
-                function(result){
+            var confBundle = {
+                message: ''
+            };
 
-                    logger.info("\n\nPROVISIONING "+boardCode+" RECEIVED: " + JSON.stringify(result) + "\n\n");
+            regStatus.message['conf']['config']['board']['status'] = "registered";
+            confBundle.message = regStatus.message['conf'];
 
-                    board_position = result.message.info.coordinates;
-                    board_config["position"] = board_position;
-                    board_config["status"] = "registered";
+            exports.setConf([confBundle]).then(
 
-                    logger.info("\n[CONFIGURATION] - BOARD POSITION UPDATED: " + JSON.stringify(board_config["position"]));
+                function (msg) {
 
-                    //Updates the settings.json file
-                    fs.writeFile(SETTINGS, JSON.stringify(configFile, null, 4), function(err) {
-                        if(err) {
-                            logger.error('Error writing settings.json file: ' + err);
+                    console.log(msg);
 
-                        } else {
-                            logger.info("settings.json configuration file saved to " + SETTINGS);
-                            //Calling the manage_WAMP_connection function that contains the logic that has to be performed if the device is connected to the WAMP server
-                            //exports.manage_WAMP_connection(board_session, details);
-                            moduleLoader(board_session, lyt_device);
-                        }
-                    });
-
-                    //Create a backup file of settings.json
-                    fs.writeFile(SETTINGS + ".BKP", JSON.stringify(configFile, null, 4), function(err) {
-                        if(err) {
-                            logger.error('Error writing settings.json.BKP file: ' + err);
-
-                        } else {
-                            logger.info("settings.json.BKP configuration file saved to " + SETTINGS + ".BKP");
-                        }
-                    });
+                    d.resolve(msg);
+                    
+                    //Restarting LR
+                    setTimeout(function () {
+                        process.exit();
+                    }, 2000)
 
 
-                },
-                function (error){
-                    logger.error('[WAMP] - Error board provisioning: ' + JSON.stringify(error));
-                    logger.info("Bye!");
-                    process.exit(1);
                 }
-                
-            );
+
+            )
 
 
-        } else if(reg_status === "registered"){
-            
+
+        }
+        else if(regStatus.message['state'] == "registered"){
+
+            logger.info("[SYSTEM] - Board registered - Start module loading... ");
+
             moduleLoader(board_session, lyt_device);
 
+            response.message = "Board '"+boardCode+"' is loading modules.";
+            response.result = "SUCCESS";
+            d.resolve(response);
+            
+
         } else{
+
+            d.resolve("Board "+boardCode+" in wrong status!");
 
             logger.error('[CONFIGURATION] - WRONG BOARD STATUS: status allowed "new" or "registerd"!');
             process.exit();
 
         }
+        
 
-
-
-
-
-
-
-
-
-
-    }else {
+    }
+    else {
+        
         // IF access to IoTronic was rejected
-        logger.error("[SYSTEM] - Connection to Iotronic "+response.result+" - "+response.message);
+        logger.error("[SYSTEM] - Connection to Iotronic " + regStatus.result + " - " + regStatus.message);
         logger.info("[SYSTEM] - Bye");
 
-        process.exit();
-    }
-    
+        d.resolve("Board " + boardCode + " disconnection...");
 
-    
+        process.exit();
+        
+    }
+
+
+    return d.promise;
 
 };
 
@@ -452,6 +704,10 @@ exports.execAction = function(args){
 
     var action = args[0];
     var params = args[1];
+
+
+    logger.info("[SYSTEM] - execAction on board RPC called: '" + action + "' action...");
+
 
     var response = {
         message: '',
@@ -526,6 +782,41 @@ exports.execAction = function(args){
             });
             break;
 
+
+        case 'restart_lr':
+
+            params=JSON.parse(params);
+
+            logger.info("[SYSTEM] --> parameters:\n" + JSON.stringify(params, null, "\t"));
+
+            // activate listener on-exit event after LR exit on-update-conf
+            logger.debug("[SYSTEM] --> Listener on process 'exit' event activated:");
+            logger.debug("[SYSTEM] --> Lightning-rod PID: " + process.pid);
+            process.on("exit", function () {
+
+                require("child_process").spawn(process.argv.shift(), process.argv, {
+                    cwd: process.cwd(),
+                    detached : true,
+                    stdio: "inherit"
+                });
+
+            });
+
+            logger.info('[SYSTEM] - Restarting Lightning-rod');
+            response.message = "Restarting Lightning-rod on board "+ boardCode;
+            response.result = "SUCCESS";
+            d.resolve(response);
+
+            //Restarting LR
+            setTimeout(function () {
+                
+                process.exit();
+                
+            }, params["time"]);
+
+
+            break;
+
         default:
             
             response.message = "Board operation '" + action + "' not supported!";
@@ -547,18 +838,27 @@ exports.execAction = function(args){
 
 
 
-exports.exportManagementCommands = function (session) {
+
+
+exports.IotronicLogin = function (session) {
 
     board_session = session;
+
+    session.register('s4t.' + session._id + '.board.checkRegistrationStatus', exports.checkRegistrationStatus);
+
+    manage_WAMP_connection(session)
+
+};
+
+
+
+exports.exportManagementCommands = function (session, callback) {
 
     //Register all the module functions as WAMP RPCs
     logger.info('[WAMP-EXPORTS] Management commands exported to the cloud!');
     session.register('s4t.' + boardCode + '.board.setBoardPosition', exports.setBoardPosition);
-    session.register('s4t.' + boardCode + '.board.checkRegistrationStatus', exports.checkRegistrationStatus);
     session.register('s4t.' + boardCode + '.board.execAction', exports.execAction);
-    //session.register('s4t.' + boardCode + '.board.updateConf', exports.updateConf);
+    session.register('s4t.' + boardCode + '.board.updateConf', exports.updateConf);
 
-    manage_WAMP_connection(session)
-    
 };
 

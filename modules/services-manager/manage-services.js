@@ -18,13 +18,15 @@
 
 
 //service logging configuration: "manageCommands"   
-var logger = log4js.getLogger('manageServices');
+var logger = log4js.getLogger('servicesManager');
 logger.setLevel(loglevel);
 
 //Services list: it is used to store the services process data that are started in the current LR session
 servicesProcess = [];
 
 var Q = require("q");
+var running = require('is-running');  	//In order to verify if a tunnel-process is alive or not.
+
 
 
 // This function expose a service
@@ -36,6 +38,8 @@ exports.enableService = function(args){
     var publicPort = String(args[2]);
     var restore = String(args[3]);
 
+    var db_tunnel_pid = String(args[4]);
+
     var response = {
         message: '',
         result: ''
@@ -46,56 +50,93 @@ exports.enableService = function(args){
 
     logger.debug("[SERVICE] - RPC enableService called: " + args);
 
-    //Looking for the process in the array
-    var i = findValue(servicesProcess, serviceName, 'key');
 
-    if ( i != -1) {
+    if(running(db_tunnel_pid)){
 
-        if(restore == "true"){
+        // Call when Restore tunnel API is called and after injection LR conf is called
 
-            logger.info("[SERVICE] - Restoring tunnel for '"+ serviceName + "' service...");
+        //kill tunnel process
+        process.kill(db_tunnel_pid);
 
-            //Killing the process
-            logger.debug('[SERVICE] --> killing '+serviceName+' process [ PID ' + servicesProcess[i].process.pid + " ]");
-            servicesProcess[i].process.kill('SIGINT');
-            servicesProcess.splice(i,1);
+        //clean data structure
+        var i = findValue(servicesProcess, serviceName, 'key');
+        servicesProcess.splice(i,1);
 
-            createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
+        logger.warn("[SERVICE] --> Tunnel process of service "+ serviceName +" still active: killed!");
 
-                response.result = "SUCCESS";
-                response.message = "Service "+ serviceName +" successfully restored on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
-                logger.info('[SERVICE] --> ' + response.message);
-                d.resolve(response);
-
-            });
-
-
-        }else{
-
-            logger.warn("Service already active!");
-            response.result = "WARNING";
-            response.message = "Service "+ serviceName +" already active!";
-            logger.info('[SERVICE] - ' + response.message);
-            d.resolve(response);
-
-        }
-        
-
-
-    }else{
-
-
-        logger.info('[SERVICE] - Exposing new tunnel for '+ serviceName + ' service...');
         createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
 
             response.result = "SUCCESS";
-            response.message = "Service "+ serviceName +" successfully exposed on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
+            response.pid = newTunnel.process.pid;
+            response.message = "Service "+ serviceName +" successfully restored on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
             logger.info('[SERVICE] --> ' + response.message);
             d.resolve(response);
 
         });
 
+
+    }else{
+
+        //Looking for the process in the array
+        var i = findValue(servicesProcess, serviceName, 'key');
+
+        if ( i != -1) {
+
+            // if service is active and stored in servicesProcess array
+
+            if(restore == "true"){
+
+                // Call when self-Restore tunnel procedure is called: when connection is recovered!
+                logger.info("[SERVICE] - Restoring tunnel for '"+ serviceName + "' service...");
+
+                //Killing the process
+                logger.debug('[SERVICE] --> killing '+serviceName+' process [ PID ' + servicesProcess[i].process.pid + " ]");
+                servicesProcess[i].process.kill('SIGINT');
+                servicesProcess.splice(i,1);
+
+                createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
+
+                    response.result = "SUCCESS";
+                    response.pid = newTunnel.process.pid;
+                    response.message = "Service "+ serviceName +" successfully restored (after reconnection) on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
+                    logger.info('[SERVICE] --> ' + response.message);
+                    d.resolve(response);
+
+                });
+
+
+            }else{
+
+                response.result = "WARNING";
+                response.message = "Service '"+ serviceName +"' already active!";
+                logger.info('[SERVICE] - ' + response.message);
+                d.resolve(response);
+
+            }
+
+
+
+        }
+        else{
+
+            // Call when LR restore tunnels at boot time and when enable-service API is called
+
+            logger.info('[SERVICE] - Exposing new tunnel for '+ serviceName + ' service...');
+            createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
+
+                response.result = "SUCCESS";
+                response.pid = newTunnel.process.pid;
+                response.message = "Service "+ serviceName +" successfully exposed on port " + publicPort + " - [PID "+newTunnel.process.pid+"]";
+                logger.info('[SERVICE] --> ' + response.message);
+                d.resolve(response);
+
+            });
+
+        }
+
+
     }
+
 
 
 
@@ -170,6 +211,8 @@ exports.checkService = function(args){
 
     var serviceName = args[0];
 
+    var serviceDbPID = args[1];
+
     var response = {
         message: '',
         result: ''
@@ -185,33 +228,50 @@ exports.checkService = function(args){
     logger.info('[SERVICE] - Checking ' + serviceName + " service...");
 
     var d = Q.defer();
-
-    //Looking for the process in the array
-    var i = findValue(servicesProcess, serviceName, 'key');
-
-    if(i == -1){
-
-        response.result = "SUCCESS";
-        service.message = serviceName +" service is inactive!";
-        service.status = "INACTIVE";
-        service.pid = null;
-        service.name = serviceName;
-        response.message = service;
-        logger.warn('[SERVICE] --> ' + JSON.stringify(response.message));
-        d.resolve(response);
-        
-    }else{
+    
+    if(running(serviceDbPID)){
 
         response.result = "WARNING";
-        service.message = serviceName +" service is active!";
+        service.message = serviceName +" service is still active!";
         service.status = "ACTIVE";
-        service.pid = servicesProcess[i].process.pid;
+        service.pid = serviceDbPID;
         service.name = serviceName;
         response.message = service;
         logger.info('[SERVICE] --> ' + JSON.stringify(response.message));
-        d.resolve(response); 
-        
+        d.resolve(response);
+
+    }else{
+
+        //Looking for the process in the array
+        var i = findValue(servicesProcess, serviceName, 'key');
+
+        if(i == -1){
+
+            response.result = "SUCCESS";
+            service.message = serviceName +" service is inactive!";
+            service.status = "INACTIVE";
+            service.pid = null;
+            service.name = serviceName;
+            response.message = service;
+            logger.warn('[SERVICE] --> ' + JSON.stringify(response.message));
+            d.resolve(response);
+
+        }else{
+
+            response.result = "WARNING";
+            service.message = serviceName +" service is active!";
+            service.status = "ACTIVE";
+            service.pid = servicesProcess[i].process.pid;
+            service.name = serviceName;
+            response.message = service;
+            logger.info('[SERVICE] --> ' + JSON.stringify(response.message));
+            d.resolve(response);
+
+        }
+
     }
+
+
 
     return d.promise;
     
@@ -269,10 +329,8 @@ function findValue(myArray, value, property) {
 
 
 
-
-
 //This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportServiceCommands = function (session){
+exports.Init = function (session){
 
     //Register all the module functions as WAMP RPCs
     session.register('s4t.'+boardCode+'.service.enable', exports.enableService);
@@ -293,4 +351,12 @@ exports.exportServiceCommands = function (session){
 };
 
 
+
+
+//This function executes procedures at boot time (no Iotronic dependent)
+exports.Boot = function (){
+
+    logger.info('[BOOT] - Services Manager booting procedures not defined.');
+
+};
 

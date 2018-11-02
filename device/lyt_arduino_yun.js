@@ -22,29 +22,29 @@ var util = require('util');
 var Device = require('./Device');
 
 function ArduinoYunDevice(name) {
-    
+
     Device.call(this);
 
     this.name = name;
 
     /*
-    Digital PIN mapping on lininoIO
+     Digital PIN mapping on lininoIO
 
-        -------------------------
-        GPIO n.     PIN
-        104	        D8
-        105	        D9
-        106	        D10
-        107	        D11
-        114	        D5
-        115	        D13
-        116	        D3
-        117	        D2
-        120	        D4
-        122	        D12
-        123	        D6
-        
-    */
+     -------------------------
+     GPIO n.     PIN
+     104	        D8
+     105	        D9
+     106	        D10
+     107	        D11
+     114	        D5
+     115	        D13
+     116	        D3
+     117	        D2
+     120	        D4
+     122	        D12
+     123	        D6
+
+     */
 
 }
 
@@ -64,20 +64,14 @@ ArduinoYunDevice.prototype.Main = function (wampConnection, logger){
 
     //Given the way linino lib is designed we first need to connect to the board and only then we can do anything else
     board.connect(function() {
-        
+
         // CONNECTION TO WAMP SERVER --------------------------------------------------------------------------
         logger.info('[WAMP] - Opening connection to WAMP server...');
         wampConnection.open();
         //-----------------------------------------------------------------------------------------------------
 
-        // PLUGINS RESTART ALL --------------------------------------------------------------------------------
-        //This procedure restarts all plugins in "ON" status
-        var managePlugins = require('../modules/plugins-manager/manage-plugins');
-        managePlugins.pluginsLoader();
-        //-----------------------------------------------------------------------------------------------------
-
     });
-    
+
 
 };
 
@@ -97,7 +91,7 @@ ArduinoYunDevice.prototype.readDigital = function(args, callback) {
         logger.error("[GPIO] - readDigital: " + response.message);
         callback(response);
     }
-    
+
 };
 
 

@@ -21,7 +21,7 @@ var util = require('util');
 
 var Device = require('./Device');
 
-function RaspberryPiDevice(name) {
+function OrangePiDevice(name) {
 
     Device.call(this);
 
@@ -29,7 +29,7 @@ function RaspberryPiDevice(name) {
 
 }
 
-util.inherits(RaspberryPiDevice, Device);
+util.inherits(OrangePiDevice, Device);
 
 
 var response = {
@@ -37,7 +37,7 @@ var response = {
     result: ''
 };
 
-RaspberryPiDevice.prototype.Main = function (wampConnection, logger) {
+OrangePiDevice.prototype.Main = function (wampConnection, logger) {
 
     // CONNECTION TO WAMP SERVER --------------------------------------------------------------------------
     logger.info('[WAMP] - Opening connection to WAMP server...');
@@ -51,7 +51,7 @@ RaspberryPiDevice.prototype.Main = function (wampConnection, logger) {
 
 
 
-RaspberryPiDevice.prototype.readDigital = function(args, callback) {
+OrangePiDevice.prototype.readDigital = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - readDigital: " + response.message);
@@ -60,7 +60,7 @@ RaspberryPiDevice.prototype.readDigital = function(args, callback) {
 };
 
 
-RaspberryPiDevice.prototype.readAnalog = function(args, callback) {
+OrangePiDevice.prototype.readAnalog = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - readAnalog: " + response.message);
@@ -69,7 +69,7 @@ RaspberryPiDevice.prototype.readAnalog = function(args, callback) {
 };
 
 
-RaspberryPiDevice.prototype.writeAnalog = function(args, callback) {
+OrangePiDevice.prototype.writeAnalog = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - writeAnalog: " + response.message);
@@ -78,7 +78,7 @@ RaspberryPiDevice.prototype.writeAnalog = function(args, callback) {
 };
 
 
-RaspberryPiDevice.prototype.writeDigital = function(args, callback) {
+OrangePiDevice.prototype.writeDigital = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - writeDigital: " + response.message);
@@ -87,7 +87,7 @@ RaspberryPiDevice.prototype.writeDigital = function(args, callback) {
 };
 
 
-RaspberryPiDevice.prototype.setMode = function(args, callback) {
+OrangePiDevice.prototype.setMode = function(args, callback) {
     response.message = "Not implemented";
     response.result = "ERROR";
     logger.info("[GPIO] - setMode: " + response.message);
@@ -96,4 +96,4 @@ RaspberryPiDevice.prototype.setMode = function(args, callback) {
 };
 
 
-module.exports = RaspberryPiDevice;
+module.exports = OrangePiDevice;

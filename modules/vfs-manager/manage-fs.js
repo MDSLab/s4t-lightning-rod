@@ -847,23 +847,8 @@ function wrap_write_function(mirrored_board, path_org, fs_function){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportFSCommands = function (session){
+exports.Init = function (session){
     
     session_fs = session;
      
@@ -877,3 +862,11 @@ exports.exportFSCommands = function (session){
     
 };
 
+
+
+//This function executes procedures at boot time (no Iotronic dependent)
+exports.Boot = function (){
+
+	logger.info('[BOOT] - VFS Manager booting procedures not defined.');
+
+};

@@ -21,21 +21,25 @@ SETTINGS = process.env.IOTRONIC_HOME+'/settings.json';
 nconf = require('nconf');
 nconf.file ({file: SETTINGS});
 
-log4js = require('log4js');
-log4js.loadAppender('file');
-
-
-logfile = nconf.get('config:log:logfile');
-loglevel = nconf.get('config:log:loglevel');
-log4js.addAppender(log4js.appenders.file(logfile));    
-var logger = log4js.getLogger('plugin-apis');
-logger.setLevel(loglevel);
-
 var Q = require("q");
 
 
-exports.getLogger = function (){
+exports.getLogger = function (plugin_name, loglevel){
+
+    log4js = require('log4js');
+    log4js.loadAppender('file');
+
+    //logfile = nconf.get('config:log:logfile');
+    //loglevel = nconf.get('config:log:loglevel');
+
+    logfile = '/var/log/iotronic/plugins/'+plugin_name+'.log';
+
+    log4js.addAppender(log4js.appenders.file(logfile));
+    var logger = log4js.getLogger(plugin_name);
+    logger.setLevel(loglevel);
+    
     return logger;
+    
 };
     
 exports.getPosition = function (){

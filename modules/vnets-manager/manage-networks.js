@@ -19,8 +19,8 @@
 
 
 
-//service logging configuration: "manageNetworks"   
-var logger = log4js.getLogger('manageNetworks');
+//service logging configuration: "networksManager"   
+var logger = log4js.getLogger('networksManager');
 logger.setLevel(loglevel);
 
 var Q = require("q");
@@ -408,7 +408,7 @@ exports.removeFromNetwork = function (args) {
 
 
 // This function exports all the functions in the module as WAMP remote procedure calls
-exports.exportNetworkCommands = function (session) {
+exports.Init = function (session) {
 
     session_wamp = session;
     
@@ -418,5 +418,13 @@ exports.exportNetworkCommands = function (session) {
     session.register('s4t.'+ boardCode + '.vnet.removeFromNetwork', exports.removeFromNetwork);
 
     logger.info('[WAMP-EXPORTS] Network commands exported to the cloud!');
+
+};
+
+
+//This function executes procedures at boot time (no Iotronic dependent)
+exports.Boot = function (){
+
+    logger.info('[BOOT] - VNET Manager booting procedures not defined.');
 
 };

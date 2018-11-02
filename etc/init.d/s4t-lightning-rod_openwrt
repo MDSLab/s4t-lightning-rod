@@ -12,7 +12,7 @@ export NODEJS=/usr/bin/node
 export LD_LIBRARY_PATH=/usr/lib
 export NPM=/usr/bin/npm
 export NODE_PATH=/usr/lib/node_modules:/usr/lib/node_modules:$NODE_PATH
-
+export NODE_TLS_REJECT_UNAUTHORIZED=0
 export IOTRONIC_HOME=/var/lib/iotronic
 <LIGHTNINGROD_HOME>
 
