@@ -102,12 +102,9 @@ then
         fi
 
 
-    fi
-
-    if [ "$rm_check" = "no" ] || [ ! -d "$IOTRONIC_HOME" ]; then
+    elif [ "$rm_check" = "no" ]; then
 
         mkdir -p /etc/iotronic/
-
         cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example.json /etc/iotronic/authentication.json
 
     fi
