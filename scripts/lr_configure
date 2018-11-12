@@ -4,6 +4,14 @@ INTERACTIVE=$1
 PARAM=`echo $1 | awk -F= '{print $1}'`
 VALUE=`echo $1 | awk -F= '{print $2}'`
 
+if [ "$NODE_PATH" = "" ]; then
+    NODE_PATH=`npm -g root`
+    echo -e "NODE_PATH USED: " $NODE_PATH
+
+else
+    echo -e "NODE_PATH FOUND: " $NODE_PATH
+fi
+
 if [ "$PARAM" = "-i" ];
 then
 

@@ -1,5 +1,15 @@
 #!/bin/sh       
 
+
+if [ "$NODE_PATH" = "" ]; then
+    NODE_PATH=`npm -g root`
+    echo -e "NODE_PATH USED: " $NODE_PATH
+
+else
+    echo -e "NODE_PATH FOUND: " $NODE_PATH
+fi
+
+
 echo "Installing..."
 
 # Configure LR service script
