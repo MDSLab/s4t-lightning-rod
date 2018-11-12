@@ -101,8 +101,7 @@ exports.getExtraInfo = function (){
 
 exports.getBoardId = function (){
     var boardID = nconf.get('auth:board:code');
-    console.log(boardID)
-    
+
     return boardID;
 	
 };
