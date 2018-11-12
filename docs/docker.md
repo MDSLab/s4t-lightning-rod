@@ -23,7 +23,7 @@ sudo mkdir /etc/iotronic/
 cd /etc/iotronic/
 
 sudo wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/templates/settings.example.json -O settings.json
-sudo wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/templates/authentication.example -O authentication.json
+sudo wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/templates/authentication.example.json -O authentication.json
 ```
 
 * Edit settings.json

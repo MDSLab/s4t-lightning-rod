@@ -14,10 +14,10 @@ echo " --> WSTUN URL: "$4
 echo " --> Configuration file path: "$5
 
 
-sed -i "s/\"layout\":.*\"\"/\"layout\": \"server\"/g" $5
-sed -i "s/\"code\":.*\"\"/\"code\": \"$1\"/g" $5
-sed -i "s/\"password\":.*\"\"/\"password\": \"$2\"/g" $5
-sed -i "s,\"url_wamp\":.*,\"url_wamp\": \"$3\"\,,g" $5
-sed -i "s,\"ws_url\":.*,\"ws_url\": \"$4\"\,,g" $5
-sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" $5
-echo -e "\nauthentication.json file configured."
+sed -i "s/\"layout\":.*\"\"/\"layout\": \"server\"/g" $5"/authentication.json"
+sed -i "s/\"code\":.*\"\"/\"code\": \"$1\"/g" $5"/authentication.json"
+sed -i "s/\"password\":.*\"\"/\"password\": \"$2\"/g" $5"/authentication.json"
+sed -i "s,\"url_wamp\":.*,\"url_wamp\": \"$3\"\,,g" $5"/authentication.json"
+sed -i "s,\"ws_url\":.*,\"ws_url\": \"$4\"\,,g" $5"/authentication.json"
+sed -i "s/\"bin\":.*\"\"/\"bin\": \"\/usr\/lib\/node_modules\/@mdslab\/wstun\/bin\/wstun.js\"/g" $5"/authentication.json"
+echo "\nauthentication.json file configured."
