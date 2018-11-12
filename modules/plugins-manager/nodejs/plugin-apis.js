@@ -31,6 +31,20 @@ catch (err) {
     console.log("[SYSTEM] - Error parsing settings file: "+JSON.stringify(err));
 }
 
+
+
+try{
+
+    AUTH_CONF = '/etc/iotronic/authentication.json';
+    nconf.file ('auth', {file: AUTH_CONF});
+
+}
+catch (err) {
+
+    console.log("[SYSTEM] - Error parsing authentication file: "+JSON.stringify(err));
+}
+
+
 var Q = require("q");
 
 
@@ -86,7 +100,8 @@ exports.getExtraInfo = function (){
 };
 
 exports.getBoardId = function (){
-    var boardID = nconf.get('config:board:code');
+    var boardID = nconf.get('auth:board:code');
+    console.log(boardID)
     
     return boardID;
 	
