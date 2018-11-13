@@ -57,7 +57,7 @@ echo "export IOTRONIC_HOME=/var/lib/iotronic" >> /etc/profile
 echo "export LIGHTNINGROD_HOME=$NODE_PATH/@mdslab/iotronic-lightning-rod" >> /etc/profile
 source /etc/profile
 
-cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example /etc/iotronic/authentication.json
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/templates/authentication.example.json /etc/iotronic/authentication.json
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/templates/settings.example.json /var/lib/iotronic/settings.json
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/plugins-manager/plugins.example.json /var/lib/iotronic/plugins/plugins.json
 cp $NODE_PATH/@mdslab/iotronic-lightning-rod/modules/drivers-manager/drivers.example.json /var/lib/iotronic/drivers/drivers.json
