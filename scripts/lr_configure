@@ -102,6 +102,9 @@ then
 
         fi
 
+        # SET WSTUN BIN PATH
+        sed -i "s|\"bin\":.*|\"bin\": \"$NODE_PATH/@mdslab/wstun/bin/wstun.js\"|g" $IOTRONIC_AUTH/authentication.json
+
 
     fi
 
@@ -195,6 +198,8 @@ else
         sed -i "s,\"ws_url\":.*,\"ws_url\": \"$WSTUN_URL\"\,,g" $IOTRONIC_AUTH/authentication.json
 
 
+        # SET WSTUN BIN PATH
+        sed -i "s|\"bin\":.*|\"bin\": \"$NODE_PATH/@mdslab/wstun/bin/wstun.js\"|g" $IOTRONIC_AUTH/authentication.json
 
     fi
 

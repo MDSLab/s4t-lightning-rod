@@ -3,10 +3,10 @@
 
 if [ "$NODE_PATH" = "" ]; then
     NODE_PATH=`npm -g root`
-    echo -e "NODE_PATH USED: " $NODE_PATH
+    echo "NODE_PATH USED: " $NODE_PATH
 
 else
-    echo -e "NODE_PATH FOUND: " $NODE_PATH
+    echo "NODE_PATH FOUND: " $NODE_PATH
 fi
 
 

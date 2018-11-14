@@ -24,10 +24,13 @@ cd /etc/iotronic/
 
 sudo wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/templates/settings.example.json -O settings.json
 sudo wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/templates/authentication.example.json -O authentication.json
+
 ```
 
-* Edit settings.json
+* Edit configuration files
 ```
+sudo sed -i "s|\"bin\":.*|\"bin\": \"/usr/local/lib/node_modules/@mdslab/wstun/bin/wstun.js\"|g" /etc/iotronic/authentication.json
+
 cd /tmp/
 
 wget https://raw.githubusercontent.com/MDSLab/s4t-lightning-rod/master/utils/install/docker/configure_LR_docker.sh -O lr_configure

@@ -1,7 +1,7 @@
 FROM arm32v7/node:carbon-slim
 
 RUN  apt-get update && apt-get install -y \
- socat dsniff fuse libfuse-dev git ntpdate python pkg-config build-essential gdb \
+ socat dsniff fuse libfuse-dev git ntpdate python pkg-config build-essential vim gdb \
  && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g --unsafe gyp autobahn@18.10.2 ws@6.1.0 nconf@0.10.0 @mdslab/wstun@1.0.7 fuse-bindings@2.8.1 requestify@0.2.5 is-running@2.1.0 connection-tester@0.2.0 log4js@1.1.1 q@1.5.1 fs-access@1.0.1 mknod@1.1.0 jsonfile md5@2.2.1 python-shell@0.5.0 net@1.0.2 lsof@0.1.0\
