@@ -9,7 +9,7 @@ Everything needs to be run as root!
 
 ##### Install dependencies via apt-get
 ```
-apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate build-essential gdb
+apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate build-essential lsof gdb
 ```
 
 ##### Install latest NodeJS 8.x release

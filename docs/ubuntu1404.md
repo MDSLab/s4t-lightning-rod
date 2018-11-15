@@ -5,7 +5,7 @@ We tested this procedure on a Ubuntu 14.04 (also within a LXD container). Everyt
 ## Install requirements
 ##### Install dependencies via apt-get
 ```
-apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate build-essential gdb
+apt -y install unzip socat dsniff fuse libfuse-dev pkg-config python git ntpdate build-essential lsof gdb
 ```
 
 ##### Install latest NodeJS 8.x release

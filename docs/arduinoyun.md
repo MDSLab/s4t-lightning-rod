@@ -13,7 +13,7 @@ echo $NODE_PATH
 ##### Install dependencies via opkg
 ```
 opkg update
-opkg install logrotate ntpdate nano git unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs gdb
+opkg install logrotate ntpdate nano git unzip socat ip dsniff fuse-utils node-autobahn node-jsonfile node-nconf node-ideino-linino-lib node-fuse-bindings node-mknod node-statvfs gdb lsof
 opkg install kmod-gre kmod-ip6-tunnel kmod-iptunnel4 kmod-iptunnel6 kmod-ipv6 kmod-tun
 ```
 
