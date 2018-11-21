@@ -28,7 +28,8 @@ import json
 
 # Inputs
 plugin_name = sys.argv[1]
-plugin_params = sys.argv[2]
+plugin_version = sys.argv[2]
+plugin_params = sys.argv[3]
 
 
 # Globals

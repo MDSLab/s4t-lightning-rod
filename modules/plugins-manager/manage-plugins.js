@@ -109,7 +109,8 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 					// the plugin is normally running
 					console.log('[PLUGIN] - PluginChecker - '+ plugin_name + ' with PID: ' + plugins[plugin_name].pid + ' alive: '+ plugins[plugin_name].alive );
 
-				}else{
+				}
+				else{
 
 					if(plugin_type == "nodejs")
 						var ext = '.js';
@@ -297,7 +298,7 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 
 								var plugin_json = fs.readFileSync(plugin_json_name);
 
-								pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, "restart");
+								pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, "restart", plugin_version);
 
 								break;
 
@@ -486,7 +487,7 @@ function cleanPluginData(plugin_name){
 }
 
 
-function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
+function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action, version) {
 
 	var d = Q.defer();
 
@@ -562,7 +563,7 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 		pythonPath: '/usr/bin/python3',
 		pythonOptions: ['-u'],
 		scriptPath: __dirname,
-		args: [plugin_name, plugin_json]
+		args: [plugin_name, version, plugin_json]
 	};
 
 	var pyshell = new PythonShell('./python/async-wrapper.py', options);
@@ -732,7 +733,7 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action) {
 }
 
 
-function pySyncStarter(plugin_name, plugin_json) {
+function pySyncStarter(plugin_name, version, plugin_json) {
 
 	var d = Q.defer();
 
@@ -763,8 +764,7 @@ function pySyncStarter(plugin_name, plugin_json) {
 				d.resolve(response);
 
 			}else{
-
-
+				
 				try{
 
 					response.result = "SUCCESS";
@@ -821,7 +821,7 @@ function pySyncStarter(plugin_name, plugin_json) {
 					pythonPath: '/usr/bin/python3',
 					pythonOptions: ['-u'],
 					scriptPath: __dirname,
-					args: [plugin_name, plugin_json]
+					args: [plugin_name, version, plugin_json]
 				};
 
 				pyshell = new PythonShell('./python/sync-wrapper.py', options);
@@ -968,6 +968,7 @@ exports.call = function (args){
 
 			//Check the plugin status
 			var status = pluginsConf.plugins[plugin_name].status;
+			var version = pluginsConf.plugins[plugin_name].version;
 
 			if (status == "off" || status == "injected"){
 
@@ -1075,7 +1076,7 @@ exports.call = function (args){
 
 					case 'python':
 						
-						pySyncStarter(plugin_name, plugin_json).then(
+						pySyncStarter(plugin_name, version, plugin_json).then(
 
 							function (execRes) {
 
@@ -1217,7 +1218,7 @@ exports.pluginKeepAlive = function (plugin_name, plugin_checksum){
 
 		// We have to restart only the plugins:
 		// - that the "autostart" flag is TRUE (boot enabled plugin)
-		// - that were in status "on" (it means that the device it was rebooted or LR crashed) even if "auotstart" is FALSE
+		// - that were in status "on" (it means that the device it was rebooted or LR crashed) even if "autostart" is FALSE
 	  	if (status == "on" || autostart == "true"){
 
 			// We associate to each plugin that has to be restarted (no injected ones) a timer to check during LR execution if the plugin is still alive
@@ -1565,6 +1566,7 @@ exports.run = function (args){
 
 
 	try{
+
 		//Reading the plugin configuration file
 		var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
 
@@ -1597,8 +1599,46 @@ exports.run = function (args){
 
 			//Check the status
 			var status = pluginsConf.plugins[plugin_name].status;
+			var version = pluginsConf.plugins[plugin_name].version
 
-			if (status == "off" || status == "injected"){
+			if (status == "off" || status == "injected" ){
+
+				//UPDATE PLUGIN MANAGEMENT
+				if (status == "injected"){
+
+					if (pluginsConf.plugins[plugin_name].pid != undefined){
+
+						var pid = pluginsConf.plugins[plugin_name].pid;
+
+						// if the plugin is not running the pid is NULL or "", in this condition "is-running" module return "true" that is a WRONG result!
+						if (pid != null && pid != ""){
+
+							if (running(pid) == true) {
+
+								try{
+
+									process.kill(pid);
+
+									logger.warn("[PLUGIN] - A previous plugin instance was killed: '"+plugin_name+"' [" + pid + "]");
+
+									clearPluginTimer(plugin_name);
+									logger.warn("[PLUGIN] --> '"+plugin_name+"' plugin timer monitor cleared!");
+
+
+								}
+								catch(err){
+
+									logger.error("[PLUGIN] - Error killing previous plugin instance [" + pid + "]: " + err);
+								}
+
+							}
+
+						}
+
+					}
+
+				}
+
 
 				logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin starting...');
 
@@ -1733,7 +1773,7 @@ exports.run = function (args){
 
 					case 'python':
 
-						pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, "start").then(
+						pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, "start", version).then(
 
 							function (execRes) {
 								d.resolve(execRes);
@@ -1929,6 +1969,17 @@ exports.injectPlugin = function(args){
 	else if(plugin_bundle.type == "python")
 		var fileName = plugin_folder + "/" + plugin_name + '.py';
 
+
+	//UPDATE PLUGIN MANAGEMENT
+	//Reading the plugins configuration file
+	var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));
+	if(pluginsConf.plugins[plugin_name] != undefined && pluginsConf.plugins[plugin_name]['version'] != undefined){
+		//console.log(plugin_bundle.version, pluginsConf.plugins[plugin_name]['version'], pluginsConf.plugins[plugin_name]['pid'] );
+		var prec_v_pid = pluginsConf.plugins[plugin_name]['pid'];
+	}
+
+
+
 	cleanPluginData(plugin_name).then(
 
 		function (clean_res) {
@@ -1962,6 +2013,9 @@ exports.injectPlugin = function(args){
 
 							pluginsConf.plugins[plugin_name]['version'] = plugin_bundle.version;
 							pluginsConf.plugins[plugin_name]['type'] = plugin_bundle.type;
+
+							//UPDATE PLUGIN MANAGEMENT
+							pluginsConf.plugins[plugin_name]['pid'] = prec_v_pid;
 
 							if (autostart != undefined)
 								pluginsConf.plugins[plugin_name]['autostart'] = autostart;
