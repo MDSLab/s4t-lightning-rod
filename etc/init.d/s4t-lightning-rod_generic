@@ -19,6 +19,8 @@ export LIGHTNINGROD_REGEX='lightning-rod.js'
 export WSTUN_REGEX='wstun.js'
 export LR_PY_ASYNC_PLUGINS_REGEX='async-wrapper.py'
 export LR_PY_SYNC_PLUGINS_REGEX='sync-wrapper.py'
+export LR_JS_ASYNC_PLUGINS_REGEX='async-wrapper'
+export LR_JS_SYNC_PLUGINS_REGEX='sync-wrapper'
 
 START=99
 STOP=99
