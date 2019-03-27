@@ -59,7 +59,7 @@ process.once('message', function(message) {
 
 process.on('exit', function(){
     
-    process.send({ name: plugin_name, level: "warn" , logmsg: 'Process terminated: putting ' + plugin_name + ' to off'});
+    process.send({ name: plugin_name, level: "warn" , status: "failed", logmsg: 'Process terminated: putting ' + plugin_name + ' to off'});
     
     try{
         //Reading the plugin configuration file

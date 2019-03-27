@@ -1,6 +1,6 @@
 {
   "name": "@mdslab/iotronic-lightning-rod",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "Implementation of the Lightning-rod, the Stack4Things node-side probe (this version works with the standalone version of IoTronic) http://stack4things.unime.it/",
   "main": "lightning-rod.js",
   "directories": {

@@ -39,6 +39,9 @@ var PLUGINS_STORE = process.env.IOTRONIC_HOME + '/plugins/';
 var LIGHTNINGROD_HOME = process.env.LIGHTNINGROD_HOME;
 
 
+PLUGIN_LOGGERS = [];
+
+
 SETTINGS = process.env.IOTRONIC_HOME+'/settings.json';
 nconf = require('nconf');
 nconf.file ({file: SETTINGS});
@@ -177,10 +180,6 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 				}
 
 
-
-
-
-
 			}
 			else if( skip === "true") {
 
@@ -269,7 +268,42 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 
 											} else if(msg.level === "warn") {
 
-												logger.warn("[PLUGIN] --> "+ msg.name + " - " + msg.logmsg);
+												logger.warn("[PLUGIN] - "+ msg.name + " - " + msg.logmsg);
+
+												if(msg.status === "failed"){
+
+													// if plugin crashes
+
+													logger.error("[PLUGIN] - '"+ plugin_name + "' - plugin process failed: "+ msg.name + " - " + msg.logmsg);
+
+													clearPluginTimer(plugin_name);
+
+													iotronic_plugin_status = "failed";
+													session_plugins.call('s4t.iotronic.plugin.updateStatus', [boardCode, plugin_name, version, iotronic_plugin_status]).then(
+
+														function (rpc_response) {
+
+															if (rpc_response.result == "ERROR") {
+
+																response.result = "ERROR";
+																response.message = 'Error notification plugin status: '+ rpc_response.message;
+																logger.error("[PLUGIN] --> Error notification plugin status for '" + plugin_name + "' plugin: " + rpc_response.message);
+
+															}
+															else {
+
+																logger.debug("[PLUGIN] - Iotronic updating status response: " + rpc_response.message);
+
+																response.result = "SUCCESS";
+																response.message = 'Plugin environment cleaned and Iotronic status updated to ' + iotronic_plugin_status;
+																logger.info("[PLUGIN] - plugin '"+plugin_name + "': "+response.message);
+
+															}
+
+														}
+													);
+
+												}
 
 											} else{
 
@@ -341,7 +375,8 @@ function pluginStarter(plugin_name, timer, plugin_json_name, skip, plugin_checks
 					}
 
 
-				}else{
+				}
+				else{
 
 					// the plugin is not alive and its checksum mismatches!
 					logger.warn( '[PLUGIN] - PluginChecker - '+ plugin_name + ' - The plugin is not alive and it will not be restarted: checksum mismatches!');
@@ -389,11 +424,11 @@ function clearPluginTimer(plugin_name) {
       
 		if( plugins[plugin_name].timer == null){
 
-	  		logger.debug("[PLUGIN] --> " +plugin_name+ ": no timer to clear!");
+	  		logger.debug("[PLUGIN] --> '" + plugin_name + "': no timer to clear!");
 
 		}else{
 	  		clearInterval( plugins[plugin_name].timer );
-  			logger.debug("[PLUGIN] --> " + plugin_name +": timer cleared!");
+  			logger.debug("[PLUGIN] --> '" + plugin_name + "': timer cleared!");
 		}
 	  
     }  
@@ -505,6 +540,7 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action, versi
 
 		// Listen for data from client
 		socket.on('data',function(bytes){
+
 			var data = bytes.toString(); 			// Decode byte string
 			var data_parsed = JSON.parse(data); 	// Parse JSON response
 
@@ -524,13 +560,6 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action, versi
 
 			}
 
-			/*
-			response.result = "SUCCESS";
-			response.message = bytes.toString(); // Decode byte strin
-			logger.info('[PLUGIN] - '+plugin_name + ' - '+response.message);
-			d.resolve(response);
-			*/
-
 		});
 
 		// On client close
@@ -541,7 +570,6 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action, versi
 			});
 
 		});
-
 
 
 	};
@@ -609,8 +637,6 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action, versi
 			} else {
 
 				logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin JSON schema saved to ' + schema_outputFilename);
-
-
 
 				// Updating the plugins.json file:
 				// - check if the user changed the autostart parameter at this stage
@@ -681,11 +707,40 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action, versi
 	pyshell.end(function (err, code, signal) {
 
 		if (err){
-			response.result = "ERROR";
-			response.message = err;
-			d.resolve(response);
 
-		}else{
+			PLUGIN_LOGGERS[plugin_name].warn("Plugin '"+plugin_name+"' error logs: \n" + JSON.stringify(err, null, "\t"));
+
+			response.result = "ERROR";
+			response.message = "Error plugin execution: please check plugin logs: \n" + err.traceback;
+			//console.log(err);
+
+			pluginsConf.plugins[plugin_name].status = "off";
+			pluginsConf.plugins[plugin_name].pid = "";
+
+			// updates the JSON file
+			fs.writeFile(PLUGINS_SETTING, JSON.stringify(pluginsConf, null, 4), function(err) {
+
+				if(err) {
+
+					response.result = "ERROR";
+					response.message = 'Error writing plugins.json: '+ err;
+					logger.error('[PLUGIN] - pyshell error in plugin '+plugin_name + ' error: '+response.message);
+					d.resolve(response);
+
+				} else {
+
+					logger.debug("[PLUGIN] --> " + PLUGINS_SETTING + " updated!");
+					clearPluginTimer(plugin_name);
+
+					d.resolve(response);
+
+				}
+
+			})
+
+
+		}
+		else{
 
 			logger.debug('[PLUGIN-SHELL] - Python shell of "'+plugin_name+'" plugin terminated: {signal: '+ signal+', code: '+code+'}');
 
@@ -707,12 +762,38 @@ function pyAsyncStarter(plugin_name, plugin_json, plugin_checksum, action, versi
 						d.resolve(response);
 
 					} else {
+
 						logger.debug("[PLUGIN] --> " + PLUGINS_SETTING + " updated!");
 						clearPluginTimer(plugin_name);
-						response.result = "SUCCESS";
-						response.message = 'Plugin environment cleaned!';
-						logger.info('[PLUGIN] - plugin '+plugin_name + ': '+response.message);
-						d.resolve(response);
+
+						iotronic_plugin_status = "failed";
+						session_plugins.call('s4t.iotronic.plugin.updateStatus', [boardCode, plugin_name, version, iotronic_plugin_status]).then(
+
+							function (rpc_response) {
+
+								if (rpc_response.result == "ERROR") {
+
+									response.result = "ERROR";
+									response.message = 'Error notification plugin status: '+ rpc_response.message;
+									logger.error("[PLUGIN] --> Error notification plugin status for '" + plugin_name + "' plugin: " + rpc_response.message);
+									d.resolve(response);
+
+								}
+								else {
+
+									logger.debug("[PLUGIN] - Iotronic updating status response: " + rpc_response.message);
+
+									response.result = "SUCCESS";
+									response.message = 'Plugin environment cleaned and Iotronic status updated to ' + iotronic_plugin_status;
+									logger.info("[PLUGIN] - plugin '"+plugin_name + "': "+response.message);
+									d.resolve(response);
+
+								}
+
+							}
+						);
+
+
 					}
 
 				});
@@ -759,7 +840,7 @@ function pySyncStarter(plugin_name, version, plugin_json) {
 			if(data_parsed.result == "ERROR"){
 
 				response.result = "ERROR";
-				response.message = data_parsed.payload;
+				response.message = "Error in plugin execution: " + data_parsed.payload;
 				logger.warn('[PLUGIN] - Error in '+plugin_name + ':\n'+JSON.stringify(response.message, null, "\t"));
 				d.resolve(response);
 
@@ -782,8 +863,6 @@ function pySyncStarter(plugin_name, version, plugin_json) {
 
 
 			}
-
-
 
 
 		});
@@ -983,8 +1062,17 @@ exports.call = function (args){
 
 						logger.info("[PLUGIN] --> plugin type: " + plugin_type);
 
+						//set plugin logger
+						var api = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/plugin-apis');
+
+						if(PLUGIN_LOGGERS[plugin_name] == undefined){
+							PLUGIN_LOGGERS[plugin_name] = api.getLogger(plugin_name, 'debug');
+						}
+
 						//Create a new process that has wrapper that manages the plugin execution
-						var child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/sync-wrapper');
+						var child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/sync-wrapper', {
+							silent: true,
+						});
 
 						//Prepare the message I will send to the process with name of the plugin to start and json file as argument
 						var input_message = {
@@ -1048,7 +1136,40 @@ exports.call = function (args){
 
 								} else if(msg.level === "warn") {
 
-									logger.warn("[PLUGIN] --> WARNING "+ msg.name + ": " + msg.logmsg);
+									// logger.warn("[PLUGIN] - "+ msg.name + " - " + msg.logmsg);
+
+									if(msg.status === "exited"){
+
+										// if plugin crashes
+
+										logger.warn("[PLUGIN] - '"+ plugin_name + "' - plugin process exited: "+ msg.name + " - " + msg.logmsg);
+
+										iotronic_plugin_status = "exited";
+										session_plugins.call('s4t.iotronic.plugin.updateStatus', [boardCode, plugin_name, version, iotronic_plugin_status]).then(
+
+											function (rpc_response) {
+
+												if (rpc_response.result == "ERROR") {
+
+													response.result = "ERROR";
+													response.message = 'Error notification plugin status: '+ rpc_response.message;
+													logger.error("[PLUGIN] --> Error notification plugin status for '" + plugin_name + "' plugin: " + rpc_response.message);
+
+												}
+												else {
+
+													logger.debug("[PLUGIN] - Iotronic updating status response: " + rpc_response.message);
+
+													response.result = "SUCCESS";
+													response.message = 'Plugin environment cleaned and Iotronic status updated to ' + iotronic_plugin_status;
+													logger.info("[PLUGIN] - plugin '"+plugin_name + "': "+response.message);
+
+												}
+
+											}
+										);
+
+									}
 
 								}
 								else{
@@ -1065,6 +1186,15 @@ exports.call = function (args){
 
 						});
 
+						child.stderr.on('data', function(data) {
+
+							var log_plug = data;
+							PLUGIN_LOGGERS[plugin_name].warn("Plugin '"+plugin_name+"' error logs: \n" + log_plug);
+							response.result = "ERROR";
+							response.message = 'Error in plugin execution: please check plugin logs!'; //\n'+ log_plug;
+							d.resolve(response);
+
+						});
 
 						//I send the input to the wrapper so that it can launch the proper plugin with the proper json file as argument
 						child.send(input_message);
@@ -1082,15 +1212,13 @@ exports.call = function (args){
 
 								if(execRes.result == "ERROR"){
 
-									logger.error("[PLUGIN] - '" + plugin_name + "' plugin execution error: "+JSON.stringify(execRes, null, "\t"));
+									// logger.error("[PLUGIN] - '" + plugin_name + "' plugin execution error: "+JSON.stringify(execRes, null, "\t"));
 
 									d.resolve(execRes);
-
 
 								}
 								else if (execRes.result == "SUCCESS")
 									d.resolve(execRes.message);
-
 
 								//update parameters and plugins.json conf file
 								try {
@@ -1134,7 +1262,6 @@ exports.call = function (args){
 											}
 
 
-
 										}
 
 									});
@@ -1144,8 +1271,6 @@ exports.call = function (args){
 								catch(err){
 										logger.error('Error updating JSON file plugins.json: '+ JSON.stringify(err));
 								}
-
-
 
 
 							}
@@ -1165,11 +1290,6 @@ exports.call = function (args){
 						break;
 
 				}
-
-
-
-
-
 
 
 			}
@@ -1332,8 +1452,6 @@ exports.pluginsBootLoader = function (){
 
 									logger.info('[PLUGIN] |--> ' + plugin_name + ' - status: ' + status + ' - autostart: ' + autostart);
 
-
-
 									setTimeout(function () {
 
 										//var plugin_checksum = md5(	fs.readFileSync(PLUGINS_STORE + plugin_name + "/"+plugin_name+ext, 'utf8'));
@@ -1342,9 +1460,6 @@ exports.pluginsBootLoader = function (){
 										exports.pluginKeepAlive(plugin_name, plugin_checksum);
 
 									}, 7000 * i);
-
-
-
 
 
 								})(i);
@@ -1599,7 +1714,7 @@ exports.run = function (args){
 
 			//Check the status
 			var status = pluginsConf.plugins[plugin_name].status;
-			var version = pluginsConf.plugins[plugin_name].version
+			var version = pluginsConf.plugins[plugin_name].version;
 
 			if (status == "off" || status == "injected" ){
 
@@ -1643,6 +1758,14 @@ exports.run = function (args){
 				logger.info('[PLUGIN] - '+ plugin_name + ' - Plugin starting...');
 
 
+				//set plugin logger
+				var api = require(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/plugin-apis');
+
+				if(PLUGIN_LOGGERS[plugin_name] == undefined){
+					PLUGIN_LOGGERS[plugin_name] = api.getLogger(plugin_name, 'debug');
+				}
+
+
 				// Check the plugin type: "nodejs" or "python"
 
 				switch (plugin_type) {
@@ -1650,7 +1773,9 @@ exports.run = function (args){
 					case 'nodejs':
 
 						//Create a new process that has wrapper that manages the plugin execution
-						var child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/async-wrapper');
+						var child = cp.fork(LIGHTNINGROD_HOME + '/modules/plugins-manager/nodejs/async-wrapper', {
+							silent: true,
+						});
 
 						//Prepare the message I will send to the process with name of the plugin to start and json file as argument
 						var input_message = {
@@ -1737,7 +1862,8 @@ exports.run = function (args){
 									});
 
 
-								} else if(msg.level === "error") {
+								}
+								else if(msg.level === "error") {
 
 									logger.error("[PLUGIN] - "+ msg.name + " - " + msg.logmsg);
 
@@ -1745,19 +1871,100 @@ exports.run = function (args){
 
 									logger.warn("[PLUGIN] - "+ msg.name + " - " + msg.logmsg);
 
+									if(msg.status === "failed"){
+
+										// if plugin crashes
+
+										logger.error("[PLUGIN] - '"+ plugin_name + "' - plugin process failed: "+ msg.name + " - " + msg.logmsg);
+
+										clearPluginTimer(plugin_name);
+
+										iotronic_plugin_status = "failed";
+										session_plugins.call('s4t.iotronic.plugin.updateStatus', [boardCode, plugin_name, version, iotronic_plugin_status]).then(
+
+											function (rpc_response) {
+
+												if (rpc_response.result == "ERROR") {
+
+													response.result = "ERROR";
+													response.message = 'Error notification plugin status: '+ rpc_response.message;
+													logger.error("[PLUGIN] --> Error notification plugin status for '" + plugin_name + "' plugin: " + rpc_response.message);
+
+												}
+												else {
+
+													logger.debug("[PLUGIN] - Iotronic updating status response: " + rpc_response.message);
+
+													response.result = "SUCCESS";
+													response.message = 'Plugin environment cleaned and Iotronic status updated to ' + iotronic_plugin_status;
+													logger.info("[PLUGIN] - plugin '"+plugin_name + "': "+response.message);
+
+												}
+
+											}
+										);
+
+									}
+
 								} else{
 
 									logger.info("[PLUGIN] - "+ msg.name + " - " + msg.logmsg);
 
 								}
 
-							} else{
+							}
+							else{
 								//serve per gestire il primo messaggio alla creazione del child
 								logger.info("[PLUGIN] --> "+ msg);
 							}
 
 
 						});
+
+						child.stderr.on('data', function(data) {
+
+							var log_plug = data;
+							PLUGIN_LOGGERS[plugin_name].warn("Plugin '"+plugin_name+"' error logs: \n" + log_plug);
+
+						});
+
+						/*
+
+						child.on('exit', function(code, signal) {
+
+							logger.info("[PLUGIN] --> '"+ plugin_name + "': plugin process exited: code[" + code + "] - signal[" + signal + "]");
+
+							clearPluginTimer(plugin_name);
+
+							iotronic_plugin_status = "exited";
+							session_plugins.call('s4t.iotronic.plugin.updateStatus', [boardCode, plugin_name, version, iotronic_plugin_status]).then(
+
+								function (rpc_response) {
+
+									if (rpc_response.result == "ERROR") {
+
+										response.result = "ERROR";
+										response.message = 'Error notification plugin status: '+ rpc_response.message;
+										logger.error("[PLUGIN] --> Error notification plugin status for '" + plugin_name + "' plugin: " + rpc_response.message);
+
+									}
+									else {
+
+										logger.debug("[PLUGIN] - Iotronic updating status response: " + rpc_response.message);
+
+										response.result = "SUCCESS";
+										response.message = 'Plugin environment cleaned and Iotronic status updated to ' + iotronic_plugin_status;
+										logger.info("[PLUGIN] - plugin '"+plugin_name + "': "+response.message);
+
+									}
+
+								}
+							);
+
+						});
+
+						*/
+
 
 						//I send the input to the wrapper so that it can launch the proper plugin with the proper json file as argument
 						child.send(input_message);
@@ -2207,7 +2414,6 @@ exports.restartPlugin = function(args){
 
 	if(checksum === plugin_checksum){
 
-
 		//If the plugin exists
 		if(pluginsConf["plugins"].hasOwnProperty(plugin_name)){
 
@@ -2312,7 +2518,8 @@ exports.getPluginLogs = function(args){
 		else{
 			var lines = data.trim().split('\n');
 			var lastLine = lines.slice(-rows);
-			console.log(lastLine);
+
+			//console.log(lastLine);
 
 			response.message = lastLine; //"Plugin logs for '" + plugin_name + "' successfully retrieved!";
 			response.result = "SUCCESS";
@@ -2485,135 +2692,6 @@ exports.Boot = function (){
 
 		}
 
-		/*
-		connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
-
-			var reachable = output.success;
-			var error_test = output.error;
-
-			if (!reachable) {
-
-				//CONNECTION STATUS: FALSE
-				logger.warn("[PLUGIN-CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: " + reachable + " - ERROR: " + error_test);
-
-				exports.pluginsBootLoader();
-
-				checkIotronicWampConnection = setInterval(function(){
-
-					logger.warn("[PLUGIN-CONNECTION-RECOVERY] - RETRY...");
-
-					connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
-
-						var reachable = output.success;
-						var error_test = output.error;
-
-						if (!reachable) {
-
-							//CONNECTION STATUS: FALSE
-							logger.warn("[PLUGIN-CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: " + reachable + " - ERROR: " + error_test);
-
-						}else{
-
-							try {
-
-								// Test if IoTronic is connected to the realm
-								session_plugins.call("s4t.iotronic.isAlive", [boardCode]).then(
-
-									function(response){
-
-										// Get plugins checksum from Iotronic
-										session_plugins.call('s4t.iotronic.plugin.checksum', [boardCode]).then(
-
-											function (rpc_response) {
-
-												if (rpc_response.result == "ERROR") {
-
-													logger.error("[PLUGIN-CONNECTION-RECOVERY] --> Getting plugin checksum list failed: " + rpc_response.message);
-
-												}
-												else {
-
-													CHECKSUMS_PLUGINS_LIST = rpc_response.message;
-
-													logger.debug("[PLUGIN-CONNECTION-RECOVERY] --> Plugins checksums list recovered: ", CHECKSUMS_PLUGINS_LIST);
-
-													clearInterval( checkIotronicWampConnection );
-
-												}
-
-											}
-
-										);
-
-									},
-									function(err){
-
-										logger.warn("NO WAMP CONNECTION YET!")
-
-									}
-
-								);
-
-							}
-							catch(err){
-								logger.warn('[PLUGIN-CONNECTION-RECOVERY] - Error calling "s4t.iotronic.isAlive"');
-							}
-
-
-						}
-
-					});
-
-
-				}, alive_timer * 1000);
-
-
-			}
-			else{
-
-
-				checkIotronicWampConnection = setInterval(function(){
-
-					try {
-
-						// Test if IoTronic is connected to the realm
-						session_plugins.call("s4t.iotronic.isAlive", [boardCode]).then(
-
-							function(response){
-
-								exports.pluginsLoader();
-
-								clearInterval( checkIotronicWampConnection );
-
-
-							},
-							function(err){
-
-								logger.warn("[PLUGIN-CONNECTION-RECOVERY] - No WAMP connection yet!")
-
-							}
-
-						);
-
-					}
-					catch(err){
-						logger.warn('[PLUGIN-CONNECTION-RECOVERY] - Internet connection available BUT wamp session not established!');
-						if(PLUGIN_MODULE_LOADED == false)
-							exports.pluginsBootLoader();
-
-					}
-
-
-
-				}, alive_timer * 1000);
-
-
-
-
-			}
-
-		});
-		*/
 
 	}, 5000);
 

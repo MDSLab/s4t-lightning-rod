@@ -128,7 +128,7 @@ function checkModEnabled(module_name) {
 
     var modules = configFile.config["board"]["modules"]; //console.log(module_name, modules[module_name]);
 
-    d.resolve(modules[module_name]);
+    d.resolve(modules[module_name]["enabled"]);
 
     return d.promise;
 

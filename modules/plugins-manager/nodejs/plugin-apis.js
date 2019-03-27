@@ -50,15 +50,12 @@ var Q = require("q");
 
 exports.getLogger = function (plugin_name, loglevel){
 
-    log4js = require('log4js');
+    var log4js = require('log4js');
     log4js.loadAppender('file');
 
-    //logfile = nconf.get('config:log:logfile');
-    //loglevel = nconf.get('config:log:loglevel');
+    var logfile = '/var/log/iotronic/plugins/'+plugin_name+'.log';
 
-    logfile = '/var/log/iotronic/plugins/'+plugin_name+'.log';
-
-    log4js.addAppender(log4js.appenders.file(logfile));
+    log4js.addAppender(log4js.appenders.file(logfile), plugin_name);
     var logger = log4js.getLogger(plugin_name);
     logger.setLevel(loglevel);
     

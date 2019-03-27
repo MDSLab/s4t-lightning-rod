@@ -78,6 +78,10 @@ class Plugin(threading.Thread):
 
 
         except Exception as err:
+
+            logging = api.getLogger(plugin_name)
+            logging.exception("Exception occurred in plugin")
+
             response = {
                     "message": str(err),
                     "result": "ERROR"

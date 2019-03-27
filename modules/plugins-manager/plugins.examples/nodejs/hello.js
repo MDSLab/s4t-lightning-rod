@@ -4,7 +4,7 @@ exports.main = function (plugin_name, arguments, api){
 
     var name = arguments.name;
 
-    logger = api.getLogger(plugin_name, 'debug');
+    var logger = api.getLogger(plugin_name, 'debug');
 
     logger.info("Hello plugin starting...");
 

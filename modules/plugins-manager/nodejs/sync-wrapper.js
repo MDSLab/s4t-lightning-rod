@@ -59,8 +59,8 @@ process.once('message', function(message) {
 
 process.on('exit', function(){
     
-    process.send({ name: plugin_name, level: "warn" , logmsg: 'Process terminated: putting ' + plugin_name + ' to off'});
-    
+    process.send({ name: plugin_name, level: "warn" , status: "exited", logmsg: 'Process terminated: putting ' + plugin_name + ' to off'});
+
     try{
         //Reading the plugin configuration file
         var pluginsConf = JSON.parse(fs.readFileSync(PLUGINS_SETTING, 'utf8'));

@@ -31,5 +31,4 @@ def main(plugin_name, params, api):
 
     logging.info(result)
 
-
     return result

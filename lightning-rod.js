@@ -1,6 +1,6 @@
 //############################################################################################
 //##
-//# Copyright (C) 2014-2018 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto, 
+//# Copyright (C) 2014-2018 Dario Bruneo, Francesco Longo, Andrea Rocco Lotronto,
 //# Giovanni Merlino, Nicola Peditto
 //##
 //# Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
 //# limitations under the License.
 //##
 //############################################################################################
-
 
 
 // LIBRARIES
@@ -104,14 +103,14 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 		var log_template={log: {logfile: "<LOG-FILE>", loglevel: "<LOG-LEVEL>"}};
 		logger.error("[SYSTEM] - Logger configuration expected: \n" + JSON.stringify(log_template, null, "\t"));
-		
+
 		process.exit();
-		
+
 	}
 	else{
 
 		// Configuration file is correctly configured... Starting LR...
-		
+
 		logger.info('[SYSTEM] - DEVICE: ' + device);
 
 		//----------------------------------------
@@ -120,7 +119,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		var wampUrl = url_wamp+":"+port_wamp+"/ws";
 
 		wampIP = wampUrl.split("//")[1].split(":")[0];
-		
+
 		//var wampRealm = nconf.get('config:wamp:realm');
 		var wampRealm = realm;
 
@@ -395,7 +394,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 							}
 
 
-						}, check_skt_time * 1000);  
+						}, check_skt_time * 1000);
 
 
 
@@ -410,7 +409,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 				},
 				function (err) {
-					
+
 					// IoTronic is not connected to the realm yet so LR need to try to reconnect later
 					logger.error("[SYSTEM] - IoTronic is not online: " + JSON.stringify(err) );
 					//if (err.error !== 'wamp.error.no_such_procedure') {}
@@ -432,7 +431,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 		};
 
-		
+
 		//-------------------------------
 		// 4. On WAMP connection close
 		//-------------------------------
@@ -468,7 +467,7 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		// 2. The selected device will connect to Iotronic WAMP server
 		//--------------------------------------------------------------
 		try{
-			
+
 			IoT_Device = require('./device/lyt_'+device);
 			lyt_device = new IoT_Device(device);
 			logger.info("[SYSTEM] - Lightning-rod "+ lyt_device.name +" starting...");
@@ -496,8 +495,8 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 
 
 	}
-	
-	
+
+
 });
 
 
