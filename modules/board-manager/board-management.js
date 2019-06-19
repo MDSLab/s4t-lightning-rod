@@ -227,11 +227,11 @@ exports.moduleLoaderOnBoot = function() {
     logger.info("[SYSTEM] - Modules loading:");
 
     var configFile = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
-
     var modules = configFile.config["board"]["modules"]; //console.log(modules);
-
     var modules_keys = Object.keys( modules ); //console.log(modules_keys);
 
+
+    //STARTING ENABLED MANAGERS
     for (var i = 0; i < modules_keys.length; i++) {
 
         (function (i) {
@@ -261,11 +261,9 @@ exports.moduleLoaderOnBoot = function() {
                         nodeRedManager.Boot();
                         break;
 
-                    
-                     case 'vnets_manager':
-                         logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
-                     break;
-                    
+                    case 'vnets_manager':
+                     logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
+                    break;
 
                     case 'gpio_manager':
                         logger.info("[SYSTEM] --> " + module_name + ": " + enabled);
@@ -285,7 +283,6 @@ exports.moduleLoaderOnBoot = function() {
                         break;
 
 
-
                 }
 
 
@@ -294,9 +291,145 @@ exports.moduleLoaderOnBoot = function() {
     }
 
 
+    //START BOARD-MANAGER CONNECTIONS TESTS PROCEDURES
+    if(wamp_socket_recovery == true || wamp_socket_recovery == "true") {
+
+        logger.info('[BOOT] - Board Manager connection controller starting...');
+        logger.info('[BOOT] --> Crossbar IP: ' + wampIP + " - Port: " + port_wamp);
+
+        // connectionTester: library used to check the reachability of Iotronic-Server/WAMP-Server
+        var connectionTester = require('connection-tester');
+
+        conn_alive_timer = 60; //second between check-connection retries
+        conn_retry_counter = 0; //counter for check-connection retries
+
+        setTimeout(function () {
+
+            var output = connectionTester.test(wampIP, port_wamp, 10000);
+            var reachable = output.success;
+            var error_test = output.error;
+
+            if (!reachable) {
+
+                //CONNECTION STATUS: FALSE
+                logger.warn("[BOARD-CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: " + reachable + " - ERROR: " + error_test);
+
+                checkInternetWampConnection = setInterval(function () {
+
+                    //logger.warn("[BOARD-CONNECTION-RECOVERY] - RETRY...");
+
+                    connectionTester.test(wampIP, port_wamp, 10000, function (err, output) {
+
+                        var reachable = output.success;
+                        var error_test = output.error;
+
+                        if (!reachable) {
+
+                            //CONNECTION STATUS: FALSE
+                            logger.warn("[BOARD-CONNECTION-RECOVERY] - INTERNET CONNECTION STATUS: " + reachable + " - ERROR: " + error_test);
+
+                        } else {
+
+                            try {
+
+                                // Test if IoTronic is connected to the realm
+                                board_session.call("s4t.iotronic.isAlive", [boardCode]).then(
+                                    function (response) {
+
+                                        conn_retry_counter = 0;
+                                        clearInterval(checkInternetWampConnection);
+
+                                    },
+                                    function (err) {
+
+                                        logger.warn("NO WAMP CONNECTION YET!")
+
+                                    }
+                                );
+
+                            } catch (err) {
+                                logger.warn('[BOARD-CONNECTION-RECOVERY] - Error calling "s4t.iotronic.isAlive"');
+                            }
+
+
+                        }
+
+                    });
+
+
+                }, conn_alive_timer * 1000);
+
+            } else {
+
+                checkInternetWampConnection = setInterval(function () {
+
+                    conn_retry_counter = conn_retry_counter + 1;
+
+                    try {
+
+                        // Test if IoTronic is connected to the realm
+                        board_session.call("s4t.iotronic.isAlive", [boardCode]).then(
+                            function (response) {
+
+                                conn_retry_counter = 0;
+                                clearInterval(checkInternetWampConnection);
+
+                            },
+                            function (err) {
+
+                                logger.warn("[CONN-RETRY] - " + conn_retry_counter);
+                                logger.warn("[BOARD-CONNECTION-RECOVERY] - No WAMP connection yet!")
+
+                            }
+                        );
+
+                    } catch (err) {
+
+                        logger.warn("[CONN-RETRY] - " + conn_retry_counter);
+                        logger.warn('[BOARD-CONNECTION-RECOVERY] - Internet connection available BUT wamp session not established!');
+                        logger.warn("--> WAMP connection error:" + err);
+
+                    }
+
+                    if (conn_retry_counter >= 5) {
+
+                        logger.warn("LR restarting in 5 seconds");
+
+                        restart_time = 5;
+
+                        // activate listener on-exit event after LR exit on-update-conf
+                        process.on("exit", function () {
+
+                            require("child_process").spawn(process.argv.shift(), process.argv, {
+                                cwd: process.cwd(),
+                                detached: true,
+                                stdio: "inherit"
+                            });
+
+                        });
+
+                        //Restarting LR
+                        setTimeout(function () {
+
+                            process.exit();
+
+                        }, restart_time * 1000);
+
+
+                    }
+
+
+                }, conn_alive_timer * 1000);
+
+            }
+
+
+        }, 5000);
+
+    }
+
+
 };
-
-
 
 
 // Init() LR function in order to control the correct LR configuration:
@@ -347,8 +480,13 @@ exports.Init_Ligthning_Rod = function (callback) {
 
         } else {
 
-            log4js.addAppender(log4js.appenders.file(logfile));
-            logger = log4js.getLogger('main');		//service logging configuration: "main"
+            try{
+                log4js.addAppender(log4js.appenders.file(logfile));
+                logger = log4js.getLogger('main');          //service logging configuration: "main"
+            }
+            catch (err) {
+                console.log("Error in log folder creation!")
+            }
 
             LogoLR();
 
@@ -938,13 +1076,10 @@ exports.execAction = function(args){
         case 'restart_lr':
 
             try{
-
                 var params = JSON.parse(params);
 
             }
             catch (err) {
-
-
                 logger.debug("[SYSTEM] --> parsing parameters error: "+JSON.stringify(err));
 
             }
@@ -958,9 +1093,6 @@ exports.execAction = function(args){
                     restart_time = 5;
 
             }
-
-
-
 
             // activate listener on-exit event after LR exit on-update-conf
             logger.debug("[SYSTEM] --> Listener on process 'exit' event activated:");
@@ -1002,13 +1134,10 @@ exports.execAction = function(args){
     }
 
 
-
-
     return d.promise;
 
 
 };
-
 
 
 var managePackage = function (pkg_mng, pkg_mng_cmd, pkg_opts, pkg_name, callback) {
@@ -1140,6 +1269,7 @@ exports.getLRversion = function () {
     return lr_v;
 
 };
+
 
 // Login to Crossbar server and to Iotornic
 exports.IotronicLogin = function (session) {

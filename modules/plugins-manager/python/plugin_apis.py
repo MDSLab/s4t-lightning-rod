@@ -1,14 +1,22 @@
 import logging
 import json
 import os
+import sys
 
 SETTINGS_PATH = os.environ['IOTRONIC_HOME']+"/settings.json"
 
-def getLogger(plugin_name):
-    logging.basicConfig(filename='/var/log/iotronic/plugins/'+plugin_name+'.log', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-    #logging.debug('TEXT')
-    #logging.info('TEXT')
-    #logging.warning('TEXT)
+def getLogger(plugin_name, console=None):
+
+    # logging.root.handlers = []
+    lr_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='/var/log/iotronic/plugins/'+plugin_name+'.log', level=logging.DEBUG)
+
+    # set up logging to console
+    if (console != None) and (console == True):
+        cl = logging.StreamHandler(sys.stdout)
+        cl.setLevel(logging.DEBUG)
+        logging.getLogger("").addHandler(cl)
+
     return logging
 
 def getExtraInfo():
@@ -26,4 +34,3 @@ def getExtraInfo():
             print("Error parsing settings.json: " + str(err))
 
         return extra
-

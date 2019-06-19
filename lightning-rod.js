@@ -118,7 +118,15 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 		//----------------------------------------
 		var wampUrl = url_wamp+":"+port_wamp+"/ws";
 
-		wampIP = wampUrl.split("//")[1].split(":")[0];
+		try{
+			wampIP = wampUrl.split("//")[1].split(":")[0];
+
+		}
+		catch(err){
+			logger.warn('[WAMP] - Error in WAMP url format: '+ err);
+			process.exit(1);
+		}
+
 
 		//var wampRealm = nconf.get('config:wamp:realm');
 		var wampRealm = realm;
@@ -152,10 +160,11 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 			logger.info('[WAMP] |--> Realm: '+ wampRealm);
 			logger.info('[WAMP] |--> Session ID: '+ session._id);
 			//logger.debug('[WAMP] |--> Connection details:\n'+ JSON.stringify(details));
-			logger.info('[WAMP] |--> socket check timing: '+ wamp_socket_recovery + " - Timing: " + rpc_alive_time + " seconds");
 
 			//--WAMP-RECOVERY-SYSTEM-INIT-------------------------------------------------------------------------------
 			if(wamp_socket_recovery == true || wamp_socket_recovery == "true") {
+
+				logger.info('[WAMP] |--> socket check timing: '+ wamp_socket_recovery + " - Timing: " + rpc_alive_time + " seconds");
 
 				RECOVERY_SESSION = session;
 				socketNotAlive = false;
@@ -301,94 +310,6 @@ manageBoard.Init_Ligthning_Rod(function (check) {
 									}
 
 								});
-
-
-								/*
-
-								// Check if the tcpkill process was killed after a previous connection recovery through this check we will avoid to start another tcpkill process
-								var tcpkill_status = running(tcpkill_pid);
-								logger.warn("[WAMP-RECOVERY] - TCPKILL STATUS: " + tcpkill_status + " - PID: " + tcpkill_pid);
-
-								// at LR startup "tcpkill_pid" is NULL and in this condition "is-running" module return "true" that is a WRONG result!
-								if (tcpkill_status === false || tcpkill_pid == null){
-
-									logger.warn("[WAMP-RECOVERY] - TCPKILL - Cleaning WAMP zombie-socket...");
-
-									var tcpkill_kill_count = 0;
-
-									//e.g.: tcpkill -9 port 8181
-									tcpkill = spawn('tcpkill',['-9','port', port_wamp]);
-									tcpkill_pid = tcpkill.pid;
-
-									tcpkill.stdout.on('data', function (data) {
-										logger.debug('[WAMP-RECOVERY] ... tcpkill stdout: ' + data);
-									});
-
-									tcpkill.stderr.on('data', function (data) {
-
-										logger.debug('[WAMP-RECOVERY] ... tcpkill stderr:\n' + data);
-
-										//it will check if tcpkill is in listening state on the port 8181
-										if(data.toString().indexOf("listening") > -1){
-
-											// LISTENING: to manage the starting of tcpkill (listening on port 8181)
-
-										}else if (data.toString().indexOf("win 0") > -1){
-
-											// TCPKILL DETECTED WAMP ACTIVITY (WAMP reconnection attempts)
-											// This is the stage triggered when the WAMP socket was killed by tcpkill and WAMP reconnection process automaticcally started:
-											// in this phase we need to kill tcpkill to allow WAMP reconnection.
-											try{
-
-												logger.debug('[WAMP-RECOVERY] ... killing tcpkill process with PID: ' + tcpkill_pid);
-												tcpkill.kill('SIGKILL'); //process.kill(tcpkill_pid);
-
-												//double check: It will test after a while if the tcpkill process has been killed, OTHERWISE reboot board.
-												setTimeout(function(){
-
-													if ( running(tcpkill_pid)){
-
-														//manageBoard.execAction(['reboot']);
-														tcpkill.kill('SIGKILL'); //process.kill(tcpkill_pid);
-														//wampConnection.close();
-
-													}
-
-												}, 2000);
-
-
-											}catch (e) {
-
-												logger.error('[WAMP-RECOVERY] ... tcpkill killing error: ', e);
-
-											}
-
-
-										}
-
-
-									});
-
-									tcpkill.on('close', function (code) {
-
-										logger.debug('[WAMP-RECOVERY] ... tcpkill killed [code: '+code+']');
-										logger.info("[WAMP-RECOVERY] - WAMP socket cleaned!");
-
-										//The previous WAMP socket was KILLED and the automatic WAMP recovery process will start
-										//so the connection recovery is completed and "online" flag is set again to TRUE
-										online = true;
-										socketNotAlive = false;
-										clearTimeout(expectIotronicResponse);
-
-									});
-
-
-								}
-								else{
-									logger.warn('[WAMP-RECOVERY] ...tcpkill already started!');
-								}
-
-								*/
 
 
 							}

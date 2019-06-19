@@ -1,0 +1,341 @@
+#!/usr/bin/env node
+
+//############################################################################################
+//##
+//# Copyright (C) 2019 Nicola Peditto
+//##
+//# Licensed under the Apache License, Version 2.0 (the "License");
+//# you may not use this file except in compliance with the License.
+//# You may obtain a copy of the License at
+//##
+//# http://www.apache.org/licenses/LICENSE-2.0
+//##
+//# Unless required by applicable law or agreed to in writing, software
+//# distributed under the License is distributed on an "AS IS" BASIS,
+//# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//# See the License for the specific language governing permissions and
+//# limitations under the License.
+//##
+//############################################################################################
+
+// Version 1.0.0
+// ./exec_plg <local|injected> <async|sync> <PLUGIN-NAME>
+
+var fs = require("fs");
+//const {PythonShell} = require('python-shell');
+var PythonShell = require('python-shell');
+var net = require('net');
+
+
+
+// Inputs
+var args = process.argv;
+
+if(args.length < 5){
+
+    if(args[3] == "list"){
+
+        var plugin_env = args[2];
+
+        if(plugin_env == "local")
+            var plugin_location = "./plugins";
+        else if (plugin_env == "injected")
+            var plugin_location = "/var/lib/iotronic/plugins";
+        else{
+            console.log("Wrong plugin environment selected: allowed 'local' or 'injected'");
+            process.exit();
+        }
+
+        fs.readdir(plugin_location, (err, files) => {
+
+            if ( (files.length == 0) || (files.length == 1) ){
+
+                console.log("No plugins available!");
+
+                process.exit();
+
+            }
+            else{
+                files.forEach(file => {
+                    if (file != "plugins.json")
+                        console.log(file);
+                });
+            }
+
+        });
+
+
+
+    }
+    else{
+
+        if(args.length != 2)
+            console.log("Wrong arguments!");
+
+        console.log("Usage:\n\t ./exec_plg <local|injected> <sync|async> <PLUGIN-NAME>");
+        console.log("\n\t ./exec_plg <local|injected> list \n");
+
+        process.exit();
+
+    }
+
+
+
+}
+else{
+
+    var plugin_env = args[2];
+
+    if(plugin_env == "local")
+        var plugin_location = "./plugins";
+    else if (plugin_env == "injected")
+        var plugin_location = "/var/lib/iotronic/plugins";
+    else{
+        console.log("Wrong plugin environment selected: allowed 'local' or 'injected'");
+        process.exit();
+    }
+
+    var plugin_type = args[3];
+    var plugin_name = args[4];
+
+    var PLUGINS_FILE_LIST = fs.readdirSync(plugin_location);
+
+
+    if(PLUGINS_FILE_LIST.includes(args[4])){
+        var plugin_version = "DEV";
+        var plugin_json_name = plugin_location + "/" + plugin_name + "/" + plugin_name + ".json";
+        var plugin_json = fs.readFileSync(plugin_json_name);
+
+        console.log("Plugin:\n\t" + plugin_name);
+        console.log("Plugin Type:\n\t" + plugin_type);
+        console.log("Plugin input parameters:\n\t" + JSON.stringify(JSON.parse(plugin_json)));
+
+        var s_server = null;
+        var socketPath = '/tmp/plugin-'+plugin_name;
+
+        var response = {
+            message: '',
+            result: ''
+        };
+
+        if(plugin_type == "async"){
+
+            // Callback for socket
+            var handler = function(socket){
+
+                // Listen for data from client
+                socket.on('data',function(bytes){
+
+                    var data = bytes.toString(); 			// Decode byte string
+                    var data_parsed = JSON.parse(data); 	// Parse JSON response
+
+                    if(data_parsed.result == "ERROR"){
+
+                        response.result = "ERROR";
+                        response.message = data_parsed.payload;
+                        console.log('[PLUGIN] - Error in '+plugin_name + ':\n'+JSON.stringify(response.message, null, "\t"));
+
+                    }else{
+
+                        response.result = "SUCCESS";
+                        response.message = data_parsed.payload;
+                        console.log('[PLUGIN] - '+plugin_name + ': '+ JSON.stringify(response.message, null, "\t"));
+
+                    }
+
+                });
+
+                // On client close
+                socket.on('end', function() {
+                    console.log('[PLUGIN-SOCKET] - Socket disconnected');
+                    s_server.close(function(){
+                        console.log('[PLUGIN-SOCKET] - Server socket closed');
+                    });
+
+                });
+
+
+            };
+
+
+            // Remove an existing socket
+            fs.unlink(socketPath, function(){
+                // Create the server, give it our callback handler and listen at the path
+
+                s_server = net.createServer(handler).listen(socketPath, function(){
+                    console.log('[PLUGIN-SOCKET] - Socket in listening...');
+                    console.log('[PLUGIN-SOCKET] --> socket: '+socketPath);
+                })
+
+            });
+
+
+            var options = {
+                mode: 'text',
+                pythonPath: '/usr/bin/python3',
+                pythonOptions: ['-u'],
+                //scriptPath: __dirname,
+                args: [plugin_name, plugin_version, plugin_json, plugin_location]
+            };
+
+            var pyshell = new PythonShell('./lib/async-wrapper.py', options);
+
+            var PY_PID = pyshell.childProcess.pid;
+            console.log("[PLUGIN-SHELL] - PID wrapper: "+ PY_PID);
+
+
+            pyshell.on('message', function (message) {
+                // received a message sent from the Python script (a simple "print" statement)
+                console.log("[PLUGIN-WRAPPER] - PYTHON: "+message);
+            });
+
+            // end the input stream and allow the process to exit
+            pyshell.end(function (err, code, signal) {
+
+                if (err){
+
+                    response.result = "ERROR";
+                    response.message = "Error plugin execution: please check plugin logs: " + err.traceback;
+
+                    console.log(response)
+
+                }
+                else{
+
+                    console.log('[PLUGIN-SHELL] - Python shell of "'+plugin_name+'" plugin terminated: {signal: '+ signal+', code: '+code+'}');
+
+                    if(signal == null && code == 0){
+                        console.log("[PLUGIN-SHELL] --> unexpected '"+plugin_name+"' plugin termination!");
+                    }else{
+                        console.log("[PLUGIN-SHELL] --> python plugin '"+plugin_name+"' terminated!")
+                    }
+
+                }
+
+
+
+            });
+
+        }
+        else if(plugin_type == "sync"){
+
+            // Callback for socket
+            var handler = function(socket){
+
+                // Listen for data from client
+                socket.on('data', function(bytes){
+
+                    var data = bytes.toString(); 			// Decode byte string
+                    var data_parsed = JSON.parse(data); 	// Parse JSON response
+
+                    if(data_parsed.result == "ERROR"){
+
+                        response.result = "ERROR";
+                        response.message = "Error in plugin execution: " + data_parsed.payload;
+                        console.log('[PLUGIN] - Error in '+plugin_name + ':\n'+JSON.stringify(response.message, null, "\t"));
+
+                    }else{
+
+                        try{
+                            response.result = "SUCCESS";
+                            response.message = data_parsed.payload;
+                            console.log('[PLUGIN] - '+plugin_name + ': '+ JSON.stringify(response.message, null, "\t"));
+                        }
+                        catch(err){
+                            response.result = "ERROR";
+                            response.message = JSON.stringify(err);
+                            console.log('Error parsing '+plugin_name + ' plugin response: '+ response.message);
+                        }
+
+                    }
+
+                });
+
+                // On client close
+                socket.on('end', function() {
+
+                    console.log('[PLUGIN-SOCKET] - Socket disconnected');
+
+                    s_server.close(function(){
+
+                        console.log('[PLUGIN-SOCKET] - Server socket closed');
+
+                    });
+
+                });
+
+            };
+
+            // Remove an existing plugin socket
+            fs.unlink(socketPath, function(){
+
+
+                    // Create the server, give it our callback handler and listen at the path
+                    s_server = net.createServer(handler).listen(socketPath, function() {
+                        console.log('[PLUGIN-SOCKET] - Socket in listening...');
+                        console.log('[PLUGIN-SOCKET] --> socket: '+socketPath);
+
+                        // after socket creation we will start the plugin wrapper
+                        var options = {
+                            mode: 'text',
+                            pythonPath: '/usr/bin/python3',
+                            pythonOptions: ['-u'],
+                            //scriptPath: __dirname,
+                            args: [plugin_name, plugin_version, plugin_json, plugin_location]
+                        };
+
+                        var pyshell = new PythonShell('./lib/sync-wrapper.py', options);
+                        // it will create a python instance like this:
+                        // python -u /opt/stack4things/lightning-rod/modules/plugins-manager/python/sync-wrapper.py py_sync {"name":"S4T"}
+
+                        console.log("[PLUGIN-SHELL] - PID wrapper: "+pyshell.childProcess.pid);
+
+                        // listening 'print' output
+                        pyshell.on('message', function (message) {
+                            // received a message sent from the Python script (a simple "print" statement)
+                            console.log("[PLUGIN-WRAPPER] - PYTHON: "+message);
+                        });
+
+
+                        // end the input stream and allow the process to exit
+                        pyshell.end(function (err, code, signal) {
+
+                            if (err){
+
+                                response.result = "ERROR";
+                                response.message = err;
+                                console.log(response);
+
+                            }else{
+                                console.log('[PLUGIN-SHELL] - Python shell terminated: {signal: '+ signal+', code: '+code+'}');
+                            }
+
+                        });
+
+
+
+                    })
+
+
+                }
+
+            );
+
+        }
+        else{
+            console.log("WRONG plugin type: '" + plugin_type +"' - Types allowed: async | sync")
+        }
+    }
+    else{
+        console.log("This plugin does not exist!");
+        process.exit();
+    }
+
+
+
+
+
+
+
+}
+

@@ -10,7 +10,7 @@
 //##
 //# Unless required by applicable law or agreed to in writing, software
 //# distributed under the License is distributed on an "AS IS" BASIS,
-//# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.stderr of process
 //# See the License for the specific language governing permissions and
 //# limitations under the License.
 //##
@@ -50,32 +50,9 @@ exports.enableService = function(args){
 
     var i = findValue(servicesProcess, serviceName, 'key');
 
-    /*
-    if(servicesProcess[i] != undefined){
-        console.log("--------------------------------------------");
-        console.log(servicesProcess[i].process.pid, db_tunnel_pid);
-        console.log("--------------------------------------------");
-    }
-    else{
-        console.log("--------------------------------------------");
-        console.log(servicesProcess[i], db_tunnel_pid);
-        console.log("--------------------------------------------");
-    }
-
-
-    if(servicesProcess[i] != undefined)
-        var service_pid = servicesProcess[i].process.pid;
-    else
-        var service_pid = db_tunnel_pid;
-    */
-
     if(running(db_tunnel_pid)){
 
         // Call when Restore tunnel API is called and after injection LR conf is called
-        /*
-        servicesProcess[i].restore = true;
-        console.log("onRESTORE " + servicesProcess[i].restore);
-        */
 
         //kill tunnel process
         process.kill(db_tunnel_pid);
@@ -128,16 +105,6 @@ exports.enableService = function(args){
 
                 });
 
-
-                /*
-                response.result = "SUCCESS";
-                //response.pid = newTunnel.process.pid;
-                response.message = "Service '"+ serviceName +"' successfully restored (after reconnection) on port " + publicPort;
-                logger.info('[SERVICE] --> ' + response.message);
-                d.resolve(response);
-                */
-
-
             }else{
 
                 response.result = "WARNING";
@@ -146,8 +113,6 @@ exports.enableService = function(args){
                 d.resolve(response);
 
             }
-
-
 
         }
         else{
@@ -335,28 +300,7 @@ function createTunnel(serviceName, localPort, publicPort, callback) {
         logger.error('[SERVICE] - onError - '+newTunnel.key+' stderr of process ' + newTunnel.process.pid + ': '+ data);
     });
     newTunnel.process.on('close', function(code){
-
         logger.debug('[SERVICE] - onClose - '+newTunnel.key+' child process ' + newTunnel.process.pid + ' exited with code '+ code);
-
-        /*
-        //clean data structure
-        var i = findValue(servicesProcess, serviceName, 'key');
-        console.log("onKILL "  + i + " " + servicesProcess[i].restore);
-
-        if(servicesProcess[i].restore == false){
-            //exports.enableService([serviceName, localPort, publicPort, "false", null]);
-            //servicesProcess[i].restore = false;
-            servicesProcess.splice(i,1);
-            //servicesProcess[i].process.pid =
-            createTunnel(serviceName, localPort, publicPort, function (newTunnel) {
-
-                logger.info("[SERVICE] --> Service '"+ serviceName +"' successfully exposed on port " + publicPort);
-
-            });
-        }
-        */
-
-
     });
 
     callback(newTunnel);

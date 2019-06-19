@@ -1,0 +1,16 @@
+#!/bin/ash
+
+echo "PluginExec Environment Creation"
+
+PLUGIN_ENV="pluginExec"
+mkdir -p $PLUGIN_ENV/plugins
+mkdir -p $PLUGIN_ENV/node_modules
+
+ln -s /usr/lib/node_modules/@mdslab/iotronic-lightning-rod/node_modules/python-shell/ $PLUGIN_ENV/node_modules/
+
+echo " - folder "$PLUGIN_ENV" created."
+
+cp -R $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/pluginExec/lib/ $PLUGIN_ENV/
+cp $NODE_PATH/@mdslab/iotronic-lightning-rod/utils/pluginExec/exec_plg $PLUGIN_ENV/
+
+echo " - environment created."
