@@ -1,0 +1,173 @@
+# This repository adheres to the publiccode.yml standard by including this 
+# metadata file that makes public software easily discoverable.
+# More info at https://github.com/italia/publiccode.yml
+
+publiccodeYmlVersion: '0.2'
+applicationSuite: Stack4Things
+categories:
+  - communications
+  - data-collection
+  - it-management
+  - cloud-management
+  - data-visualization
+  - event-management
+description:
+  it:
+    documentation: 'https://github.com/MDSLab/s4t-lightning-rod'
+    features:
+      - IoT Management
+      - Fleet IoT Management
+    genericName: Lightning-rod
+    localisedName: S4T-LR
+    longDescription: >
+      Stack4Things è un framework per l'Internet of Things sviluppato dal Mobile
+      and Distributed Systems Lab (MDSLab), un laboratorio del dipartimento di
+      Ingegneria dell'Università di Messina. Stack4Things è un progetto
+      open-source che aiuta a gestire le flotte di dispositivi IoT senza
+      preoccuparsi della loro posizione fisica, della loro configurazione di
+      rete, della tecnologia sottostante. Si tratta di una soluzione orizzontale
+      orientata al Cloud (che può essere integrata con OpenStack) che fornisce
+      la virtualizzazione, la personalizzazione e l'orchestrazione degli oggetti
+      dell'internet degli oggetti. Stack4Things fornisce un'esperienza
+      "out-of-the-box" su diversi dei più popolari sistemi embedded e mobili.
+
+
+      Stack4Things coinvolge due componenti principali: il servizio IoTronic e
+      la sonda Lightning-rod. IoTronic è il servizio Cloud-side che permette
+      agli utenti di gestire le risorse dell'internet degli oggetti.
+      Lightning-rod è la sonda IoT-side che funge da controparte IoTronic che
+      collega il dispositivo al Cloud. Entrambi i componenti sono implementati
+      in Node.js. Stack4things nella sua versione standalone è solo parzialmente
+      integrato con OpenStack (può utilizzare il servizio Neutron come back-end
+      per la gestione della rete). Questa versione è stata implementata
+      principalmente per motivi di ricerca. Per la versione standalone è
+      disponibile anche una bozza di dashboard Web.
+
+
+      Stack4Things è un IaaS dedicato all’IoT capace di esporre delle REST API
+      che permettano la gestione di device IoT denominati all’interno del
+      framework come “board”. La struttura di tale sistema è conforme a quella
+      dei servizi sviluppati all’interno di OpenStack a cui per l’appunto si può
+      interfacciare per il suo funzionamento. L’architettura del sistema si
+      concentra sulla comunicazione tra gli user e i nodi IoT. Il sistema è
+      caratterizzato da due entità S4T IoTronic (parte Cloud
+      dell’infrastruttura) e S4T lightning-rod (lato IoT dell’infrastruttura).
+      Questo sistema consente di realizzare varie azioni volte alla gestione di
+      dispositivi IoT, come:
+
+
+      ● la Gestione di Board – registrazione, cancellazione, invio di comandi -
+
+
+      ● Plugin – iniettare pezzi di codice custom da fare eseguire sulla Board
+
+
+      ● Servizi – Permettere di accedere a servizi installati su una Board
+
+
+      ● Virtual Network – organizzare reti interne tra board
+
+
+      ● Web Service – Espone servizi http sulle Board in modo sicuro con
+      encription e2e
+
+
+      In particolare il sistema dal lato della board esegue direttamente sul MPU
+      ed interagisce con gli strumenti del S.O. ed i servizi della board, ovvero
+      avrà accesso ai sensori e agli attuatori forniti dal dispositivo
+      attraverso i pins di I/O. Lightning-rod rappresenta il punto di contatto
+      tra la scheda e il Cloud, permettendo all’user di pilotare la scheda anche
+      se essa è posta dietro un firewall molto restrittivo o un sistema di
+      Natting. La comunicazione viene assicurata attraverso WAMP. La controparte
+      lato Cloud, che abbiamo detto essere il servizio IoTronic di Stack4Things
+      è implementato secondo gli standard dei servizi OpenStack, al fine di
+      fornire la possibilità di gestire uno o più dispositivi IoT remoti. 
+
+
+      L’architettura del sistema lato IoT prevede che sul dispositivo sia
+      opererante come S.O. in esecuzione sul MCU del dispositivo BaTHOS, mentre
+      si assume che lato MPU sia presente una distribuzione derivante da OpenWRT
+      (o quanto meno una S.O. UNIX-like). BaTHOS grazie alle estensioni indicate
+      come MCUIO sarà in grado di esporre i pin digitali-analogici-I/O al SO
+      operante sul MPU. La comunicazione nel sistema è gestita attraverso vari
+      bus seriali. Inoltre, tra le funzionalità fornite dai moduli del kernel
+      relativi a MCUIO includono le enumerazioni dei pin oltre che
+      l’esportazione degli handler corrispondenti degli I/O come i-nodes del
+      virtual file-system sysfs. Sopra l’astrazione sysfs, che è conforme alle
+      assunzioni comuni su filesystem UNIX-like, vi è la necessità di mediare
+      l'accesso per mezzo di un insieme di librerie ispirate a MCUIO, ovvero le
+      librerie sysfs di Stack4Things MCUIO. Tali librerie rappresentano
+      l'interfaccia rispetto al file-system sysfs MCUIO che gestisce le
+      richieste di lettura e scrittura in termini di concorrenza. Questo viene
+      fatto al giusto livello di astrazione semantica, ovvero bloccando e
+      rilasciando le risorse in base alle prenotazioni e in un modo che dipende
+      dai requisiti derivanti dal comportamento tipico dei pin di I/O per uso
+      generale e da altri requisiti specifici per le risorse di sensing e
+      actuating. Il lightning-rod engine è il cuore di questa parte di
+      architettura, infatti esso interagisce con il cloud per mezzo di
+      connessioni ad uno specifico WAMP router attraverso comunicazioni su
+      canali di tipo full-duplex che inviano e ricevono dati dal cloud eseguendo
+      comandi provenienti dagli user del Cloud La comunicazione con il Cloud è
+      assicurata da una serie di librerie che implementano le funzionalità lato
+      client del protocollo WAMP (librerie WAMP Stack4Things). Inoltre, un set
+      di librerie WebSocket (Stack4Things wstunnel library) consente all’engine
+      di agire come un tunneling inverso WebSocket server, connettendosi a uno
+      specifico server WebSocket in esecuzione nel Cloud. Ciò consente ai
+      servizi interni di essere direttamente accessibili da utenti esterni
+      attraverso il tunnel WebSocket il cui traffico in entrata viene
+      automaticamente inoltrato al daemon interno (ad esempio, SSH, HTTP,
+      Telnet) preso in considerazione. Il traffico in uscita viene reindirizzato
+      al tunnel WebSocket e alla fine raggiunge l'utente finale che si connette
+      al server WebSocket in esecuzione nel Cloud per interagire con il servizio
+      della scheda. Il “lightning-rod engine” di Stack4Things implementa anche
+      un caricatore di plugin. I plug-in personalizzati possono essere iniettati
+      dal cloud ed eseguiti sul caricatore di plugin per implementare comandi
+      specifici definiti dall'utente, possibilmente incluse interazioni a
+      livello di sistema, ad es. con un gestore di pacchetti o il sottosistema
+      di gestione dei runlevel.
+    shortDescription: >-
+      IoTronic è utilizzato al fine di gestire dispositivi IoT, fornendo la
+      possibilità di gestire tali dispositivi durante il loro ciclo vitale
+developmentStatus: stable
+it:
+  conforme:
+    gdpr: false
+    lineeGuidaDesign: false
+    misureMinimeSicurezza: false
+    modelloInteroperabilita: true
+  countryExtensionVersion: '0.2'
+  piattaforme:
+    anpr: false
+    cie: false
+    pagopa: false
+    spid: false
+  riuso:
+    codiceIPA: udsm_me
+landingURL: 'http://stack4things.unime.it/'
+legal:
+  license: Apache-2.0
+  mainCopyrightOwner: MDSLAB
+  repoOwner: MDSLAB
+localisation:
+  availableLanguages:
+    - en
+  localisationReady: false
+maintenance:
+  contacts:
+    - affiliation: Università degli Studi di Messina
+      email: gmerlino@unime.it
+      name: Giovanni Merlino
+  contractors:
+    - name: smartme.IO
+      until: '2022-08-06'
+  type: internal
+name: Lightning-rod
+platforms:
+  - linux
+  - web
+releaseDate: '2019-06-19'
+softwareType: standalone/iot
+softwareVersion: 2.3.6
+url: 'https://github.com/MDSLab/s4t-lightning-rod.git'
+usedBy:
+  - Comune di Torino
