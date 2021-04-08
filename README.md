@@ -41,8 +41,7 @@ We tested this procedure on an Arduino YUN with LininoOS and LininoIO installed.
 
 ### Generic machine
 
-* [Installation guide for Ubuntu 16.04](https://github.com/MDSLab/s4t-lightning-rod/blob/master/docs/ubuntu1604.md)
-* [Installation guide for Ubuntu 14.04](https://github.com/MDSLab/s4t-lightning-rod/blob/master/docs/ubuntu1404.md)
+* [Installation guide for Ubuntu 20.04](https://github.com/MDSLab/s4t-lightning-rod/blob/master/docs/ubuntu20.04.md)
 
 <!--
 ### LXD
